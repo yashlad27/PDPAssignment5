@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import model.event.Event;
 import model.event.RecurringEvent;
+import model.exceptions.ConflictingEventException;
 import utilities.CSVExporter;
 import utilities.DateTimeUtil;
 
@@ -46,12 +47,12 @@ public class Calendar implements ICalendar {
    * @return true if created successfully.
    */
   @Override
-  public boolean addEvent(Event event, boolean autoDecline) {
+  public boolean addEvent(Event event, boolean autoDecline) throws ConflictingEventException {
     if (event == null) {
       throw new IllegalArgumentException("Event cannot be null");
     }
     if (autoDecline && hasConflict(event)) {
-      return false;
+      throw new ConflictingEventException("Cannot add event '" + event.getSubject() + "' due to conflict with an existing event");
     }
     events.add(event);
     eventById.put(event.getId(), event);
