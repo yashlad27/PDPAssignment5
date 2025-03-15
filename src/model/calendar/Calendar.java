@@ -94,14 +94,14 @@ public class Calendar implements ICalendar {
 
   @Override
   public boolean createRecurringEventUntil(String name, LocalDateTime start, LocalDateTime end,
-      String weekdays, LocalDate untilDate, boolean autoDecline) {
+                                           String weekdays, LocalDate untilDate, boolean autoDecline) {
     try {
       Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
 
-      RecurringEvent recurringEvent = new RecurringEvent(name, start, end, null,
-          null,
-          true,
-          repeatDays, untilDate);
+      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, start, end, repeatDays)
+              .isPublic(true)
+              .endDate(untilDate)
+              .build();
 
       return addRecurringEvent(recurringEvent, autoDecline);
     } catch (IllegalArgumentException e) {
@@ -111,15 +111,19 @@ public class Calendar implements ICalendar {
 
   @Override
   public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-      int occurrences, boolean autoDecline, String description, String location, boolean isPublic) {
+                                            int occurrences, boolean autoDecline, String description, String location, boolean isPublic) {
     try {
       Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
 
       LocalDateTime startOfDay = date.atStartOfDay();
       LocalDateTime endOfDay = date.atTime(23, 59, 59);
 
-      RecurringEvent recurringEvent = new RecurringEvent(name, startOfDay, endOfDay, description,
-          location, isPublic, repeatDays, occurrences);
+      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, startOfDay, endOfDay, repeatDays)
+              .description(description)
+              .location(location)
+              .isPublic(isPublic)
+              .occurrences(occurrences)
+              .build();
 
       recurringEvent.setAllDay(true);
 
@@ -131,16 +135,20 @@ public class Calendar implements ICalendar {
 
   @Override
   public boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
-      LocalDate untilDate, boolean autoDecline, String description, String location,
-      boolean isPublic) {
+                                                 LocalDate untilDate, boolean autoDecline, String description, String location,
+                                                 boolean isPublic) {
     try {
       Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
 
       LocalDateTime startOfDay = date.atStartOfDay();
       LocalDateTime endOfDay = date.atTime(23, 59, 59);
 
-      RecurringEvent recurringEvent = new RecurringEvent(name, startOfDay, endOfDay, description,
-          location, isPublic, repeatDays, untilDate);
+      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, startOfDay, endOfDay, repeatDays)
+              .description(description)
+              .location(location)
+              .isPublic(isPublic)
+              .endDate(untilDate)
+              .build();
 
       recurringEvent.setAllDay(true);
 
@@ -164,8 +172,8 @@ public class Calendar implements ICalendar {
     }
 
     return events.stream()
-        .filter(e -> e.getSubject().equals(subject) && e.getStartDateTime().equals(startDateTime))
-        .findFirst().orElse(null);
+            .filter(e -> e.getSubject().equals(subject) && e.getStartDateTime().equals(startDateTime))
+            .findFirst().orElse(null);
   }
 
   /**
@@ -189,7 +197,7 @@ public class Calendar implements ICalendar {
    */
   @Override
   public boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property,
-      String newValue) {
+                                 String newValue) {
     Event eventToEdit = findEvent(subject, startDateTime);
 
     if (eventToEdit == null) {
@@ -210,12 +218,12 @@ public class Calendar implements ICalendar {
    */
   @Override
   public int editEventsFromDate(String subject, LocalDateTime startDateTime, String property,
-      String newValue) {
+                                String newValue) {
     int count = 0;
 
     List<Event> matchingEvents = events.stream().filter(
-        e -> e.getSubject().equals(subject) && !e.getStartDateTime().isBefore(startDateTime))
-        .collect(Collectors.toList());
+                    e -> e.getSubject().equals(subject) && !e.getStartDateTime().isBefore(startDateTime))
+            .collect(Collectors.toList());
 
     for (Event event : matchingEvents) {
       if (updateEventProperty(event, property, newValue)) {
@@ -239,7 +247,7 @@ public class Calendar implements ICalendar {
     int count = 0;
 
     List<Event> matchingEvents = events.stream().filter(e -> e.getSubject().equals(subject))
-        .collect(Collectors.toList());
+            .collect(Collectors.toList());
 
     for (Event event : matchingEvents) {
       if (updateEventProperty(event, property, newValue)) {
@@ -337,7 +345,7 @@ public class Calendar implements ICalendar {
       case "public":
       case "private":
         boolean isPublic = newValue.equalsIgnoreCase("public") || (newValue.equalsIgnoreCase("true")
-            && !property.equals("private"));
+                && !property.equals("private"));
         event.setPublic(isPublic);
         return true;
       default:
@@ -370,8 +378,8 @@ public class Calendar implements ICalendar {
       if (event.getStartDateTime() != null) {
         LocalDate eventStartDate = event.getStartDateTime().toLocalDate();
         LocalDate eventEndDate =
-            (event.getEndDateTime() != null) ? event.getEndDateTime().toLocalDate()
-                : eventStartDate;
+                (event.getEndDateTime() != null) ? event.getEndDateTime().toLocalDate()
+                        : eventStartDate;
 
         return !(eventEndDate.isBefore(startDate) || eventStartDate.isAfter(endDate));
       } else if (event.getDate() != null) {
@@ -386,7 +394,7 @@ public class Calendar implements ICalendar {
     return events.stream().anyMatch(event -> {
       if (event.getStartDateTime() != null && event.getEndDateTime() != null) {
         return !dateTime.isBefore(event.getStartDateTime()) && !dateTime.isAfter(
-            event.getEndDateTime());
+                event.getEndDateTime());
       }
 
       if (event.getDate() != null) {

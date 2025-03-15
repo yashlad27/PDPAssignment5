@@ -1,5 +1,6 @@
 package controller.command;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -123,10 +124,14 @@ public class CreateEventCommand implements ICommand {
     }
 
     try {
-      Set<java.time.DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
+      Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
 
-      RecurringEvent recurringEvent = new RecurringEvent(eventName, startDateTime, endDateTime,
-          description, location, isPublic, repeatDays, occurrences);
+      RecurringEvent recurringEvent = new RecurringEvent.Builder(eventName, startDateTime, endDateTime, repeatDays)
+              .description(description)
+              .location(location)
+              .isPublic(isPublic)
+              .occurrences(occurrences)
+              .build();
 
       boolean success = calendar.addRecurringEvent(recurringEvent, autoDecline);
 
@@ -174,8 +179,12 @@ public class CreateEventCommand implements ICommand {
     try {
       Set<java.time.DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
 
-      RecurringEvent recurringEvent = new RecurringEvent(eventName, startDateTime, endDateTime,
-          description, location, isPublic, repeatDays, untilDate);
+      RecurringEvent recurringEvent = new RecurringEvent.Builder(eventName, startDateTime, endDateTime, repeatDays)
+              .description(description)
+              .location(location)
+              .isPublic(isPublic)
+              .endDate(untilDate)
+              .build();
 
       boolean success = calendar.addRecurringEvent(recurringEvent, autoDecline);
 
