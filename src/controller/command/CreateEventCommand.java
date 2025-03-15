@@ -1,5 +1,6 @@
 package controller.command;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -123,7 +124,7 @@ public class CreateEventCommand implements ICommand {
     }
 
     try {
-      Set<java.time.DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
+      Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
 
       RecurringEvent recurringEvent = new RecurringEvent(eventName, startDateTime, endDateTime,
           description, location, isPublic, repeatDays, occurrences);
