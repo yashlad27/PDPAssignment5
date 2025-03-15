@@ -44,7 +44,7 @@ public class Calendar implements ICalendar {
    *
    * @param event       the event to add
    * @param autoDecline if true, the addition will be declined if it conflicts with existing events
-   * @return true if created successfully.
+   * @return
    */
   @Override
   public boolean addEvent(Event event, boolean autoDecline) throws ConflictingEventException {
@@ -64,7 +64,7 @@ public class Calendar implements ICalendar {
    *
    * @param recurringEvent the recurring event to add
    * @param autoDecline    if true, the addition will be declined if any occurrence conflicts
-   * @return true if created successfully.
+   * @return
    */
   @Override
   public boolean addRecurringEvent(RecurringEvent recurringEvent, boolean autoDecline) {

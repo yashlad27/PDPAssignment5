@@ -7,6 +7,9 @@ import java.util.regex.Pattern;
 
 import controller.command.CommandFactory;
 import controller.command.ICommand;
+import model.exceptions.ConflictingEventException;
+import model.exceptions.EventNotFoundException;
+import model.exceptions.InvalidEventException;
 import utilities.DateTimeUtil;
 
 /**
@@ -310,7 +313,7 @@ public class CommandParser {
       return args;
     }
 
-    public String execute() {
+    public String execute() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
       return command.execute(args);
     }
   }
