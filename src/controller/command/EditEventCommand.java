@@ -3,6 +3,9 @@ package controller.command;
 import java.time.LocalDateTime;
 
 import model.calendar.ICalendar;
+import model.exceptions.ConflictingEventException;
+import model.exceptions.EventNotFoundException;
+import model.exceptions.InvalidEventException;
 import utilities.DateTimeUtil;
 
 /**
@@ -136,7 +139,7 @@ public class EditEventCommand implements ICommand {
    */
 
   @Override
-  public String execute(String[] args) {
+  public String execute(String[] args) throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     if (args.length < 3) {
       return "Error: Insufficient arguments for edit command";
     }
@@ -159,12 +162,15 @@ public class EditEventCommand implements ICommand {
       String newValue = args[4];
       newValue = removeQuotes(newValue);
 
-      boolean success = calendar.editSingleEvent(subject, startDateTime, property, newValue);
-
-      if (success) {
+      try {
+        calendar.editSingleEvent(subject, startDateTime, property, newValue);
         return "Successfully edited event '" + subject + "'.";
-      } else {
-        return "Failed to edit event. Event not found or invalid property.";
+      } catch (EventNotFoundException e) {
+        return "Failed to edit event: Event not found - " + e.getMessage();
+      } catch (InvalidEventException e) {
+        return "Failed to edit event: Invalid property or value - " + e.getMessage();
+      } catch (ConflictingEventException e) {
+        return "Failed to edit event: Would create a conflict - " + e.getMessage();
       }
     } else if (type.equals("series_from_date")) {
       if (args.length < 5) {
@@ -183,13 +189,19 @@ public class EditEventCommand implements ICommand {
       String newValue = args[4];
       newValue = removeQuotes(newValue);
 
-      int count = calendar.editEventsFromDate(subject, startDateTime, property, newValue);
-
-      if (count > 0) {
-        return "Successfully edited " + count + " events in the series.";
-      } else {
-        return "No matching events found to edit.";
+      try {
+        int count = calendar.editEventsFromDate(subject, startDateTime, property, newValue);
+        if (count > 0) {
+          return "Successfully edited " + count + " events in the series.";
+        } else {
+          return "No matching events found to edit.";
+        }
+      } catch (InvalidEventException e) {
+        return "Failed to edit events: Invalid property or value - " + e.getMessage();
+      } catch (ConflictingEventException e) {
+        return "Failed to edit events: Would create a conflict - " + e.getMessage();
       }
+
     } else if (type.equals("all")) {
       if (args.length < 4) {
         return "Error: Insufficient arguments for editing all events";
@@ -200,12 +212,17 @@ public class EditEventCommand implements ICommand {
       String newValue = args[3];
       newValue = removeQuotes(newValue);
 
-      int count = calendar.editAllEvents(subject, property, newValue);
-
-      if (count > 0) {
-        return "Successfully edited " + count + " events.";
-      } else {
-        return "No events found with the subject '" + subject + "'.";
+      try {
+        int count = calendar.editAllEvents(subject, property, newValue);
+        if (count > 0) {
+          return "Successfully edited " + count + " events.";
+        } else {
+          return "No events found with the subject '" + subject + "'.";
+        }
+      } catch (InvalidEventException e) {
+        return "Failed to edit events: Invalid property or value - " + e.getMessage();
+      } catch (ConflictingEventException e) {
+        return "Failed to edit events: Would create a conflict - " + e.getMessage();
       }
     } else {
       return "Unknown edit command type: " + type;

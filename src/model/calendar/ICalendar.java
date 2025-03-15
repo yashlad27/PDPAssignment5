@@ -21,7 +21,7 @@ public interface ICalendar {
    *
    * @param event       the event to add
    * @param autoDecline if true, the addition will be declined if it conflicts with existing events
-   * @return true if the event was added, false if it was declined due to conflicts
+   * @return
    */
   boolean addEvent(Event event, boolean autoDecline) throws ConflictingEventException;
 
@@ -30,7 +30,7 @@ public interface ICalendar {
    *
    * @param recurringEvent the recurring event to add
    * @param autoDecline    if true, the addition will be declined if any occurrence conflicts
-   * @return true if the event was added, false if it was declined due to conflicts
+   * @return
    */
   boolean addRecurringEvent(RecurringEvent recurringEvent, boolean autoDecline) throws ConflictingEventException;
 
@@ -43,7 +43,7 @@ public interface ICalendar {
    * @param weekdays    the days of the week to repeat on (e.g., "MWF")
    * @param untilDate   the date until which to repeat (inclusive)
    * @param autoDecline whether to automatically decline if there's a conflict
-   * @return true if the event was created successfully, false otherwise
+   * @return
    */
   boolean createRecurringEventUntil(String name, LocalDateTime start, LocalDateTime end,
                                     String weekdays, LocalDate untilDate, boolean autoDecline) throws InvalidEventException, ConflictingEventException;
@@ -56,7 +56,7 @@ public interface ICalendar {
    * @param weekdays    the days of the week to repeat on (e.g., "MWF")
    * @param occurrences the number of occurrences
    * @param autoDecline whether to automatically decline if there's a conflict
-   * @return true if the event was created successfully, false otherwise
+   * @return
    */
   boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays, int occurrences,
                                      boolean autoDecline, String description, String location, boolean isPublic) throws InvalidEventException, ConflictingEventException;
@@ -69,7 +69,7 @@ public interface ICalendar {
    * @param weekdays    the days of the week to repeat on (e.g., "MWF")
    * @param untilDate   the date until which to repeat (inclusive)
    * @param autoDecline whether to automatically decline if there's a conflict
-   * @return true if the event was created successfully, false otherwise
+   * @return
    */
   boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
                                           LocalDate untilDate, boolean autoDecline, String description, String location,
