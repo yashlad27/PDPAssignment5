@@ -1,0 +1,6 @@
+create event Team Meeting from 2022-05-15T09:00 to 2022-05-15T10:30
+create event Weekly Standup from 2022-06-01T09:00 to 2022-06-01T09:30 repeats MWF for 10 times
+invalid_command this will cause an error
+print events on 2023-06-05
+export cal calendar.csv
+exit

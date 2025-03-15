@@ -1,0 +1,58 @@
+create event "Product Strategy Meeting" from 2023-11-01T09:00 to 2023-11-01T11:00 desc "Review Q4 product roadmap" at "Building A, Room 203"
+create event "Tech Talk: AI Innovations" from 2023-11-02T14:00 to 2023-11-02T16:00 desc "Guest speaker from Google discussing latest AI trends" at "Nexus Building, Auditorium"
+create event "Marketing Campaign Review" from 2023-11-03T10:00 to 2023-11-03T12:00 desc "Analysis of Q3 campaign performance" at "Building B, Marketing Suite"
+create event "Dinner Party" from 2023-11-03T19:00 to 2023-11-03T22:00 desc "Team celebration for project completion" at "Riverside Restaurant, Private Room" private
+create event "Team Football Match" from 2023-11-05T10:30 to 2023-11-05T14:30 desc "Monthly recreational activity" at "City Sports Complex, Field 3" private
+create event "Client Pitch Preparation" from 2023-11-06T13:00 to 2023-11-06T15:00 desc "Rehearsal for upcoming client presentation" at "Building C, Room 105"
+create event "Web Platform Launch" from 2023-11-07T09:00 to 2023-11-07T12:00 desc "Public launch of redesigned platform" at "Building A, Conference Center"
+create event "Lunch with Manager" from 2023-11-08T12:00 to 2023-11-08T13:30 desc "Monthly one-on-one lunch meeting" at "Café Milano" private
+create event "Product Demo" from 2023-11-09T15:00 to 2023-11-09T16:30 desc "Demonstration of new features to stakeholders" at "Building B, Demo Room"
+create event "Code Sprint Planning" from 2023-11-10T10:00 to 2023-11-10T12:00 desc "Planning session for next week's code sprint" at "Building C, Dev Hub"
+create event "Weekend Hackathon" on 2023-11-11 desc "Internal innovation competition" at "Nexus Building, Open Space" private
+create event "Volunteer Day" on 2023-11-12 desc "Company-sponsored community service" at "City Park" private
+create event "Board Meeting" from 2023-11-13T09:00 to 2023-11-13T12:00 desc "Quarterly board review" at "Building A, Boardroom"
+create event "User Research Workshop" from 2023-11-14T13:00 to 2023-11-14T17:00 desc "Workshop with key users to gather feedback" at "Building B, Room 302"
+create event "Product Talk: Future of Mobile" from 2023-11-15T14:00 to 2023-11-15T16:00 desc "Industry trends and company strategy" at "Nexus Building, Lecture Hall"
+create event "Team Building Workshop" from 2023-11-16T09:00 to 2023-11-16T16:00 desc "Full-day team-building activities" at "Adventure Center"
+create event "Investor Presentation" from 2023-11-17T11:00 to 2023-11-17T13:00 desc "Presenting quarterly results to investors" at "Building A, Executive Suite"
+create event "Dinner with Board Members" from 2023-11-17T19:00 to 2023-11-17T21:30 desc "Semi-annual networking dinner" at "Grand Hotel Restaurant" private
+create event "UI/UX Design Workshop" on 2023-11-18 desc "Collaborative design session for new product" at "Building C, Design Studio"
+create event "Charity Run" on 2023-11-19 desc "Company participation in city marathon" at "City Center" private
+create event "Product Roadmap Review" from 2023-11-20T10:00 to 2023-11-20T12:00 desc "Review and update product plans for Q1" at "Building B, Strategy Room"
+create event "Tech Debt Sprint" from 2023-11-21T09:00 to 2023-11-21T17:00 desc "Dedicated day to address technical debt" at "Building C, Dev Floor"
+create event "Thanksgiving Lunch" from 2023-11-22T12:00 to 2023-11-22T14:00 desc "Team lunch before holiday" at "Building A, Cafeteria" private
+create event "Remote Work Day" on 2023-11-23 desc "Company-wide remote working day" at "Virtual"
+create event "Thanksgiving Holiday" on 2023-11-24 desc "Office closed for Thanksgiving" at "Closed"
+create event "Black Friday Strategy" from 2023-11-25T09:00 to 2023-11-25T11:00 desc "Emergency meeting to address sales platform issues" at "Building B, Crisis Room"
+create event "Weekend Team Football Match" from 2023-11-26T10:30 to 2023-11-26T14:30 desc "Monthly recreational activity" at "City Sports Complex, Field 3" private
+create event "Cyber Monday Preparations" from 2023-11-27T09:00 to 2023-11-27T17:00 desc "All-hands meeting to prepare for online sales event" at "Building A, Main Hall"
+create event "Customer Feedback Session" from 2023-11-28T13:00 to 2023-11-28T15:00 desc "Gathering insights from key customers" at "Building C, Customer Center"
+create event "Product Demo: New Analytics" from 2023-11-29T11:00 to 2023-11-29T12:30 desc "Demo of new analytics dashboard" at "Nexus Building, Demo Zone"
+create event "Monthly All-Hands" from 2023-11-30T15:00 to 2023-11-30T17:00 desc "Company-wide meeting with executive Q&A" at "Building A, Auditorium"
+create event "Team Sync" from 2023-11-01T09:00 to 2023-11-01T09:30 repeats MWF until 2023-11-30 desc "Regular team check-in" at "Building B, Room 101"
+create event "Project Status Meeting" from 2023-11-02T14:00 to 2023-11-02T15:00 repeats TR for 8 times desc "Bi-weekly project updates" at "Building C, Room 203"
+
+print events on 2023-11-15
+print events from 2023-11-01 to 2023-11-07
+print events from 2023-11-20 to 2023-11-30
+
+show status on 2023-11-03T11:30
+show status on 2023-11-11T10:00
+show status on 2023-11-17T20:00
+show status on 2023-11-23T14:00
+show status on 2023-11-26T12:00
+show status on 2023-11-30T15:30
+
+edit event location "Product Strategy Meeting" from 2023-11-01T09:00 to 2023-11-01T11:00 with "Building A, Executive Conference Room"
+edit event description "Tech Talk: AI Innovations" from 2023-11-02T14:00 to 2023-11-02T16:00 with "Guest speaker from Google discussing latest AI advances and practical applications"
+edit event name "Team Football Match" from 2023-11-05T10:30 to 2023-11-05T14:30 with "Team Sports Day"
+edit events name "Team Sync" from 2023-11-01T09:00 with "Daily Standup"
+edit events location "Project Status Meeting" from 2023-11-02T14:00 with "Building C, War Room"
+edit event description "Lunch with Manager" from 2023-11-08T12:00 to 2023-11-08T13:30 with "Monthly performance review and career development discussion"
+edit event name "Weekend Hackathon" from 2023-11-11T00:00 to 2023-11-11T23:59 with "Innovation Day"
+edit events name "Dinner Party" with "Team Social Event"
+edit event location "Board Meeting" from 2023-11-13T09:00 to 2023-11-13T12:00 with "Building A, Executive Suite"
+
+print events from 2023-11-01 to 2023-11-15
+export cal calendar_export.csv
+exit
