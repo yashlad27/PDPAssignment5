@@ -1,17 +1,19 @@
 package model.calendar;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
 import model.exceptions.InvalidTimezoneException;
 import utilities.TimeZoneHandler;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * Manages multiple calendars with unique names and timezones.
  * Provides functionality to create, access, modify, and switch between calendars.
+ * Uses functional interfaces for calendar operations.
  */
 public class CalendarManager {
 
@@ -60,6 +62,76 @@ public class CalendarManager {
     public CalendarManager build() {
       return new CalendarManager(this);
     }
+  }
+
+  /**
+   * Executes an operation on a calendar by name and returns a result.
+   *
+   * @param <T>          the result type
+   * @param calendarName the name of the calendar
+   * @param operation    the operation to execute
+   * @return the result of the operation
+   * @throws CalendarNotFoundException if the calendar cannot be found
+   * @throws Exception                 if the operation throws an exception
+   */
+  public <T> T executeOnCalendar(String calendarName, CalendarOperation<T> operation)
+          throws CalendarNotFoundException, Exception {
+    Calendar calendar = getCalendarByName(calendarName);
+    return operation.execute(calendar);
+  }
+
+  /**
+   * Executes an operation on the active calendar and returns a result.
+   *
+   * @param <T>       the result type
+   * @param operation the operation to execute
+   * @return the result of the operation
+   * @throws CalendarNotFoundException if there is no active calendar
+   * @throws Exception                 if the operation throws an exception
+   */
+  public <T> T executeOnActiveCalendar(CalendarOperation<T> operation)
+          throws CalendarNotFoundException, Exception {
+    Calendar calendar = getActiveCalendar();
+    return operation.execute(calendar);
+  }
+
+  /**
+   * Applies a consumer to a calendar by name.
+   *
+   * @param calendarName the name of the calendar
+   * @param consumer     the consumer to apply
+   * @throws CalendarNotFoundException if the calendar cannot be found
+   */
+  public void applyToCalendar(String calendarName, Consumer<Calendar> consumer)
+          throws CalendarNotFoundException {
+    Calendar calendar = getCalendarByName(calendarName);
+    consumer.accept(calendar);
+  }
+
+  /**
+   * Applies a consumer to the active calendar.
+   *
+   * @param consumer the consumer to apply
+   * @throws CalendarNotFoundException if there is no active calendar
+   */
+  public void applyToActiveCalendar(Consumer<Calendar> consumer)
+          throws CalendarNotFoundException {
+    Calendar calendar = getActiveCalendar();
+    consumer.accept(calendar);
+  }
+
+  /**
+   * Gets a calendar by name.
+   *
+   * @param name the name of the calendar
+   * @return the calendar with the specified name
+   * @throws CalendarNotFoundException if no calendar with the specified name exists
+   */
+  private Calendar getCalendarByName(String name) throws CalendarNotFoundException {
+    if (!calendars.containsKey(name)) {
+      throw new CalendarNotFoundException("Calendar not found: " + name);
+    }
+    return calendars.get(name);
   }
 
   /**
@@ -128,10 +200,7 @@ public class CalendarManager {
    * @throws CalendarNotFoundException if no calendar with the specified name exists
    */
   public Calendar getCalendar(String name) throws CalendarNotFoundException {
-    if (!calendars.containsKey(name)) {
-      throw new CalendarNotFoundException("Calendar not found: " + name);
-    }
-    return calendars.get(name);
+    return getCalendarByName(name);
   }
 
   /**
@@ -202,7 +271,7 @@ public class CalendarManager {
    *
    * @param oldName the current name of the calendar
    * @param newName the new name for the calendar
-   * @throws CalendarNotFoundException   if no calendar with the specified name exists
+   * @throws CalendarNotFoundException  if no calendar with the specified name exists
    * @throws DuplicateCalendarException if a calendar with the new name already exists
    */
   public void editCalendarName(String oldName, String newName)
@@ -222,20 +291,20 @@ public class CalendarManager {
       throw new DuplicateCalendarException("Calendar with name '" + newName + "' already exists");
     }
 
-    // Get the calendar
-    Calendar calendar = calendars.get(oldName);
+    // Update calendar name
+    applyToCalendar(oldName, calendar -> {
+      // Update name in calendar object
+      calendar.setName(newName);
 
-    // Update name in calendar object
-    calendar.setName(newName);
+      // Remove from map with old name and add with new name
+      calendars.remove(oldName);
+      calendars.put(newName, calendar);
 
-    // Remove from map with old name and add with new name
-    calendars.remove(oldName);
-    calendars.put(newName, calendar);
-
-    // Update active calendar name if necessary
-    if (oldName.equals(activeCalendarName)) {
-      activeCalendarName = newName;
-    }
+      // Update active calendar name if necessary
+      if (oldName.equals(activeCalendarName)) {
+        activeCalendarName = newName;
+      }
+    });
   }
 
   /**
@@ -253,14 +322,8 @@ public class CalendarManager {
       throw new InvalidTimezoneException("Invalid timezone: " + newTimezone);
     }
 
-    // Check if calendar exists
-    if (!calendars.containsKey(calendarName)) {
-      throw new CalendarNotFoundException("Calendar not found: " + calendarName);
-    }
-
-    // Get the calendar and update timezone
-    Calendar calendar = calendars.get(calendarName);
-    calendar.setTimezone(newTimezone);
+    // Update timezone
+    applyToCalendar(calendarName, calendar -> calendar.setTimezone(newTimezone));
   }
 
   /**
