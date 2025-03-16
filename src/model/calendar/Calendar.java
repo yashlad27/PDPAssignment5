@@ -363,24 +363,24 @@ public class Calendar implements ICalendar {
     }
   }
 
-  @Override
-  public List<Event> getEventsOnDate(LocalDate date) {
-    return events.stream().filter(event -> {
-      if (event.getStartDateTime() != null) {
-        LocalDate eventStartDate = event.getStartDateTime().toLocalDate();
-
-        if (event.getEndDateTime() != null) {
-          LocalDate eventEndDate = event.getEndDateTime().toLocalDate();
-          return !date.isBefore(eventStartDate) && !date.isAfter(eventEndDate);
-        } else {
-          return eventStartDate.equals(date);
-        }
-      } else if (event.getDate() != null) {
-        return event.getDate().equals(date);
-      }
-      return false;
-    }).collect(Collectors.toList());
-  }
+//  @Override
+//  public List<Event> getEventsOnDate(LocalDate date) {
+//    return events.stream().filter(event -> {
+//      if (event.getStartDateTime() != null) {
+//        LocalDate eventStartDate = event.getStartDateTime().toLocalDate();
+//
+//        if (event.getEndDateTime() != null) {
+//          LocalDate eventEndDate = event.getEndDateTime().toLocalDate();
+//          return !date.isBefore(eventStartDate) && !date.isAfter(eventEndDate);
+//        } else {
+//          return eventStartDate.equals(date);
+//        }
+//      } else if (event.getDate() != null) {
+//        return event.getDate().equals(date);
+//      }
+//      return false;
+//    }).collect(Collectors.toList());
+//  }
 
   @Override
   public List<Event> getEventsInRange(LocalDate startDate, LocalDate endDate) {
@@ -533,5 +533,35 @@ public class Calendar implements ICalendar {
 
     EventPropertyUpdater updater = propertyUpdaters.get(property.toLowerCase());
     return updater != null && updater.update(event, newValue);
+  }
+
+  public List<Event> getFilteredEvents(EventFilter filter) {
+    return events.stream()
+            .filter(filter::matches)
+            .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<Event> getEventsOnDate(LocalDate date) {
+    if (date == null) {
+      throw new IllegalArgumentException("Date cannot be null");
+    }
+
+    return getFilteredEvents(event -> {
+      if (event.getStartDateTime() != null) {
+        LocalDate eventStartDate = event.getStartDateTime().toLocalDate();
+
+        if (event.getEndDateTime() != null) {
+          LocalDate eventEndDate = event.getEndDateTime().toLocalDate();
+          return !date.isBefore(eventStartDate) && !date.isAfter(eventEndDate);
+        } else {
+          return eventStartDate.equals(date);
+        }
+
+      } else if (event.getDate() != null) {
+        return event.getDate().equals(date);
+      }
+      return false;
+    });
   }
 }
