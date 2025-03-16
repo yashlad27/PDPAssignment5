@@ -18,6 +18,7 @@ import model.event.RecurringEvent;
 import model.exceptions.ConflictingEventException;
 import utilities.CSVExporter;
 import utilities.DateTimeUtil;
+import utilities.EventPropertyUpdater;
 
 /**
  * Implementation of the ICalendar interface that manages calendar events.
@@ -30,6 +31,7 @@ public class Calendar implements ICalendar {
   private final Map<UUID, RecurringEvent> recurringEventById;
   private String name;
   private String timezone;
+  private final Map<String, EventPropertyUpdater> propertyUpdaters;
 
   /**
    * Constructs a new Calendar with no events.
@@ -41,6 +43,9 @@ public class Calendar implements ICalendar {
     this.recurringEventById = new HashMap<>();
     this.name = "Default";
     this.timezone = "America/New_York";
+
+    this.propertyUpdaters = new HashMap<>();
+    initializePropertyUpdaters();
   }
 
   /**
@@ -425,5 +430,108 @@ public class Calendar implements ICalendar {
 
   public void setTimezone(String timezone) {
     this.timezone = timezone;
+  }
+
+  /**
+   * Initializes the map of property updaters with lambda expressions for each property.
+   */
+  private void initializePropertyUpdaters() {
+
+    EventPropertyUpdater subjectUpdater = (event, value) -> {
+      try {
+        event.setSubject(value);
+        return true;
+      } catch (IllegalArgumentException e) {
+        return false;
+      }
+    };
+
+    propertyUpdaters.put("subject", subjectUpdater);
+    propertyUpdaters.put("name", subjectUpdater);
+
+    propertyUpdaters.put("description", (event, value) -> {
+      event.setDescription(value);
+      return true;
+    });
+
+    propertyUpdaters.put("location", (event, value) -> {
+      event.setLocation(value);
+      return true;
+    });
+
+    // Start date/time updaters
+    EventPropertyUpdater startTimeUpdater = (event, value) -> {
+      try {
+        LocalDateTime newStartTime;
+        if (value.contains("T")) {
+          newStartTime = DateTimeUtil.parseDateTime(value);
+        } else {
+          LocalTime newTime = LocalTime.parse(value);
+          newStartTime = LocalDateTime.of(event.getStartDateTime().toLocalDate(), newTime);
+        }
+        event.setStartDateTime(newStartTime);
+        return true;
+      } catch (Exception e) {
+        return false;
+      }
+    };
+    propertyUpdaters.put("start", startTimeUpdater);
+    propertyUpdaters.put("starttime", startTimeUpdater);
+    propertyUpdaters.put("startdatetime", startTimeUpdater);
+
+    // End date/time updaters
+    EventPropertyUpdater endTimeUpdater = (event, value) -> {
+      try {
+        LocalDateTime newEndTime;
+        if (value.contains("T")) {
+          newEndTime = DateTimeUtil.parseDateTime(value);
+        } else {
+          LocalTime newTime = LocalTime.parse(value);
+          newEndTime = LocalDateTime.of(event.getEndDateTime().toLocalDate(), newTime);
+        }
+        event.setEndDateTime(newEndTime);
+        return true;
+      } catch (Exception e) {
+        return false;
+      }
+    };
+    propertyUpdaters.put("end", endTimeUpdater);
+    propertyUpdaters.put("endtime", endTimeUpdater);
+    propertyUpdaters.put("enddatetime", endTimeUpdater);
+
+    // Visibility/privacy updaters
+    EventPropertyUpdater visibilityUpdater = (event, value) -> {
+      boolean isPublic = value.equalsIgnoreCase("public") || value.equalsIgnoreCase("true");
+      event.setPublic(isPublic);
+      return true;
+    };
+    propertyUpdaters.put("visibility", visibilityUpdater);
+    propertyUpdaters.put("ispublic", visibilityUpdater);
+    propertyUpdaters.put("public", visibilityUpdater);
+
+    // Special case for "private" - inverts the logic
+    propertyUpdaters.put("private", (event, value) -> {
+      boolean isPrivate = value.equalsIgnoreCase("true") || value.equalsIgnoreCase("private");
+      event.setPublic(!isPrivate);
+      return true;
+    });
+
+  }
+
+  /**
+   * Updates a specific property of an event.
+   *
+   * @param event    the event to update
+   * @param property the property to update
+   * @param newValue the new value for the property
+   * @return true if the update was successful, otherwise false
+   */
+  private boolean UpdateEventProperty(Event event, String property, String newValue) {
+    if (property == null || newValue == null) {
+      return false;
+    }
+
+    EventPropertyUpdater updater = propertyUpdaters.get(property.toLowerCase());
+    return updater != null && updater.update(event, newValue);
   }
 }
