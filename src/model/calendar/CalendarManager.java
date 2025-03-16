@@ -38,7 +38,6 @@ public class CalendarManager {
      * Constructor for Builder.
      */
     public Builder() {
-      // Default timezone handler
       this.timezoneHandler = new TimeZoneHandler();
     }
 

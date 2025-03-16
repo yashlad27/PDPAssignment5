@@ -28,6 +28,8 @@ public class Calendar implements ICalendar {
   private final List<RecurringEvent> recurringEvents;
   private final Map<UUID, Event> eventById;
   private final Map<UUID, RecurringEvent> recurringEventById;
+  private String name;
+  private String timezone;
 
   /**
    * Constructs a new Calendar with no events.
@@ -37,6 +39,8 @@ public class Calendar implements ICalendar {
     this.recurringEvents = new ArrayList<>();
     this.eventById = new HashMap<>();
     this.recurringEventById = new HashMap<>();
+    this.name = "Default";
+    this.timezone = "America/New_York";
   }
 
   /**
@@ -405,5 +409,21 @@ public class Calendar implements ICalendar {
 
       return false;
     });
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getTimezone() {
+    return timezone;
+  }
+
+  public void setTimezone(String timezone) {
+    this.timezone = timezone;
   }
 }
