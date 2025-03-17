@@ -47,21 +47,6 @@ public class CreateEventCommand implements ICommand {
                              LocalDateTime endDateTime, boolean autoDecline, String description, String location,
                              boolean isPublic) {
 
-    if (eventName == null || eventName.trim().isEmpty()) {
-      return "Error: Event name cannot be empty";
-    }
-    if (startDateTime == null) {
-      return "Error: Start date/time cannot be null";
-    }
-
-    Event event = new Event(eventName, startDateTime, endDateTime, description, location, isPublic);
-
-    try {
-      calendar.addEvent(event, autoDecline);
-      return "Event '" + eventName + "' created successfully.";
-    } catch (ConflictingEventException e) {
-      return "Failed to create event due to conflicts: " + e.getMessage();
-    }
   }
 
   /**
@@ -111,37 +96,7 @@ public class CreateEventCommand implements ICommand {
   private String createRecurringEvent(String eventName, LocalDateTime startDateTime,
                                       LocalDateTime endDateTime, String weekdays, int occurrences, boolean autoDecline,
                                       String description, String location, boolean isPublic) {
-    if (eventName == null || eventName.trim().isEmpty()) {
-      return "Error: Event name cannot be empty";
-    }
-    if (startDateTime == null) {
-      return "Error: Start date/time cannot be null";
-    }
-    if (weekdays == null || weekdays.trim().isEmpty()) {
-      return "Error: Weekdays cannot be empty";
-    }
-    if (occurrences <= 0) {
-      return "Error: Occurrences must be positive";
-    }
 
-    try {
-      Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
-
-      RecurringEvent recurringEvent = new RecurringEvent.Builder(eventName, startDateTime, endDateTime, repeatDays)
-              .description(description)
-              .location(location)
-              .isPublic(isPublic)
-              .occurrences(occurrences)
-              .build();
-
-     calendar.addRecurringEvent(recurringEvent, autoDecline);
-      return "Recurring event '" + eventName + "' created successfully with " + occurrences
-              + " occurrences.";
-    } catch (ConflictingEventException e) {
-      return "Failed to create recurring event due to conflicts: " + e.getMessage();
-    } catch (IllegalArgumentException e) {
-      return "Error: " + e.getMessage();
-    }
   }
 
   /**
