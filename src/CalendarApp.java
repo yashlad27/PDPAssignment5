@@ -1,7 +1,9 @@
 import controller.CalendarController;
+import controller.command.CalendarCommandFactory;
 import controller.command.CommandFactory;
-import model.calendar.Calendar;
+import model.calendar.CalendarManager;
 import model.calendar.ICalendar;
+import utilities.TimeZoneHandler;
 import view.ConsoleView;
 import view.ICalendarView;
 
@@ -16,16 +18,41 @@ public class CalendarApp {
    * @param args command line arguments
    */
   public static void main(String[] args) {
-    ICalendar calendar = new Calendar();
+
     ICalendarView view = new ConsoleView();
 
-    CommandFactory commandFactory = new CommandFactory(calendar, view);
+    TimeZoneHandler timezoneHandler = new TimeZoneHandler();
 
-    CalendarController controller = new CalendarController(commandFactory, view);
+    CalendarManager calendarManager = new CalendarManager.Builder()
+            .timezoneHandler(timezoneHandler)
+            .build();
+
+    try {
+      calendarManager.createCalendarWithDefaultTimezone("Default");
+      calendarManager.setActiveCalendar("Default");
+    } catch (Exception e) {
+      view.displayError("Failed to create default calendar: " + e.getMessage());
+      return;
+    }
+
+    ICalendar activeCalendar;
+    try {
+      activeCalendar = calendarManager.getActiveCalendar();
+    } catch (Exception e) {
+      view.displayError("Failed to get active calendar: " + e.getMessage());
+      return;
+    }
+
+    // create command
+    CommandFactory commandFactory = new CommandFactory(activeCalendar, view);
+    CalendarCommandFactory calendarCommandFactory = new CalendarCommandFactory(calendarManager, view);
+
+    // create controller
+    CalendarController controller = new CalendarController(commandFactory, calendarCommandFactory, view);
 
     if (args.length < 2) {
       view.displayError(
-          "Insufficient arguments. Usage: --mode [interactive|headless filename.txt]");
+              "Insufficient arguments. Usage: --mode [interactive|headless filename.txt]");
       return;
     }
 
@@ -60,4 +87,5 @@ public class CalendarApp {
       ((ConsoleView) view).close();
     }
   }
+
 }
