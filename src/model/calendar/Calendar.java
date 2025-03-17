@@ -384,7 +384,11 @@ public class Calendar implements ICalendar {
 
   @Override
   public List<Event> getEventsInRange(LocalDate startDate, LocalDate endDate) {
-    return events.stream().filter(event -> {
+    if (startDate == null || endDate == null) {
+      throw new IllegalArgumentException("Start date and end date cannot be null");
+    }
+
+    return getFilteredEvents(event -> {
       if (event.getStartDateTime() != null) {
         LocalDate eventStartDate = event.getStartDateTime().toLocalDate();
         LocalDate eventEndDate =
@@ -396,15 +400,19 @@ public class Calendar implements ICalendar {
         return !event.getDate().isBefore(startDate) && !event.getDate().isAfter(endDate);
       }
       return false;
-    }).collect(Collectors.toList());
+    });
   }
 
   @Override
   public boolean isBusy(LocalDateTime dateTime) {
-    return events.stream().anyMatch(event -> {
+    if (dateTime == null) {
+      throw new IllegalArgumentException("DateTime cannot be null");
+    }
+
+    EventFilter busyFilter = event -> {
       if (event.getStartDateTime() != null && event.getEndDateTime() != null) {
-        return !dateTime.isBefore(event.getStartDateTime()) && !dateTime.isAfter(
-                event.getEndDateTime());
+        return !dateTime.isBefore(event.getStartDateTime()) &&
+                !dateTime.isAfter(event.getEndDateTime());
       }
 
       if (event.getDate() != null) {
@@ -413,7 +421,9 @@ public class Calendar implements ICalendar {
       }
 
       return false;
-    });
+    };
+
+    return events.stream().anyMatch(busyFilter::matches);
   }
 
   public String getName() {

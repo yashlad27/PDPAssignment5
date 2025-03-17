@@ -163,7 +163,6 @@ public class CommandFactory {
     }
   }
 
-  // Other create event methods would be implemented similarly...
 
   private String createAllDayEvent(String[] args) {
     // Implementation
@@ -205,6 +204,7 @@ public class CommandFactory {
     }
   }
 
+  // need to implement the below methods (logic)
   private String editSingleEvent(String[] args) throws EventNotFoundException, InvalidEventException, ConflictingEventException {
     // Implementation
     return "Not implemented yet";
@@ -225,7 +225,7 @@ public class CommandFactory {
    */
   private String executePrintCommand(String[] args) {
     // Implementation
-    return "Not implemented yet";
+    return "Print command not fully implemented yet";
   }
 
   /**
@@ -233,7 +233,7 @@ public class CommandFactory {
    */
   private String executeShowStatusCommand(String[] args) {
     // Implementation
-    return "Not implemented yet";
+    return "Show status command not fully implemented yet";
   }
 
   /**
@@ -241,7 +241,7 @@ public class CommandFactory {
    */
   private String executeExportCommand(String[] args) {
     // Implementation
-    return "Not implemented yet";
+    return "Export command not fully implemented yet";
   }
 
   /**

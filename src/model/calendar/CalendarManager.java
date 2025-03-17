@@ -276,7 +276,6 @@ public class CalendarManager {
    */
   public void editCalendarName(String oldName, String newName)
           throws CalendarNotFoundException, DuplicateCalendarException {
-    // Validate parameters
     if (newName == null || newName.trim().isEmpty()) {
       throw new IllegalArgumentException("New calendar name cannot be null or empty");
     }

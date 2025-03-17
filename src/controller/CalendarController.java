@@ -4,35 +4,47 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import controller.command.CalendarCommandFactory;
 import controller.command.CommandFactory;
 import controller.parser.CommandParser;
 import model.calendar.ICalendar;
+import model.exceptions.CalendarNotFoundException;
+import model.exceptions.DuplicateCalendarException;
+import model.exceptions.InvalidTimezoneException;
 import view.ICalendarView;
 
 /**
- * A simplified implementation of the calendar controller that handles event creation commands.
+ * A controller that handles both event and calendar management commands.
  */
 public class CalendarController {
 
   private final ICalendarView view;
   private final CommandParser parser;
+  private final CalendarCommandFactory calendarCommandFactory;
   private static final String EXIT_COMMAND = "exit";
 
   /**
-   * Constructs a new BasicCalendarController.
+   * Constructs a new CalendarController.
    *
-   * @param commandFactory the command factory
-   * @param view           the view for user interaction
+   * @param commandFactory         the command factory for event commands
+   * @param calendarCommandFactory the command factory for calendar commands
+   * @param view                   the view for user interaction
    */
-  public CalendarController(CommandFactory commandFactory, ICalendarView view) {
+  public CalendarController(CommandFactory commandFactory,
+                            CalendarCommandFactory calendarCommandFactory,
+                            ICalendarView view) {
     if (commandFactory == null) {
       throw new IllegalArgumentException("CommandFactory cannot be null");
+    }
+    if (calendarCommandFactory == null) {
+      throw new IllegalArgumentException("CalendarCommandFactory cannot be null");
     }
     if (view == null) {
       throw new IllegalArgumentException("View cannot be null");
     }
 
     this.view = view;
+    this.calendarCommandFactory = calendarCommandFactory;
     ICalendar calendar = commandFactory.getCalendar();
     this.parser = new CommandParser(commandFactory);
   }
@@ -56,13 +68,58 @@ public class CalendarController {
     }
 
     try {
-      // Parse the command and execute it directly through CommandWithArgs
+      // First, check if it's a calendar management command
+      if (trimmedCommand.startsWith("create calendar") ||
+              trimmedCommand.startsWith("edit calendar") ||
+              trimmedCommand.startsWith("use calendar") ||
+              trimmedCommand.startsWith("copy event") ||
+              trimmedCommand.startsWith("copy events")) {
+
+        // Handle calendar-specific commands
+        return processCalendarCommand(trimmedCommand);
+      }
+
+      // Otherwise, treat it as a regular event command
       CommandParser.CommandWithArgs commandWithArgs = parser.parseCommand(trimmedCommand);
       return commandWithArgs.execute();
     } catch (IllegalArgumentException e) {
       return "Error: " + e.getMessage();
     } catch (Exception e) {
       return "Unexpected error: " + e.getMessage();
+    }
+  }
+
+  /**
+   * Processes a calendar-specific command.
+   *
+   * @param commandStr the calendar command string
+   * @return the result of command execution
+   */
+  private String processCalendarCommand(String commandStr) throws CalendarNotFoundException,
+          InvalidTimezoneException, DuplicateCalendarException {
+    // For commands like "create calendar --name myCalendar --timezone America/New_York"
+    // parts[0] = "create", parts[1] = "calendar"
+    String[] parts = commandStr.split("\\s+", 3);
+    if (parts.length < 2) {
+      return "Error: Invalid calendar command format";
+    }
+
+    String action = parts[0]; // e.g., "create", "edit", "use"
+
+    // Prepare args - the first arg should be "calendar" for most commands
+    String[] args;
+    if (parts.length > 2) {
+      // Create args array starting with "calendar" followed by the rest of the command
+      String restOfCommand = parts[2].trim();
+      args = restOfCommand.split("\\s+");
+    } else {
+      args = new String[0];
+    }
+
+    if (calendarCommandFactory.hasCommand(action)) {
+      return calendarCommandFactory.getCommand(action).execute(args);
+    } else {
+      return "Error: Unknown calendar command: " + action;
     }
   }
 
@@ -123,7 +180,7 @@ public class CalendarController {
       // Check if file was empty
       if (!fileHasCommands) {
         view.displayError(
-            "Error: Command file is empty. " + "At least one command (exit) is required.");
+                "Error: Command file is empty. " + "At least one command (exit) is required.");
         return false;
       }
 
