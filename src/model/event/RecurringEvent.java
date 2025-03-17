@@ -57,6 +57,7 @@ public class RecurringEvent extends Event {
     private int occurrences = -1;
     private LocalDate endDate = null;
     private UUID recurringId = null;
+    private boolean isAllDay = false;
 
     /**
      * Constructor for the builder with required params.
@@ -84,6 +85,11 @@ public class RecurringEvent extends Event {
       return this;
     }
 
+    public Builder isAllDay(boolean isAllDay) {
+      this.isAllDay = isAllDay;
+      return this;
+    }
+
     public Builder occurrences(int occurrences) {
       this.occurrences = occurrences;
       this.endDate = null;   // reset endDate as we are using occurrences
@@ -108,8 +114,14 @@ public class RecurringEvent extends Event {
      */
     public RecurringEvent build() {
       validate();
-      return new RecurringEvent(subject, startDateTime, endDateTime,
+      RecurringEvent event = new RecurringEvent(subject, startDateTime, endDateTime,
               description, location, isPublic, repeatDays, occurrences, endDate, recurringId);
+
+      if (isAllDay) {
+        event.setAllDay(true);
+      }
+
+      return event;
     }
 
     /**
@@ -138,9 +150,9 @@ public class RecurringEvent extends Event {
         throw new IllegalArgumentException("End date must be after start date");
       }
 
-      if (!startDateTime.toLocalDate().equals(endDateTime.toLocalDate())) {
-        throw new IllegalArgumentException("Recurring events must start and end on the same day");
-      }
+//      if (!startDateTime.toLocalDate().equals(endDateTime.toLocalDate())) {
+//        throw new IllegalArgumentException("Recurring events must start and end on the same day");
+//      }
     }
 
   }
