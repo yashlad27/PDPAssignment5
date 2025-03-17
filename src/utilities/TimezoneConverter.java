@@ -47,4 +47,41 @@ public interface TimezoneConverter {
   static TimezoneConverter identity() {
     return dateTime -> dateTime;
   }
+
+  /**
+   * Creates a converter from a source timezone to UTC.
+   *
+   * @param fromTimezone the source timezone
+   * @param handler      the timezone handler to use
+   * @return a converter that converts from the source timezone to UTC
+   */
+  static TimezoneConverter toUTC(String fromTimezone, TimeZoneHandler handler) {
+    return between(fromTimezone, "UTC", handler);
+  }
+
+  /**
+   * Creates a converter from UTC to a target timezone.
+   *
+   * @param toTimezone the target timezone
+   * @param handler    the timezone handler to use
+   * @return a converter that converts from UTC to the target timezone
+   */
+  static TimezoneConverter fromUTC(String toTimezone, TimeZoneHandler handler) {
+    return between("UTC", toTimezone, handler);
+  }
+
+  /**
+   * Creates a converter that first converts to UTC, then to the target timezone.
+   * This is useful for converting between arbitrary timezones.
+   *
+   * @param fromTimezone the source timezone
+   * @param toTimezone   the target timezone
+   * @param handler      the timezone handler to use
+   * @return a converter that converts via UTC
+   */
+  static TimezoneConverter viaUTC(String fromTimezone, String toTimezone, TimeZoneHandler handler) {
+    return toUTC(fromTimezone, handler).andThen(fromUTC(toTimezone, handler));
+  }
+
+
 }
