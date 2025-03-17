@@ -7,6 +7,7 @@ import java.util.Set;
 
 import model.calendar.ICalendar;
 import model.event.Event;
+import model.event.EventCreationStrategy;
 import model.event.RecurringEvent;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.InvalidEventException;
@@ -46,7 +47,34 @@ public class CreateEventCommand implements ICommand {
   private String createEvent(String eventName, LocalDateTime startDateTime,
                              LocalDateTime endDateTime, boolean autoDecline, String description, String location,
                              boolean isPublic) {
+    if (eventName == null || eventName.trim().isEmpty()) {
+      return "Error: Event name cannot be empty";
+    }
+    if (startDateTime == null) {
+      return "Error: Start date/time cannot be null";
+    }
 
+    try {
+      EventCreationStrategy strategy = EventCreationStrategy.timedEvent(eventName, startDateTime, endDateTime);
+
+      if (description != null) {
+        strategy = EventCreationStrategy.withDescription(strategy, description);
+      }
+      if (location != null) {
+        strategy = EventCreationStrategy.withLocation(strategy, location);
+      }
+      strategy = EventCreationStrategy.withVisibility(strategy, isPublic);
+
+      // Create the event
+      Event event = strategy.createEvent();
+
+      calendar.addEvent(event, autoDecline);
+      return "Event '" + eventName + "' created successfully.";
+    } catch (ConflictingEventException e) {
+      return "Failed to create event due to conflicts: " + e.getMessage();
+    } catch (InvalidEventException | IllegalArgumentException e) {
+      return "Error creating event: " + e.getMessage();
+    }
   }
 
   /**
@@ -96,7 +124,46 @@ public class CreateEventCommand implements ICommand {
   private String createRecurringEvent(String eventName, LocalDateTime startDateTime,
                                       LocalDateTime endDateTime, String weekdays, int occurrences, boolean autoDecline,
                                       String description, String location, boolean isPublic) {
+    if (eventName == null || eventName.trim().isEmpty()) {
+      return "Error: Event name cannot be empty";
+    }
+    if (startDateTime == null) {
+      return "Error: Start date/time cannot be null";
+    }
+    if (weekdays == null || weekdays.trim().isEmpty()) {
+      return "Error: Weekdays cannot be empty";
+    }
+    if (occurrences <= 0) {
+      return "Error: Occurrences must be positive";
+    }
 
+    try {
+      Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
+
+      // Use EventCreationStrategy to create the recurring event
+      EventCreationStrategy strategy = EventCreationStrategy.recurringEvent(
+              eventName, startDateTime, endDateTime, repeatDays, occurrences);
+
+      // Add optional properties
+      if (description != null) {
+        strategy = EventCreationStrategy.withDescription(strategy, description);
+      }
+      if (location != null) {
+        strategy = EventCreationStrategy.withLocation(strategy, location);
+      }
+      strategy = EventCreationStrategy.withVisibility(strategy, isPublic);
+
+      // Create the event
+      RecurringEvent recurringEvent = (RecurringEvent) strategy.createEvent();
+
+      // Add to calendar
+      calendar.addRecurringEvent(recurringEvent, autoDecline);
+      return "Recurring event '" + eventName + "' created successfully with " + occurrences + " occurrences.";
+    } catch (ConflictingEventException e) {
+      return "Failed to create recurring event due to conflicts: " + e.getMessage();
+    } catch (InvalidEventException | IllegalArgumentException e) {
+      return "Error creating recurring event: " + e.getMessage();
+    }
   }
 
   /**
