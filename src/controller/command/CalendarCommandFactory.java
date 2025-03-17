@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import model.calendar.CalendarManager;
+import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
 import model.exceptions.InvalidTimezoneException;
 import view.ICalendarView;
@@ -31,16 +32,19 @@ public class CalendarCommandFactory {
   }
 
   private void registerCommands() {
-    commands.put("create", this::executeCreateCalendarCommand);
+    commands.put("create", this::executeCreateCommand);
     commands.put("edit", this::executeEditCalendarCommand);
     commands.put("use", this::executeUseCalendarCommand);
     commands.put("copy", this::executeCopyCommand);
   }
 
-  private String executeCopyCommand(String[] args) throws DuplicateCalendarException,
+  /**
+   * Executes the create calendar command.
+   */
+  private String executeCreateCommand(String[] args) throws DuplicateCalendarException,
           InvalidTimezoneException {
 
-    if(args.length<4) {
+    if (args.length < 4) {
       return "Error: Insufficient arguments for create calendar command";
     }
 
@@ -61,19 +65,52 @@ public class CalendarCommandFactory {
     String timezone = args.length > 4 ? args[4] : "America/New_York";
 
     calendarManager.createCalendar(calendarName, timezone);
-
-    return "Calendar '"+calendarName+"' created with timezone '"+timezone+"'";
+    return "Calendar '" + calendarName + "' created with timezone '" + timezone + "'";
   }
 
-  private String executeUseCalendarCommand(String[] strings) {
+  /**
+   * Executes the edit calendar command.
+   */
+  private String executeEditCalendarCommand(String[] args)
+          throws CalendarNotFoundException, DuplicateCalendarException, InvalidTimezoneException {
+    if (args.length < 6) {
+      return "Error: Insufficient arguments for edit calendar command";
+    }
+
+    if (!args[0].equals("calendar")) {
+      return "Error: Expected 'calendar' argument";
+    }
+
+    if (!args[1].equals("--name")) {
+      return "Error: Expected '--name' flag";
+    }
+
+    String calendarName = args[2];
+
+    if(!args[3].equals("--property")) {
+      return "Error: Expected '--property' flag";
+    }
+
+    String property = args[4];
+    String newValue = args[5];
+
+    switch (property.toLowerCase()) {
+      case "name":
+        calendarManager.editCalendarName(calendarName, newValue);
+        return "Calendar name changed from '" + calendarName + "' to '" + newValue + "'";
+      case "timezone":
+        calendarManager.editCalendarTimezone(calendarName, newValue);
+        return "Timezone for calendar '" + calendarName + "' changed to '" + newValue + "'";
+      default:
+        return "Error: Unsupported property '" + property + "'. Valid properties are 'name' and 'timezone'";
+    }
+  }
+
+  private String executeUseCalendarCommand(String[] args) {
     return "";
   }
 
-  private String executeEditCalendarCommand(String[] strings) {
-    return "";
-  }
-
-  private String executeCreateCalendarCommand(String[] strings) {
+  private String executeCopyCommand(String[] args) {
     return "";
   }
 }
