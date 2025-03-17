@@ -306,61 +306,70 @@ public class Calendar implements ICalendar {
    * @param newValue the new value for the property
    * @return true if the update was successful, otherwise false.
    */
+//  private boolean updateEventProperty(Event event, String property, String newValue) {
+//    switch (property.toLowerCase()) {
+//      case "subject":
+//      case "name":
+//        event.setSubject(newValue);
+//        return true;
+//      case "description":
+//        event.setDescription(newValue);
+//        return true;
+//      case "location":
+//        event.setLocation(newValue);
+//        return true;
+//      case "start":
+//      case "starttime":
+//      case "startdatetime":
+//        try {
+//          LocalDateTime newStartTime;
+//          if (newValue.contains("T")) {
+//            newStartTime = DateTimeUtil.parseDateTime(newValue);
+//          } else {
+//            LocalTime newTime = LocalTime.parse(newValue);
+//            newStartTime = LocalDateTime.of(event.getStartDateTime().toLocalDate(), newTime);
+//          }
+//          event.setStartDateTime(newStartTime);
+//          return true;
+//        } catch (Exception e) {
+//          return false;
+//        }
+//      case "end":
+//      case "endtime":
+//      case "enddatetime":
+//        try {
+//          LocalDateTime newEndTime;
+//          if (newValue.contains("T")) {
+//            newEndTime = DateTimeUtil.parseDateTime(newValue);
+//          } else {
+//            LocalTime newTime = LocalTime.parse(newValue);
+//            newEndTime = LocalDateTime.of(event.getEndDateTime().toLocalDate(), newTime);
+//          }
+//          event.setEndDateTime(newEndTime);
+//          return true;
+//        } catch (Exception e) {
+//          return false;
+//        }
+//      case "visibility":
+//      case "ispublic":
+//      case "public":
+//      case "private":
+//        boolean isPublic = newValue.equalsIgnoreCase("public") || (newValue.equalsIgnoreCase("true")
+//                && !property.equals("private"));
+//        event.setPublic(isPublic);
+//        return true;
+//      default:
+//        return false;
+//    }
+//  }
+
   private boolean updateEventProperty(Event event, String property, String newValue) {
-    switch (property.toLowerCase()) {
-      case "subject":
-      case "name":
-        event.setSubject(newValue);
-        return true;
-      case "description":
-        event.setDescription(newValue);
-        return true;
-      case "location":
-        event.setLocation(newValue);
-        return true;
-      case "start":
-      case "starttime":
-      case "startdatetime":
-        try {
-          LocalDateTime newStartTime;
-          if (newValue.contains("T")) {
-            newStartTime = DateTimeUtil.parseDateTime(newValue);
-          } else {
-            LocalTime newTime = LocalTime.parse(newValue);
-            newStartTime = LocalDateTime.of(event.getStartDateTime().toLocalDate(), newTime);
-          }
-          event.setStartDateTime(newStartTime);
-          return true;
-        } catch (Exception e) {
-          return false;
-        }
-      case "end":
-      case "endtime":
-      case "enddatetime":
-        try {
-          LocalDateTime newEndTime;
-          if (newValue.contains("T")) {
-            newEndTime = DateTimeUtil.parseDateTime(newValue);
-          } else {
-            LocalTime newTime = LocalTime.parse(newValue);
-            newEndTime = LocalDateTime.of(event.getEndDateTime().toLocalDate(), newTime);
-          }
-          event.setEndDateTime(newEndTime);
-          return true;
-        } catch (Exception e) {
-          return false;
-        }
-      case "visibility":
-      case "ispublic":
-      case "public":
-      case "private":
-        boolean isPublic = newValue.equalsIgnoreCase("public") || (newValue.equalsIgnoreCase("true")
-                && !property.equals("private"));
-        event.setPublic(isPublic);
-        return true;
-      default:
-        return false;
+    if (property == null || newValue == null) {
+      return false;
     }
+
+    EventPropertyUpdater updater = propertyUpdaters.get(property.toLowerCase());
+    return updater != null && updater.update(event, newValue);
   }
 
 //  @Override
