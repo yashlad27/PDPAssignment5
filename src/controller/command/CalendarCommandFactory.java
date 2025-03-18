@@ -1,12 +1,18 @@
 package controller.command;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import controller.command.copy.CopyCommand;
+import controller.command.copy.CopyEventsBetweenDatesCommand;
+import controller.command.copy.CopyEventsOnDateCommand;
 import model.calendar.CalendarManager;
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
 import model.exceptions.InvalidTimezoneException;
+import utilities.TimeZoneHandler;
 import view.ICalendarView;
 
 public class CalendarCommandFactory {
@@ -14,6 +20,9 @@ public class CalendarCommandFactory {
   private final Map<String, CalendarCommandHandler> commands;
   private final CalendarManager calendarManager;
   private final ICalendarView view;
+  private final List<CopyCommand> copyCommands;
+  private final TimeZoneHandler timezoneHandler;
+
 
   public CalendarCommandFactory(CalendarManager calendarManager, ICalendarView view) {
     if (calendarManager == null) {
@@ -27,6 +36,11 @@ public class CalendarCommandFactory {
     this.commands = new HashMap<>();
     this.calendarManager = calendarManager;
     this.view = view;
+
+    this.timezoneHandler = calendarManager.getTimezoneHandler();
+
+    this.copyCommands = new ArrayList<>();
+    registerCopyCommands();
 
     registerCommands();
   }
@@ -133,7 +147,23 @@ public class CalendarCommandFactory {
    * Executes the copy event/events command.
    */
   private String executeCopyCommand(String[] args) {
-    return "Copy command not implemented yet";
+    if (args.length < 1) {
+      return "Error: Insufficient arguments for copy command";
+    }
+
+    try {
+      // Find the appropriate copy command
+      for (CopyCommand command : copyCommands) {
+        if (command.canHandle(args)) {
+          return command.execute(args);
+        }
+      }
+
+      // If no command could handle it
+      return "Error: Invalid copy command format";
+    } catch (Exception e) {
+      return "Error: " + e.getMessage();
+    }
   }
 
   /**
@@ -159,6 +189,12 @@ public class CalendarCommandFactory {
       return handler.withExceptionHandling();
     }
     return null;
+  }
+
+  private void registerCopyCommands() {
+    copyCommands.add(new CopyEventCommand(calendarManager, timezoneHandler));
+    copyCommands.add(new CopyEventsOnDateCommand(calendarManager, timezoneHandler));
+    copyCommands.add(new CopyEventsBetweenDatesCommand(calendarManager, timezoneHandler));
   }
 
 }
