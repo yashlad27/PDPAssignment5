@@ -85,6 +85,17 @@ public class CommandParser {
   private static final Pattern EDIT_ALL_DAY_EVENT_PATTERN = Pattern.compile(
           "edit event (\\w+) \"([^\"]+)\" on (\\d{4}-\\d{2}-\\d{2}) with \"?([^\"]+)\"?");
 
+  private static final Pattern CREATE_CALENDAR_PATTERN = Pattern.compile(
+          "create calendar --name ([\\w-]+) --timezone ([\\w/]+)");
+
+  private static final Pattern EDIT_CALENDAR_PATTERN = Pattern.compile(
+          "edit calendar --name ([\\w-]+) --property (\\w+) ([\\w/]+)");
+
+  private static final Pattern USE_CALENDAR_PATTERN = Pattern.compile(
+          "use calendar --name ([\\w-]+)");
+
+// Then add methods to parse these commands
+
   /**
    * Constructs a new CommandParser.
    *
