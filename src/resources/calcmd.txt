@@ -1,0 +1,61 @@
+create calendar --name Work --timezone America/New_York
+create calendar --name Personal --timezone Europe/Paris
+create calendar --name Travel --timezone Asia/Tokyo
+
+edit calendar --name Work --property name WorkCalendar
+edit calendar --name Travel --property timezone Australia/Sydney
+
+use calendar --name WorkCalendar
+
+create event "Team Meeting" from 2025-03-25T09:00 to 2025-03-25T10:00 desc "Weekly team sync" at "Conference Room A"
+create event "Project Deadline" from 2025-03-28T17:00 to 2025-03-28T18:00 desc "Submit final project" at "Office"
+
+create event "Daily Standup" from 2025-03-25T08:30 to 2025-03-25T08:45 repeats MTWRF for 10 times desc "Daily team check-in" at "Zoom"
+
+use calendar --name Personal
+create event "Dentist Appointment" from 2025-03-26T14:00 to 2025-03-26T15:00 desc "Regular checkup" at "Downtown Dental"
+create event "Gym Session" from 2025-03-25T18:00 to 2025-03-25T19:30 repeats MWF for 8 times desc "Fitness training" at "City Gym"
+
+use calendar --name Travel
+create event "Flight to London" from 2025-04-15T08:00 to 2025-04-15T14:00 desc "Business trip" at "Airport"
+
+use calendar --name WorkCalendar
+print events on 2025-03-25
+print events from 2025-03-25 to 2025-03-28
+
+use calendar --name Personal
+print events on 2025-03-26
+show status on 2025-03-26T14:30
+
+use calendar --name WorkCalendar
+copy event "Team Meeting" on 2025-03-25T09:00 --target Personal to 2025-03-26T10:00
+
+use calendar --name Personal
+copy events on 2025-03-26 --target Travel to 2025-04-16
+
+use calendar --name WorkCalendar
+copy events between 2025-03-25 and 2025-03-28 --target Personal to 2025-04-01
+
+use calendar --name WorkCalendar
+edit event subject "Team Meeting" from 2025-03-25T09:00 to 2025-03-25T10:00 with "Weekly Team Sync"
+
+use calendar --name Personal
+edit events location "Gym Session" from 2025-03-25T18:00 with "Downtown Fitness Center"
+
+use calendar --name Travel
+edit events description "Flight to London" with "Business trip to UK office"
+
+use calendar --name WorkCalendar
+export cal work_calendar.csv
+
+use calendar --name WorkCalendar
+create event "Conflicting Meeting" from 2025-03-25T09:30 to 2025-03-25T10:30 desc "This should conflict with Team Meeting"
+
+create calendar --name Travel --timezone Invalid/Zone
+
+use calendar --name NonExistent
+
+use calendar --name WorkCalendar
+edit event subject "Non-existent Meeting" from 2025-03-25T11:00 to 2025-03-25T12:00 with "New Subject"
+
+exit

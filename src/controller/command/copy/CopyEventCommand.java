@@ -33,6 +33,9 @@ public class CopyEventCommand implements CopyCommand {
 
   @Override
   public String execute(String[] args) throws Exception {
+    if (args.length < 8) {
+      return "Error: Insufficient arguments for copy event command";
+    }
     String eventName = args[1];
     String dateTimeStr = args[3];
     String targetCalName = args[5];
