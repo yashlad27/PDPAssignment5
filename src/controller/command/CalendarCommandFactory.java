@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import controller.command.copy.CopyCommand;
-import controller.command.copy.CopyEventsBetweenDatesCommand;
-import controller.command.copy.CopyEventsOnDateCommand;
 import model.calendar.CalendarManager;
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
@@ -192,9 +190,9 @@ public class CalendarCommandFactory {
   }
 
   private void registerCopyCommands() {
-    copyCommands.add(new CopyEventCommand(calendarManager, timezoneHandler));
-    copyCommands.add(new CopyEventsOnDateCommand(calendarManager, timezoneHandler));
-    copyCommands.add(new CopyEventsBetweenDatesCommand(calendarManager, timezoneHandler));
+    copyCommands.add(new controller.command.copy.CopyEventCommand(calendarManager, timezoneHandler));
+    copyCommands.add(new controller.command.copy.CopyEventsOnDateCommand(calendarManager, timezoneHandler));
+    copyCommands.add(new controller.command.copy.CopyEventsBetweenDatesCommand(calendarManager, timezoneHandler));
   }
 
 }
