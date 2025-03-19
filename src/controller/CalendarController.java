@@ -97,8 +97,6 @@ public class CalendarController {
    */
   private String processCalendarCommand(String commandStr) throws CalendarNotFoundException,
           InvalidTimezoneException, DuplicateCalendarException {
-    // For commands like "create calendar --name myCalendar --timezone America/New_York"
-    // parts[0] = "create", parts[1] = "calendar"
     String[] parts = commandStr.split("\\s+", 3);
     if (parts.length < 2) {
       return "Error: Invalid calendar command format";
@@ -109,11 +107,17 @@ public class CalendarController {
     // Prepare args - the first arg should be "calendar" for most commands
     String[] args;
     if (parts.length > 2) {
-      // Create args array starting with "calendar" followed by the rest of the command
+      // Include "calendar" as the first element in the args array
       String restOfCommand = parts[2].trim();
-      args = restOfCommand.split("\\s+");
+      String[] restArgs = restOfCommand.split("\\s+");
+
+      // Create a new array with "calendar" as the first element
+      args = new String[restArgs.length + 1];
+      args[0] = "calendar";  // Add "calendar" as the first element
+      System.arraycopy(restArgs, 0, args, 1, restArgs.length);
     } else {
-      args = new String[0];
+      // Just include "calendar" as the only argument
+      args = new String[]{"calendar"};
     }
 
     if (calendarCommandFactory.hasCommand(action)) {

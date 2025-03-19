@@ -150,15 +150,92 @@ public class CalendarCommandFactory {
     }
 
     try {
-      // Find the appropriate copy command
-      for (CopyCommand command : copyCommands) {
-        if (command.canHandle(args)) {
-          return command.execute(args);
-        }
-      }
+      String subCommand = args[0];
 
-      // If no command could handle it
-      return "Error: Invalid copy command format";
+      if (subCommand.equals("event")) {
+        // Handle "copy event" command format
+        if (args.length < 8) {
+          return "Error: Insufficient arguments for copy event command";
+        }
+
+        String eventName = args[1];
+        String onToken = args[2]; // should be "on"
+        String dateTimeStr = args[3];
+        String targetFlag = args[4]; // should be "--target"
+        String targetCalendarName = args[5];
+        String toToken = args[6]; // should be "to"
+        String targetDateTimeStr = args[7];
+
+        // Validate format
+        if (!"on".equals(onToken) || !"--target".equals(targetFlag) || !"to".equals(toToken)) {
+          return "Error: Invalid copy event command format";
+        }
+
+        controller.command.CopyEventCommand copyCommand =
+                new controller.command.CopyEventCommand(calendarManager, timezoneHandler);
+
+        return copyCommand.execute(new String[] {
+                "event", eventName, dateTimeStr, targetCalendarName, targetDateTimeStr, "true"
+        });
+      }
+      else if (subCommand.equals("events") && args.length > 1 && "on".equals(args[1])) {
+        // Handle "copy events on" command format
+        if (args.length < 7) {
+          return "Error: Insufficient arguments for copy events on date command";
+        }
+
+        String dateStr = args[2];
+        String targetFlag = args[3]; // should be "--target"
+        String targetCalendarName = args[4];
+        String toToken = args[5]; // should be "to"
+        String targetDateStr = args[6];
+
+        // Validate format
+        if (!"--target".equals(targetFlag) || !"to".equals(toToken)) {
+          return "Error: Invalid copy events on date command format";
+        }
+
+        controller.command.CopyEventCommand copyCommand =
+                new controller.command.CopyEventCommand(calendarManager, timezoneHandler);
+
+        return copyCommand.execute(new String[] {
+                "events_on_date", dateStr, targetCalendarName, targetDateStr, "true"
+        });
+      }
+      else if (subCommand.equals("events") && args.length > 1 && "between".equals(args[1])) {
+        // Handle "copy events between" command format
+        if (args.length < 8) {
+          return "Error: Insufficient arguments for copy events between dates command";
+        }
+
+        String startDateStr = args[2];
+        String andToken = args[3]; // should be "and"
+        String endDateStr = args[4];
+        String targetFlag = args[5]; // should be "--target"
+        String targetCalendarName = args[6];
+        String targetStartDateStr = args[7];
+
+        // Validate format
+        if (!"and".equals(andToken) || !"--target".equals(targetFlag)) {
+          return "Error: Invalid copy events between dates command format";
+        }
+
+        controller.command.CopyEventCommand copyCommand =
+                new controller.command.CopyEventCommand(calendarManager, timezoneHandler);
+
+        return copyCommand.execute(new String[] {
+                "events_between_dates", startDateStr, endDateStr, targetCalendarName, targetStartDateStr, "true"
+        });
+      }
+      else {
+        // Find the appropriate copy command from the registered commands
+        for (CopyCommand command : copyCommands) {
+          if (command.canHandle(args)) {
+            return command.execute(args);
+          }
+        }
+        return "Error: Invalid copy command format";
+      }
     } catch (Exception e) {
       return "Error: " + e.getMessage();
     }

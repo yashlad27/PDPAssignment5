@@ -1,5 +1,6 @@
 package controller.command;
 
+import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -242,6 +243,11 @@ public class CommandFactory {
   /**
    * Executes the edit event command.
    */
+// Implementation for CommandFactory.java
+
+  /**
+   * Executes the edit event command.
+   */
   private String executeEditCommand(String[] args) throws EventNotFoundException, InvalidEventException, ConflictingEventException {
     if (args.length < 3) {
       return "Error: Insufficient arguments for edit command";
@@ -259,20 +265,102 @@ public class CommandFactory {
     }
   }
 
-  // need to implement the below methods (logic)
   private String editSingleEvent(String[] args) throws EventNotFoundException, InvalidEventException, ConflictingEventException {
-    // Implementation
-    return "Not implemented yet";
+    if (args.length < 5) {
+      return "Error: Insufficient arguments for editing a single event";
+    }
+
+    String property = args[1];
+    String subject = args[2];
+    LocalDateTime startDateTime;
+    try {
+      startDateTime = DateTimeUtil.parseDateTime(args[3]);
+    } catch (Exception e) {
+      return "Error parsing date/time: " + e.getMessage();
+    }
+
+    String newValue = args[4];
+    if (newValue.startsWith("\"") && newValue.endsWith("\"")) {
+      newValue = newValue.substring(1, newValue.length() - 1);
+    }
+
+    try {
+      boolean success = calendar.editSingleEvent(subject, startDateTime, property, newValue);
+      if (success) {
+        return "Successfully edited event '" + subject + "'.";
+      } else {
+        return "Failed to edit event. Event not found or property not editable.";
+      }
+    } catch (EventNotFoundException e) {
+      throw e;
+    } catch (InvalidEventException e) {
+      throw e;
+    } catch (ConflictingEventException e) {
+      throw e;
+    } catch (Exception e) {
+      return "Unexpected error editing event: " + e.getMessage();
+    }
   }
 
   private String editEventsFromDate(String[] args) throws InvalidEventException, ConflictingEventException {
-    // Implementation
-    return "Not implemented yet";
+    if (args.length < 5) {
+      return "Error: Insufficient arguments for editing events from date";
+    }
+
+    String property = args[1];
+    String subject = args[2];
+    LocalDateTime startDateTime;
+
+    try {
+      startDateTime = DateTimeUtil.parseDateTime(args[3]);
+    } catch (Exception e) {
+      return "Error parsing date/time: " + e.getMessage();
+    }
+
+    String newValue = args[4];
+    if (newValue.startsWith("\"") && newValue.endsWith("\"")) {
+      newValue = newValue.substring(1, newValue.length() - 1);
+    }
+
+    try {
+      int count = calendar.editEventsFromDate(subject, startDateTime, property, newValue);
+      if (count > 0) {
+        return "Successfully edited " + count + " events.";
+      } else {
+        return "No matching events found to edit.";
+      }
+    } catch (InvalidEventException | ConflictingEventException e) {
+      throw e;
+    } catch (Exception e) {
+      return "Unexpected error editing events: " + e.getMessage();
+    }
   }
 
   private String editAllEvents(String[] args) throws InvalidEventException, ConflictingEventException {
-    // Implementation
-    return "Not implemented yet";
+    if (args.length < 4) {
+      return "Error: Insufficient arguments for editing all events";
+    }
+
+    String property = args[1];
+    String subject = args[2];
+    String newValue = args[3];
+
+    if (newValue.startsWith("\"") && newValue.endsWith("\"")) {
+      newValue = newValue.substring(1, newValue.length() - 1);
+    }
+
+    try {
+      int count = calendar.editAllEvents(subject, property, newValue);
+      if (count > 0) {
+        return "Successfully edited " + count + " events.";
+      } else {
+        return "No events found with the subject '" + subject + "'.";
+      }
+    } catch (InvalidEventException | ConflictingEventException e) {
+      throw e;
+    } catch (Exception e) {
+      return "Unexpected error editing events: " + e.getMessage();
+    }
   }
 
   /**
@@ -295,9 +383,26 @@ public class CommandFactory {
    * Executes the export calendar command.
    */
   private String executeExportCommand(String[] args) {
-    // Implementation
-    return "Export command not fully implemented yet";
+    if (args.length < 1) {
+      return "Error: Missing filename for export command";
+    }
+
+    String filePath = args[0];
+
+    try {
+      String absolutePath = calendar.exportToCSV(filePath);
+      if (absolutePath != null) {
+        return "Calendar exported successfully to: " + absolutePath;
+      } else {
+        return "Failed to export calendar. Check if the file path is valid and accessible.";
+      }
+    } catch (IOException e) {
+      return "Failed to export calendar: " + e.getMessage();
+    } catch (Exception e) {
+      return "Unexpected error during export: " + e.getMessage();
+    }
   }
+
 
   /**
    * Gets a command executor by name.

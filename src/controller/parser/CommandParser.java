@@ -94,8 +94,6 @@ public class CommandParser {
   private static final Pattern USE_CALENDAR_PATTERN = Pattern.compile(
           "use calendar --name ([\\w-]+)");
 
-// Then add methods to parse these commands
-
   /**
    * Constructs a new CommandParser.
    *
