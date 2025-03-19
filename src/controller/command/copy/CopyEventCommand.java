@@ -41,6 +41,11 @@ public class CopyEventCommand implements CopyCommand {
     String targetCalName = args[5];
     String targetDateTimeStr = args[7];
 
+    // Remove quotes from event name if present
+    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
+      eventName = eventName.substring(1, eventName.length() - 1);
+    }
+
     // Validate target calendar exists
     if (!calendarManager.hasCalendar(targetCalName)) {
       return "Error: Target calendar '" + targetCalName + "' does not exist";

@@ -121,7 +121,6 @@ public class CalendarCommandFactory {
   /**
    * Executes the use calendar command.
    */
-
   private String executeUseCalendarCommand(String[] args) throws CalendarNotFoundException {
     if (args.length < 3) {
       return "Error: Insufficient arguments for use calendar command";
@@ -169,6 +168,11 @@ public class CalendarCommandFactory {
         // Validate format
         if (!"on".equals(onToken) || !"--target".equals(targetFlag) || !"to".equals(toToken)) {
           return "Error: Invalid copy event command format";
+        }
+
+        // Remove quotes from event name if present
+        if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
+          eventName = eventName.substring(1, eventName.length() - 1);
         }
 
         controller.command.CopyEventCommand copyCommand =
@@ -271,5 +275,4 @@ public class CalendarCommandFactory {
     copyCommands.add(new controller.command.copy.CopyEventsOnDateCommand(calendarManager, timezoneHandler));
     copyCommands.add(new controller.command.copy.CopyEventsBetweenDatesCommand(calendarManager, timezoneHandler));
   }
-
 }

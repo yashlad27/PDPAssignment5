@@ -62,7 +62,7 @@ public class CopyEventCommand implements ICommand {
     } catch (CalendarNotFoundException e) {
       return "Error: " + e.getMessage();
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      return "Error: " + e.getMessage();
     }
   }
 
