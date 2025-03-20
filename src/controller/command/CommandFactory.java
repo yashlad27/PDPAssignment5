@@ -54,6 +54,81 @@ public class CommandFactory {
   /**
    * Registers all command executors.
    */
+//  private void registerCommands() {
+//    // Create event command - using a lambda that captures 'this'
+//    commands.put("create", args -> {
+//      if (args.length < 1) {
+//        return "Error: Insufficient arguments for create command";
+//      }
+//
+//      try {
+//        switch (args[0]) {
+//          case "single":
+//            return createSingleEvent(args);
+//          case "recurring":
+//            return createRecurringEvent(args);
+//          case "allday":
+//            return createAllDayEvent(args);
+//          case "recurring-until":
+//            return createRecurringEventUntil(args);
+//          case "allday-recurring":
+//            return createAllDayRecurringEvent(args);
+//          case "allday-recurring-until":
+//            return createAllDayRecurringEventUntil(args);
+//          default:
+//            return "Error: Unknown create event type: " + args[0];
+//        }
+//      } catch (ConflictingEventException e) {
+//        return "Error: Event conflicts with existing event - " + e.getMessage();
+//      } catch (Exception e) {
+//        return "Error creating event: " + e.getMessage();
+//      }
+//    });
+//
+//    // Edit event command
+//    commands.put("edit", args -> {
+//      if (args.length < 3) {
+//        return "Error: Insufficient arguments for edit command";
+//      }
+//
+//      try {
+//        String type = args[0];
+//        if (type.equals("single")) {
+//          return editSingleEvent(args);
+//        } else if (type.equals("series_from_date")) {
+//          return editEventsFromDate(args);
+//        } else if (type.equals("all")) {
+//          return editAllEvents(args);
+//        } else {
+//          return "Unknown edit command type: " + type;
+//        }
+//      } catch (EventNotFoundException e) {
+//        return "Error: Event not found - " + e.getMessage();
+//      } catch (InvalidEventException e) {
+//        return "Error: Invalid event parameters - " + e.getMessage();
+//      } catch (ConflictingEventException e) {
+//        return "Error: Edit would create a conflict - " + e.getMessage();
+//      } catch (Exception e) {
+//        return "Error editing event: " + e.getMessage();
+//      }
+//    });
+//
+//    // Print events command
+//    commands.put("print", this::executePrintCommand);
+//
+//    // Show status command
+//    commands.put("show", this::executeShowStatusCommand);
+//
+//    // Export calendar command
+//    commands.put("export", this::executeExportCommand);
+//
+//    // Exit command
+//    commands.put("exit", args -> "Exiting application.");
+//  }
+
+  /**
+   * Registers all command executors.
+   */
   private void registerCommands() {
     // Create event command - using a lambda that captures 'this'
     commands.put("create", args -> {
@@ -121,6 +196,9 @@ public class CommandFactory {
 
     // Export calendar command
     commands.put("export", this::executeExportCommand);
+
+    // Diagnostic command
+    //commands.put("diagnose", new DiagnosticCommand(calendarManager)::execute);
 
     // Exit command
     commands.put("exit", args -> "Exiting application.");
