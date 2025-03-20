@@ -48,9 +48,9 @@ public class TimeZoneHandler {
   /**
    * Converts a LocalDateTime from one timezone to another.
    *
-   * @param dateTime the LocalDateTime to convert
+   * @param dateTime     the LocalDateTime to convert
    * @param fromTimezone the source timezone
-   * @param toTimezone the target timezone
+   * @param toTimezone   the target timezone
    * @return the converted LocalDateTime
    * @throws IllegalArgumentException if parameters are invalid
    */
@@ -81,7 +81,7 @@ public class TimeZoneHandler {
    * Calculates the offset in hours between two timezones at the current time.
    *
    * @param fromTimezone the source timezone
-   * @param toTimezone the target timezone
+   * @param toTimezone   the target timezone
    * @return the offset in hours (can be negative)
    * @throws IllegalArgumentException if parameters are invalid
    */
@@ -166,7 +166,7 @@ public class TimeZoneHandler {
    * Get a timezone converter for converting between two timezones.
    *
    * @param fromTimezone the source timezone
-   * @param toTimezone the target timezone
+   * @param toTimezone   the target timezone
    * @return a TimezoneConverter for the specified conversion
    */
   public TimezoneConverter getConverter(String fromTimezone, String toTimezone) {
