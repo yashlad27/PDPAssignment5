@@ -2,6 +2,7 @@ package controller.command;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import model.calendar.CalendarManager;
@@ -61,6 +62,8 @@ public class CopyEventCommand implements ICommand {
       }
     } catch (CalendarNotFoundException e) {
       return "Error: " + e.getMessage();
+    } catch (ConflictingEventException e) {
+      return "Error: " + e.getMessage();
     } catch (Exception e) {
       return "Error: " + e.getMessage();
     }
@@ -87,6 +90,7 @@ public class CopyEventCommand implements ICommand {
 
     // Get source calendar (active calendar)
     ICalendar sourceCalendar = calendarManager.getActiveCalendar();
+    String sourceCalendarName = calendarManager.getActiveCalendarName();
 
     // Find the event
     Event sourceEvent = sourceCalendar.findEvent(eventName, sourceDateTime);
@@ -99,29 +103,34 @@ public class CopyEventCommand implements ICommand {
     String targetTimezone = calendarManager.executeOnCalendar(targetCalendarName,
             calendar -> ((model.calendar.Calendar) calendar).getTimezone());
 
-    // Create timezone converter
-    TimezoneConverter converter = timezoneHandler.getConverter(sourceTimezone, targetTimezone);
+    // Calculate duration of the source event in seconds
+    long durationSeconds = ChronoUnit.SECONDS.between(
+            sourceEvent.getStartDateTime(),
+            sourceEvent.getEndDateTime());
 
-    // Calculate duration of the source event
-    long durationSeconds = sourceEvent.getEndDateTime().toEpochSecond(java.time.ZoneOffset.UTC) -
-            sourceEvent.getStartDateTime().toEpochSecond(java.time.ZoneOffset.UTC);
-
-    // Create a new event with the adjusted time
+    // Create a new event with the provided target time
     Event newEvent = new Event(
             sourceEvent.getSubject(),
-            converter.convert(targetDateTime),
-            converter.convert(targetDateTime.plusSeconds(durationSeconds)),
+            targetDateTime,
+            targetDateTime.plusSeconds(durationSeconds),
             sourceEvent.getDescription(),
             sourceEvent.getLocation(),
             sourceEvent.isPublic()
     );
 
+    if (sourceEvent.isAllDay()) {
+      newEvent.setAllDay(true);
+    }
+
     // Add the event to the target calendar
+    final Event eventToAdd = newEvent;
     boolean added = calendarManager.executeOnCalendar(targetCalendarName,
-            calendar -> calendar.addEvent(newEvent, autoDecline));
+            calendar -> calendar.addEvent(eventToAdd, autoDecline));
 
     if (added) {
-      return "Event '" + eventName + "' copied successfully to calendar '" + targetCalendarName + "'.";
+      return "Event '" + eventName + "' copied successfully from calendar '" +
+              sourceCalendarName + "' to calendar '" + targetCalendarName +
+              "' at " + DateTimeUtil.formatDateTime(targetDateTime) + ".";
     } else {
       return "Failed to copy event due to conflicts.";
     }
@@ -147,6 +156,7 @@ public class CopyEventCommand implements ICommand {
 
     // Get source calendar (active calendar)
     ICalendar sourceCalendar = calendarManager.getActiveCalendar();
+    String sourceCalendarName = calendarManager.getActiveCalendarName();
 
     // Get events on the source date
     List<Event> eventsOnDate = sourceCalendar.getEventsOnDate(sourceDate);
@@ -160,7 +170,7 @@ public class CopyEventCommand implements ICommand {
     String targetTimezone = calendarManager.executeOnCalendar(targetCalendarName,
             calendar -> ((model.calendar.Calendar) calendar).getTimezone());
 
-    // Create timezone converter
+    // Create timezone converter to adjust times
     TimezoneConverter converter = timezoneHandler.getConverter(sourceTimezone, targetTimezone);
 
     // Calculate date difference in days
@@ -176,7 +186,7 @@ public class CopyEventCommand implements ICommand {
         Event newEvent;
 
         if (sourceEvent.isAllDay()) {
-          // All-day event
+          // All-day event - just use the target date
           newEvent = Event.createAllDayEvent(
                   sourceEvent.getSubject(),
                   targetDate,
@@ -189,10 +199,15 @@ public class CopyEventCommand implements ICommand {
           LocalDateTime adjustedStart = sourceEvent.getStartDateTime().plusDays(daysDifference);
           LocalDateTime adjustedEnd = sourceEvent.getEndDateTime().plusDays(daysDifference);
 
+          // Convert to target timezone - this keeps the local time the same
+          // but ensures it's interpreted in the target timezone context
+          LocalDateTime convertedStart = converter.convert(adjustedStart);
+          LocalDateTime convertedEnd = converter.convert(adjustedEnd);
+
           newEvent = new Event(
                   sourceEvent.getSubject(),
-                  converter.convert(adjustedStart),
-                  converter.convert(adjustedEnd),
+                  convertedStart,
+                  convertedEnd,
                   sourceEvent.getDescription(),
                   sourceEvent.getLocation(),
                   sourceEvent.isPublic()
@@ -200,22 +215,29 @@ public class CopyEventCommand implements ICommand {
         }
 
         // Add the event to the target calendar
-        calendarManager.executeOnCalendar(targetCalendarName,
-                calendar -> calendar.addEvent(newEvent, autoDecline));
+        final Event eventToAdd = newEvent;
+        boolean added = calendarManager.executeOnCalendar(targetCalendarName,
+                calendar -> calendar.addEvent(eventToAdd, autoDecline));
 
-        successCount++;
+        if (added) {
+          successCount++;
+        } else {
+          failCount++;
+        }
       } catch (ConflictingEventException e) {
         failCount++;
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        throw new RuntimeException("Error copying event: " + e.getMessage(), e);
       }
     }
 
     if (failCount == 0) {
-      return "Successfully copied " + successCount + " events from " + sourceDate + " to " + targetDate +
+      return "Successfully copied " + successCount + " events from " + sourceDate +
+              " in calendar '" + sourceCalendarName + "' to " + targetDate +
               " in calendar '" + targetCalendarName + "'.";
     } else {
-      return "Copied " + successCount + " events, but " + failCount + " events could not be copied due to conflicts.";
+      return "Copied " + successCount + " events, but " + failCount +
+              " events could not be copied due to conflicts.";
     }
   }
 
@@ -240,6 +262,7 @@ public class CopyEventCommand implements ICommand {
 
     // Get source calendar (active calendar)
     ICalendar sourceCalendar = calendarManager.getActiveCalendar();
+    String sourceCalendarName = calendarManager.getActiveCalendarName();
 
     // Get events in the date range
     List<Event> eventsInRange = sourceCalendar.getEventsInRange(sourceStartDate, sourceEndDate);
@@ -256,7 +279,7 @@ public class CopyEventCommand implements ICommand {
     // Create timezone converter
     TimezoneConverter converter = timezoneHandler.getConverter(sourceTimezone, targetTimezone);
 
-    // Calculate date difference in days
+    // Calculate date difference in days from source start to target start
     long daysDifference = targetStartDate.toEpochDay() - sourceStartDate.toEpochDay();
 
     int successCount = 0;
@@ -275,8 +298,9 @@ public class CopyEventCommand implements ICommand {
             eventDate = sourceEvent.getStartDateTime().toLocalDate();
           }
 
-          // Calculate the adjusted date
-          LocalDate adjustedDate = eventDate.plusDays(daysDifference);
+          // Calculate the adjusted date relative to the source and target start dates
+          long daysFromStart = ChronoUnit.DAYS.between(sourceStartDate, eventDate);
+          LocalDate adjustedDate = targetStartDate.plusDays(daysFromStart);
 
           newEvent = Event.createAllDayEvent(
                   sourceEvent.getSubject(),
@@ -286,14 +310,32 @@ public class CopyEventCommand implements ICommand {
                   sourceEvent.isPublic()
           );
         } else {
-          // Regular event - adjust date and convert timezone
-          LocalDateTime adjustedStart = sourceEvent.getStartDateTime().plusDays(daysDifference);
-          LocalDateTime adjustedEnd = sourceEvent.getEndDateTime().plusDays(daysDifference);
+          // Regular event
+
+          // Calculate days from source start date
+          long daysFromStart = ChronoUnit.DAYS.between(
+                  sourceStartDate,
+                  sourceEvent.getStartDateTime().toLocalDate());
+
+          // Apply the same offset from the target start date
+          LocalDateTime adjustedStart = targetStartDate.atTime(
+                  sourceEvent.getStartDateTime().toLocalTime()).plusDays(daysFromStart);
+
+          // Calculate the duration of the original event
+          long durationSeconds = ChronoUnit.SECONDS.between(
+                  sourceEvent.getStartDateTime(),
+                  sourceEvent.getEndDateTime());
+
+          LocalDateTime adjustedEnd = adjustedStart.plusSeconds(durationSeconds);
+
+          // Convert to target timezone context
+          LocalDateTime convertedStart = converter.convert(adjustedStart);
+          LocalDateTime convertedEnd = converter.convert(adjustedEnd);
 
           newEvent = new Event(
                   sourceEvent.getSubject(),
-                  converter.convert(adjustedStart),
-                  converter.convert(adjustedEnd),
+                  convertedStart,
+                  convertedEnd,
                   sourceEvent.getDescription(),
                   sourceEvent.getLocation(),
                   sourceEvent.isPublic()
@@ -301,10 +343,15 @@ public class CopyEventCommand implements ICommand {
         }
 
         // Add the event to the target calendar
-        calendarManager.executeOnCalendar(targetCalendarName,
-                calendar -> calendar.addEvent(newEvent, autoDecline));
+        final Event eventToAdd = newEvent;
+        boolean added = calendarManager.executeOnCalendar(targetCalendarName,
+                calendar -> calendar.addEvent(eventToAdd, autoDecline));
 
-        successCount++;
+        if (added) {
+          successCount++;
+        } else {
+          failCount++;
+        }
       } catch (ConflictingEventException e) {
         failCount++;
       } catch (Exception e) {
@@ -314,9 +361,12 @@ public class CopyEventCommand implements ICommand {
 
     if (failCount == 0) {
       return "Successfully copied " + successCount + " events from date range " + sourceStartDate +
-              " to " + sourceEndDate + " in calendar '" + targetCalendarName + "'.";
+              " to " + sourceEndDate + " in calendar '" + sourceCalendarName +
+              "' to date range starting at " + targetStartDate +
+              " in calendar '" + targetCalendarName + "'.";
     } else {
-      return "Copied " + successCount + " events, but " + failCount + " events could not be copied due to conflicts.";
+      return "Copied " + successCount + " events, but " + failCount +
+              " events could not be copied due to conflicts.";
     }
   }
 

@@ -5,6 +5,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +23,7 @@ import utilities.EventPropertyUpdater;
 
 /**
  * Implementation of the ICalendar interface that manages calendar events.
+ * Each calendar has its own timezone context.
  */
 public class Calendar implements ICalendar {
 
@@ -49,20 +51,39 @@ public class Calendar implements ICalendar {
   }
 
   /**
+   * Constructs a new Calendar with a specific name and timezone.
+   *
+   * @param name     the name of the calendar
+   * @param timezone the timezone of the calendar
+   */
+  public Calendar(String name, String timezone) {
+    this();
+    this.name = name;
+    this.timezone = timezone;
+  }
+
+  /**
    * method to add event to the calendar.
    *
    * @param event       the event to add
    * @param autoDecline if true, the addition will be declined if it conflicts with existing events
-   * @return
+   * @return true if the event was added successfully, false otherwise
    */
   @Override
   public boolean addEvent(Event event, boolean autoDecline) throws ConflictingEventException {
     if (event == null) {
       throw new IllegalArgumentException("Event cannot be null");
     }
-    if (autoDecline && hasConflict(event)) {
-      throw new ConflictingEventException("Cannot add event '" + event.getSubject() + "' due to conflict with an existing event");
+
+    // Always check for conflicts regardless of autoDecline flag
+    if (hasConflict(event)) {
+      if (autoDecline) {
+        throw new ConflictingEventException("Cannot add event '" + event.getSubject() +
+                "' due to conflict with an existing event");
+      }
+      return false;
     }
+
     events.add(event);
     eventById.put(event.getId(), event);
     return true;
@@ -73,21 +94,25 @@ public class Calendar implements ICalendar {
    *
    * @param recurringEvent the recurring event to add
    * @param autoDecline    if true, the addition will be declined if any occurrence conflicts
-   * @return
+   * @return true if the recurring event was added successfully, false otherwise
    */
   @Override
-  public boolean addRecurringEvent(RecurringEvent recurringEvent, boolean autoDecline) {
+  public boolean addRecurringEvent(RecurringEvent recurringEvent, boolean autoDecline)
+          throws ConflictingEventException {
     if (recurringEvent == null) {
       throw new IllegalArgumentException("Recurring event cannot be null");
     }
 
     List<Event> occurrences = recurringEvent.getAllOccurrences();
 
-    if (autoDecline) {
-      for (Event occurrence : occurrences) {
-        if (hasConflict(occurrence)) {
-          return false;
+    // Always check for conflicts for all occurrences
+    for (Event occurrence : occurrences) {
+      if (hasConflict(occurrence)) {
+        if (autoDecline) {
+          throw new ConflictingEventException("Cannot add recurring event '" +
+                  recurringEvent.getSubject() + "' due to conflict with an existing event");
         }
+        return false;
       }
     }
 
@@ -102,9 +127,43 @@ public class Calendar implements ICalendar {
     return true;
   }
 
+  /**
+   * Creates and adds a deep copy of an event to this calendar.
+   *
+   * @param sourceEvent the event to copy
+   * @param autoDecline if true, the addition will be declined if it conflicts
+   * @return true if the event was copied successfully, false otherwise
+   */
+  public boolean addEventCopy(Event sourceEvent, boolean autoDecline) throws ConflictingEventException {
+    if (sourceEvent == null) {
+      throw new IllegalArgumentException("Source event cannot be null");
+    }
+
+    // Create a deep copy of the event
+    Event newEvent = new Event(
+            sourceEvent.getSubject(),
+            sourceEvent.getStartDateTime(),
+            sourceEvent.getEndDateTime(),
+            sourceEvent.getDescription(),
+            sourceEvent.getLocation(),
+            sourceEvent.isPublic()
+    );
+
+    if (sourceEvent.isAllDay()) {
+      newEvent.setAllDay(true);
+      if (sourceEvent.getDate() != null) {
+        newEvent.setDate(sourceEvent.getDate());
+      }
+    }
+
+    return addEvent(newEvent, autoDecline);
+  }
+
   @Override
   public boolean createRecurringEventUntil(String name, LocalDateTime start, LocalDateTime end,
-                                           String weekdays, LocalDate untilDate, boolean autoDecline) {
+                                           String weekdays, LocalDate untilDate,
+                                           boolean autoDecline)
+          throws ConflictingEventException {
     try {
       Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
 
@@ -121,14 +180,18 @@ public class Calendar implements ICalendar {
 
   @Override
   public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-                                            int occurrences, boolean autoDecline, String description, String location, boolean isPublic) {
+                                            int occurrences, boolean autoDecline,
+                                            String description,
+                                            String location, boolean isPublic)
+          throws ConflictingEventException {
     try {
       Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
 
       LocalDateTime startOfDay = date.atStartOfDay();
       LocalDateTime endOfDay = date.atTime(23, 59, 59);
 
-      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, startOfDay, endOfDay, repeatDays)
+      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, startOfDay,
+              endOfDay, repeatDays)
               .description(description)
               .location(location)
               .isPublic(isPublic)
@@ -145,15 +208,18 @@ public class Calendar implements ICalendar {
 
   @Override
   public boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
-                                                 LocalDate untilDate, boolean autoDecline, String description, String location,
-                                                 boolean isPublic) {
+                                                 LocalDate untilDate, boolean autoDecline,
+                                                 String description, String location,
+                                                 boolean isPublic)
+          throws ConflictingEventException {
     try {
       Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
 
       LocalDateTime startOfDay = date.atStartOfDay();
       LocalDateTime endOfDay = date.atTime(23, 59, 59);
 
-      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, startOfDay, endOfDay, repeatDays)
+      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, startOfDay, endOfDay,
+              repeatDays)
               .description(description)
               .location(location)
               .isPublic(isPublic)
@@ -182,7 +248,8 @@ public class Calendar implements ICalendar {
     }
 
     return events.stream()
-            .filter(e -> e.getSubject().equals(subject) && e.getStartDateTime().equals(startDateTime))
+            .filter(e -> e.getSubject().equals(subject)
+                    && e.getStartDateTime().equals(startDateTime))
             .findFirst().orElse(null);
   }
 
@@ -207,7 +274,8 @@ public class Calendar implements ICalendar {
    */
   @Override
   public boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property,
-                                 String newValue) {
+                                 String newValue)
+          throws ConflictingEventException {
     Event eventToEdit = findEvent(subject, startDateTime);
 
     if (eventToEdit == null) {
@@ -228,11 +296,13 @@ public class Calendar implements ICalendar {
    */
   @Override
   public int editEventsFromDate(String subject, LocalDateTime startDateTime, String property,
-                                String newValue) {
+                                String newValue)
+          throws ConflictingEventException {
     int count = 0;
 
-    List<Event> matchingEvents = events.stream().filter(
-                    e -> e.getSubject().equals(subject) && !e.getStartDateTime().isBefore(startDateTime))
+    List<Event> matchingEvents = events.stream()
+            .filter(e -> e.getSubject().equals(subject) &&
+                    !e.getStartDateTime().isBefore(startDateTime))
             .collect(Collectors.toList());
 
     for (Event event : matchingEvents) {
@@ -253,10 +323,12 @@ public class Calendar implements ICalendar {
    * @return number of occurrences edited.
    */
   @Override
-  public int editAllEvents(String subject, String property, String newValue) {
+  public int editAllEvents(String subject, String property, String newValue)
+          throws ConflictingEventException {
     int count = 0;
 
-    List<Event> matchingEvents = events.stream().filter(e -> e.getSubject().equals(subject))
+    List<Event> matchingEvents = events.stream()
+            .filter(e -> e.getSubject().equals(subject))
             .collect(Collectors.toList());
 
     for (Event event : matchingEvents) {
@@ -268,9 +340,9 @@ public class Calendar implements ICalendar {
   }
 
   /**
-   * retrieves oll reccurring events in the calendar.
+   * retrieves all recurring events in the calendar.
    *
-   * @return a list of all reccuring events.
+   * @return a list of all recurring events.
    */
   @Override
   public List<RecurringEvent> getAllRecurringEvents() {
@@ -278,7 +350,7 @@ public class Calendar implements ICalendar {
   }
 
   /**
-   * Export all events of the calendar to a  csv file.
+   * Export all events of the calendar to a csv file.
    *
    * @param filePath the path where the CSV file should be created
    * @return filePath of exported csv.
@@ -306,90 +378,51 @@ public class Calendar implements ICalendar {
    * @param newValue the new value for the property
    * @return true if the update was successful, otherwise false.
    */
-//  private boolean updateEventProperty(Event event, String property, String newValue) {
-//    switch (property.toLowerCase()) {
-//      case "subject":
-//      case "name":
-//        event.setSubject(newValue);
-//        return true;
-//      case "description":
-//        event.setDescription(newValue);
-//        return true;
-//      case "location":
-//        event.setLocation(newValue);
-//        return true;
-//      case "start":
-//      case "starttime":
-//      case "startdatetime":
-//        try {
-//          LocalDateTime newStartTime;
-//          if (newValue.contains("T")) {
-//            newStartTime = DateTimeUtil.parseDateTime(newValue);
-//          } else {
-//            LocalTime newTime = LocalTime.parse(newValue);
-//            newStartTime = LocalDateTime.of(event.getStartDateTime().toLocalDate(), newTime);
-//          }
-//          event.setStartDateTime(newStartTime);
-//          return true;
-//        } catch (Exception e) {
-//          return false;
-//        }
-//      case "end":
-//      case "endtime":
-//      case "enddatetime":
-//        try {
-//          LocalDateTime newEndTime;
-//          if (newValue.contains("T")) {
-//            newEndTime = DateTimeUtil.parseDateTime(newValue);
-//          } else {
-//            LocalTime newTime = LocalTime.parse(newValue);
-//            newEndTime = LocalDateTime.of(event.getEndDateTime().toLocalDate(), newTime);
-//          }
-//          event.setEndDateTime(newEndTime);
-//          return true;
-//        } catch (Exception e) {
-//          return false;
-//        }
-//      case "visibility":
-//      case "ispublic":
-//      case "public":
-//      case "private":
-//        boolean isPublic = newValue.equalsIgnoreCase("public") || (newValue.equalsIgnoreCase("true")
-//                && !property.equals("private"));
-//        event.setPublic(isPublic);
-//        return true;
-//      default:
-//        return false;
-//    }
-//  }
-
-  private boolean updateEventProperty(Event event, String property, String newValue) {
+  private boolean updateEventProperty(Event event, String property, String newValue)
+          throws ConflictingEventException {
     if (property == null || newValue == null) {
       return false;
     }
 
+    // Create a temporary copy to check for conflicts after property update
+    Event tempEvent = new Event(
+            event.getSubject(),
+            event.getStartDateTime(),
+            event.getEndDateTime(),
+            event.getDescription(),
+            event.getLocation(),
+            event.isPublic()
+    );
+    tempEvent.setAllDay(event.isAllDay());
+
+    // Apply the update to the temporary event
     EventPropertyUpdater updater = propertyUpdaters.get(property.toLowerCase());
-    return updater != null && updater.update(event, newValue);
+    if (updater == null || !updater.update(tempEvent, newValue)) {
+      return false;
+    }
+
+    // Check if the update would create conflicts
+    if (wouldCreateConflict(tempEvent, event)) {
+      throw new ConflictingEventException("Updating " + property + " would create a conflict");
+    }
+
+    // If we got here, apply the update to the actual event
+    return updater.update(event, newValue);
   }
 
-//  @Override
-//  public List<Event> getEventsOnDate(LocalDate date) {
-//    return events.stream().filter(event -> {
-//      if (event.getStartDateTime() != null) {
-//        LocalDate eventStartDate = event.getStartDateTime().toLocalDate();
-//
-//        if (event.getEndDateTime() != null) {
-//          LocalDate eventEndDate = event.getEndDateTime().toLocalDate();
-//          return !date.isBefore(eventStartDate) && !date.isAfter(eventEndDate);
-//        } else {
-//          return eventStartDate.equals(date);
-//        }
-//      } else if (event.getDate() != null) {
-//        return event.getDate().equals(date);
-//      }
-//      return false;
-//    }).collect(Collectors.toList());
-//  }
+  /**
+   * Checks if updating an event would create a conflict.
+   *
+   * @param updatedEvent  the event with updated properties
+   * @param originalEvent the original event before updates
+   * @return true if the update would create a conflict, false otherwise
+   */
+  private boolean wouldCreateConflict(Event updatedEvent, Event originalEvent) {
+    // Skip comparing against the original event
+    return events.stream()
+            .filter(e -> !e.getId().equals(originalEvent.getId()))
+            .anyMatch(updatedEvent::conflictsWith);
+  }
 
   @Override
   public List<Event> getEventsInRange(LocalDate startDate, LocalDate endDate) {
@@ -435,19 +468,55 @@ public class Calendar implements ICalendar {
     return events.stream().anyMatch(busyFilter::matches);
   }
 
+  /**
+   * Gets the name of this calendar.
+   *
+   * @return the name of the calendar
+   */
   public String getName() {
     return name;
   }
 
+  /**
+   * Sets the name of this calendar.
+   *
+   * @param name the new name for the calendar
+   */
   public void setName(String name) {
+    if (name == null || name.trim().isEmpty()) {
+      throw new IllegalArgumentException("Calendar name cannot be null or empty");
+    }
     this.name = name;
   }
 
+  /**
+   * Gets the timezone of this calendar.
+   *
+   * @return the timezone string (IANA format)
+   */
   public String getTimezone() {
     return timezone;
   }
 
+  /**
+   * Sets the timezone of this calendar.
+   * All events in the calendar will maintain their local times
+   * but be interpreted in the context of the new timezone.
+   *
+   * @param timezone the new timezone string (IANA format)
+   */
   public void setTimezone(String timezone) {
+    if (timezone == null || timezone.trim().isEmpty()) {
+      throw new IllegalArgumentException("Timezone cannot be null or empty");
+    }
+
+    // Validate that this is a valid timezone
+    try {
+      ZoneId.of(timezone);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid timezone: " + timezone);
+    }
+
     this.timezone = timezone;
   }
 
@@ -455,7 +524,6 @@ public class Calendar implements ICalendar {
    * Initializes the map of property updaters with lambda expressions for each property.
    */
   private void initializePropertyUpdaters() {
-
     EventPropertyUpdater subjectUpdater = (event, value) -> {
       try {
         event.setSubject(value);
@@ -520,7 +588,8 @@ public class Calendar implements ICalendar {
 
     // Visibility/privacy updaters
     EventPropertyUpdater visibilityUpdater = (event, value) -> {
-      boolean isPublic = value.equalsIgnoreCase("public") || value.equalsIgnoreCase("true");
+      boolean isPublic = value.equalsIgnoreCase("public")
+              || value.equalsIgnoreCase("true");
       event.setPublic(isPublic);
       return true;
     };
@@ -530,30 +599,19 @@ public class Calendar implements ICalendar {
 
     // Special case for "private" - inverts the logic
     propertyUpdaters.put("private", (event, value) -> {
-      boolean isPrivate = value.equalsIgnoreCase("true") || value.equalsIgnoreCase("private");
+      boolean isPrivate = value.equalsIgnoreCase("true")
+              || value.equalsIgnoreCase("private");
       event.setPublic(!isPrivate);
       return true;
     });
-
   }
 
   /**
-   * Updates a specific property of an event.
+   * Get events that match a specific filter.
    *
-   * @param event    the event to update
-   * @param property the property to update
-   * @param newValue the new value for the property
-   * @return true if the update was successful, otherwise false
+   * @param filter the filter to apply
+   * @return a list of events that match the filter
    */
-  private boolean UpdateEventProperty(Event event, String property, String newValue) {
-    if (property == null || newValue == null) {
-      return false;
-    }
-
-    EventPropertyUpdater updater = propertyUpdaters.get(property.toLowerCase());
-    return updater != null && updater.update(event, newValue);
-  }
-
   public List<Event> getFilteredEvents(EventFilter filter) {
     return events.stream()
             .filter(filter::matches)

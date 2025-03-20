@@ -48,20 +48,68 @@ public class TimeZoneHandler {
   /**
    * Converts a LocalDateTime from one timezone to another.
    *
-   * @param dateTime the LocalDateTime to convert
+   * @param dateTime     the LocalDateTime to convert
    * @param fromTimezone the source timezone
-   * @param toTimezone the target timezone
+   * @param toTimezone   the target timezone
    * @return the converted LocalDateTime
    * @throws IllegalArgumentException if parameters are invalid
    */
   public LocalDateTime convertTime(LocalDateTime dateTime, String fromTimezone, String toTimezone) {
-    if (dateTime == null || !isValidTimezone(fromTimezone) || !isValidTimezone(toTimezone)) {
-      throw new IllegalArgumentException("Invalid parameters for time conversion");
+    if (dateTime == null) {
+      throw new IllegalArgumentException("DateTime cannot be null");
+    }
+
+    if (!isValidTimezone(fromTimezone)) {
+      throw new IllegalArgumentException("Invalid source timezone: " + fromTimezone);
+    }
+
+    if (!isValidTimezone(toTimezone)) {
+      throw new IllegalArgumentException("Invalid target timezone: " + toTimezone);
+    }
+
+    // If the timezones are the same, no conversion needed
+    if (fromTimezone.equals(toTimezone)) {
+      return dateTime;
     }
 
     ZonedDateTime sourceZoned = dateTime.atZone(ZoneId.of(fromTimezone));
     ZonedDateTime targetZoned = sourceZoned.withZoneSameInstant(ZoneId.of(toTimezone));
     return targetZoned.toLocalDateTime();
+  }
+
+  /**
+   * Calculates the offset in hours between two timezones at the current time.
+   *
+   * @param fromTimezone the source timezone
+   * @param toTimezone   the target timezone
+   * @return the offset in hours (can be negative)
+   * @throws IllegalArgumentException if parameters are invalid
+   */
+  public double getTimezoneOffsetHours(String fromTimezone, String toTimezone) {
+    if (!isValidTimezone(fromTimezone) || !isValidTimezone(toTimezone)) {
+      throw new IllegalArgumentException("Invalid timezone parameters");
+    }
+
+    LocalDateTime now = LocalDateTime.now();
+    ZonedDateTime sourceZoned = now.atZone(ZoneId.of(fromTimezone));
+    ZonedDateTime targetZoned = now.atZone(ZoneId.of(toTimezone));
+
+    int sourceOffset = sourceZoned.getOffset().getTotalSeconds();
+    int targetOffset = targetZoned.getOffset().getTotalSeconds();
+
+    // calc hrs difference !
+    return (targetOffset - sourceOffset) / 3600.0;
+  }
+
+  /**
+   * Determines if a timezone is ahead of another timezone.
+   *
+   * @param timezone1 the first timezone
+   * @param timezone2 the second timezone
+   * @return true if timezone1 is ahead of timezone2, false otherwise
+   */
+  public boolean isTimeZoneAhead(String timezone1, String timezone2) {
+    return getTimezoneOffsetHours(timezone2, timezone1) > 0;
   }
 
   /**
@@ -118,7 +166,7 @@ public class TimeZoneHandler {
    * Get a timezone converter for converting between two timezones.
    *
    * @param fromTimezone the source timezone
-   * @param toTimezone the target timezone
+   * @param toTimezone   the target timezone
    * @return a TimezoneConverter for the specified conversion
    */
   public TimezoneConverter getConverter(String fromTimezone, String toTimezone) {
