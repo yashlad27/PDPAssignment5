@@ -3,6 +3,10 @@ package controller;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import controller.command.CalendarCommandFactory;
 import controller.command.CommandFactory;
@@ -97,27 +101,71 @@ public class CalendarController {
    */
   private String processCalendarCommand(String commandStr) throws CalendarNotFoundException,
           InvalidTimezoneException, DuplicateCalendarException {
-    String[] parts = commandStr.split("\\s+", 3);
+    String[] parts = parseCommand(commandStr);
     if (parts.length < 2) {
       return "Error: Invalid calendar command format";
     }
 
-    String action = parts[0]; // e.g., "create", "edit", "use"
+    String action = parts[0]; // e.g., "create", "edit", "use", "copy"
+    String targetType = parts[1]; // e.g., "calendar", "event", "events"
 
-    // Prepare args - the first arg should be "calendar" for most commands
+    // Handle copy commands specially due to their more complex structure
+    if (action.equals("copy")) {
+      if (targetType.equals("event")) {
+        // Format: copy event "Event Name" on DATE --target CAL to DATE
+        if (parts.length < 9) {
+          return "Error: Insufficient arguments for copy event command";
+        }
+
+        // First, validate the command structure
+        if (!parts[3].equals("on") || !parts[5].equals("--target") || !parts[7].equals("to")) {
+          return "Error: Invalid copy event command format";
+        }
+
+        return calendarCommandFactory.getCommand("copy").execute(parts);
+      } else if (targetType.equals("events")) {
+        // Two formats:
+        // 1. copy events on DATE --target CAL to DATE
+        // 2. copy events between DATE and DATE --target CAL DATE
+        if (parts.length < 2) {
+          return "Error: Insufficient arguments for copy events command";
+        }
+
+        String subtype = parts[2]; // "on" or "between"
+
+        if (subtype.equals("on")) {
+          if (parts.length < 8) {
+            return "Error: Insufficient arguments for copy events on date command";
+          }
+          if (!parts[3].equals("on") || !parts[5].equals("--target") || !parts[7].equals("to")) {
+            return "Error: Invalid copy events on date command format";
+          }
+        } else if (subtype.equals("between")) {
+          if (parts.length < 10) {
+            return "Error: Insufficient arguments for copy events between dates command";
+          }
+          if (!parts[3].equals("between") || !parts[5].equals("and") ||
+                  !parts[7].equals("--target")) {
+            return "Error: Invalid copy events between dates command format";
+          }
+        } else {
+          return "Error: Unknown copy events subcommand: " + subtype;
+        }
+
+        return calendarCommandFactory.getCommand("copy").execute(parts);
+      } else {
+        return "Error: Unknown copy target: " + targetType;
+      }
+    }
+
+    // For other calendar commands
     String[] args;
-    if (parts.length > 2) {
-      // Include "calendar" as the first element in the args array
-      String restOfCommand = parts[2].trim();
-      String[] restArgs = restOfCommand.split("\\s+");
-
-      // Create a new array with "calendar" as the first element
-      args = new String[restArgs.length + 1];
-      args[0] = "calendar";  // Add "calendar" as the first element
-      System.arraycopy(restArgs, 0, args, 1, restArgs.length);
+    if (targetType.equals("calendar")) {
+      args = new String[parts.length - 1];
+      args[0] = "calendar";
+      System.arraycopy(parts, 2, args, 1, parts.length - 2);
     } else {
-      // Just include "calendar" as the only argument
-      args = new String[]{"calendar"};
+      return "Error: Expected 'calendar' after '" + action + "'";
     }
 
     if (calendarCommandFactory.hasCommand(action)) {
@@ -125,6 +173,33 @@ public class CalendarController {
     } else {
       return "Error: Unknown calendar command: " + action;
     }
+  }
+
+  /**
+   * Parses a command string into an array of tokens, properly handling quoted strings.
+   *
+   * @param commandStr the command string to parse
+   * @return an array of command tokens
+   */
+  private String[] parseCommand(String commandStr) {
+    List<String> tokens = new ArrayList<>();
+    Pattern pattern = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
+    Matcher matcher = pattern.matcher(commandStr);
+
+    while (matcher.find()) {
+      if (matcher.group(1) != null) {
+        // Add double-quoted string without the quotes
+        tokens.add(matcher.group(1));
+      } else if (matcher.group(2) != null) {
+        // Add single-quoted string without the quotes
+        tokens.add(matcher.group(2));
+      } else {
+        // Add unquoted word
+        tokens.add(matcher.group());
+      }
+    }
+
+    return tokens.toArray(new String[0]);
   }
 
   /**

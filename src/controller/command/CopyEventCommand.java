@@ -62,7 +62,7 @@ public class CopyEventCommand implements ICommand {
     } catch (CalendarNotFoundException e) {
       return "Error: " + e.getMessage();
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      return "Error: " + e.getMessage();
     }
   }
 
@@ -80,6 +80,11 @@ public class CopyEventCommand implements ICommand {
     LocalDateTime targetDateTime = DateTimeUtil.parseDateTime(args[4]);
     boolean autoDecline = args.length > 5 ? Boolean.parseBoolean(args[5]) : true;
 
+    // Validate target calendar exists
+    if (!calendarManager.hasCalendar(targetCalendarName)) {
+      return "Error: Target calendar '" + targetCalendarName + "' does not exist";
+    }
+
     // Get source calendar (active calendar)
     ICalendar sourceCalendar = calendarManager.getActiveCalendar();
 
@@ -89,10 +94,6 @@ public class CopyEventCommand implements ICommand {
       throw new EventNotFoundException("Event not found: " + eventName + " at " + sourceDateTime);
     }
 
-    // Determine time shift
-    long timeShiftMillis = targetDateTime.toInstant(java.time.ZoneOffset.UTC).toEpochMilli() -
-            sourceDateTime.toInstant(java.time.ZoneOffset.UTC).toEpochMilli();
-
     // Get the source and target timezones
     String sourceTimezone = ((model.calendar.Calendar) sourceCalendar).getTimezone();
     String targetTimezone = calendarManager.executeOnCalendar(targetCalendarName,
@@ -101,13 +102,15 @@ public class CopyEventCommand implements ICommand {
     // Create timezone converter
     TimezoneConverter converter = timezoneHandler.getConverter(sourceTimezone, targetTimezone);
 
+    // Calculate duration of the source event
+    long durationSeconds = sourceEvent.getEndDateTime().toEpochSecond(java.time.ZoneOffset.UTC) -
+            sourceEvent.getStartDateTime().toEpochSecond(java.time.ZoneOffset.UTC);
+
     // Create a new event with the adjusted time
     Event newEvent = new Event(
             sourceEvent.getSubject(),
             converter.convert(targetDateTime),
-            converter.convert(targetDateTime.plusSeconds(
-                    sourceEvent.getEndDateTime().toEpochSecond(java.time.ZoneOffset.UTC) -
-                            sourceEvent.getStartDateTime().toEpochSecond(java.time.ZoneOffset.UTC))),
+            converter.convert(targetDateTime.plusSeconds(durationSeconds)),
             sourceEvent.getDescription(),
             sourceEvent.getLocation(),
             sourceEvent.isPublic()
@@ -136,6 +139,11 @@ public class CopyEventCommand implements ICommand {
     String targetCalendarName = args[2];
     LocalDate targetDate = DateTimeUtil.parseDate(args[3]);
     boolean autoDecline = args.length > 4 ? Boolean.parseBoolean(args[4]) : true;
+
+    // Validate target calendar exists
+    if (!calendarManager.hasCalendar(targetCalendarName)) {
+      return "Error: Target calendar '" + targetCalendarName + "' does not exist";
+    }
 
     // Get source calendar (active calendar)
     ICalendar sourceCalendar = calendarManager.getActiveCalendar();
@@ -225,6 +233,11 @@ public class CopyEventCommand implements ICommand {
     LocalDate targetStartDate = DateTimeUtil.parseDate(args[4]);
     boolean autoDecline = args.length > 5 ? Boolean.parseBoolean(args[5]) : true;
 
+    // Validate target calendar exists
+    if (!calendarManager.hasCalendar(targetCalendarName)) {
+      return "Error: Target calendar '" + targetCalendarName + "' does not exist";
+    }
+
     // Get source calendar (active calendar)
     ICalendar sourceCalendar = calendarManager.getActiveCalendar();
 
@@ -294,6 +307,8 @@ public class CopyEventCommand implements ICommand {
         successCount++;
       } catch (ConflictingEventException e) {
         failCount++;
+      } catch (Exception e) {
+        throw new RuntimeException("Error copying event: " + e.getMessage(), e);
       }
     }
 
