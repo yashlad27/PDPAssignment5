@@ -35,6 +35,7 @@ public class CalendarApp {
       return;
     }
 
+    // Get the active calendar reference
     ICalendar activeCalendar;
     try {
       activeCalendar = calendarManager.getActiveCalendar();
@@ -43,16 +44,19 @@ public class CalendarApp {
       return;
     }
 
-    // create command
+    // Create command factories
     CommandFactory commandFactory = new CommandFactory(activeCalendar, view);
-    CalendarCommandFactory calendarCommandFactory = new CalendarCommandFactory(calendarManager, view);
+    CalendarCommandFactory calendarCommandFactory = new CalendarCommandFactory(calendarManager,
+            view);
 
-    // create controller
-    CalendarController controller = new CalendarController(commandFactory, calendarCommandFactory, view);
+    // Create controller with dynamic calendar access
+    CalendarController controller = new CalendarController(commandFactory,
+            calendarCommandFactory, calendarManager, view);
 
     if (args.length < 2) {
       view.displayError(
-              "Insufficient arguments. Usage: --mode [interactive|headless filename.txt]");
+              "Insufficient arguments. Usage: --mode "
+                      + "[interactive|headless filename.txt]");
       return;
     }
 
@@ -68,7 +72,8 @@ public class CalendarApp {
       controller.startInteractiveMode();
     } else if (modeValue.equals("headless")) {
       if (args.length < 3) {
-        view.displayError("Headless mode requires a filename. Usage: --mode headless filename.txt");
+        view.displayError("Headless mode requires a filename. "
+                + "Usage: --mode headless filename.txt");
         return;
       }
 
@@ -87,5 +92,4 @@ public class CalendarApp {
       ((ConsoleView) view).close();
     }
   }
-
 }
