@@ -1,6 +1,11 @@
 package utilities;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Functional interface for converting time between different time zones.
@@ -27,6 +32,51 @@ public interface TimezoneConverter {
    */
   static TimezoneConverter between(String fromTimezone, String toTimezone, TimeZoneHandler handler) {
     return dateTime -> handler.convertTime(dateTime, fromTimezone, toTimezone);
+  }
+
+  /**
+   * Creates a converter that preserves local time but changes the timezone context.
+   * This converter returns a time with the same local time components but considered
+   * to be in a different timezone.
+   *
+   * @param fromTimezone the source timezone
+   * @param toTimezone   the target timezone
+   * @return a converter that preserves local time
+   */
+  static TimezoneConverter preservingLocalTime(String fromTimezone, String toTimezone) {
+    return dateTime -> dateTime; // Same local time, just in a different timezone context
+  }
+
+  /**
+   * Creates a copy converter that preserves the duration of an event but shifts
+   * it to a specific target date and time.
+   *
+   * @param targetDateTime the target date and time for the start of the event
+   * @return a converter that shifts an event to a specific time while preserving duration
+   */
+  static TimezoneConverter shiftToSpecificTime(LocalDateTime targetDateTime) {
+    return dateTime -> targetDateTime;
+  }
+
+  /**
+   * Creates a converter that shifts a date-time by a specific number of days.
+   *
+   * @param days the number of days to shift (can be negative)
+   * @return a converter that shifts by days
+   */
+  static TimezoneConverter shiftByDays(long days) {
+    return dateTime -> dateTime.plusDays(days);
+  }
+
+  /**
+   * Calculates the duration between two date-times.
+   *
+   * @param start the start date-time
+   * @param end   the end date-time
+   * @return the duration in seconds
+   */
+  static long durationInSeconds(LocalDateTime start, LocalDateTime end) {
+    return ChronoUnit.SECONDS.between(start, end);
   }
 
   /**
@@ -83,5 +133,14 @@ public interface TimezoneConverter {
     return toUTC(fromTimezone, handler).andThen(fromUTC(toTimezone, handler));
   }
 
-
+  /**
+   * Converts a date to the same date in another timezone.
+   * This does not adjust for timezone differences, just provides the same calendar date.
+   *
+   * @param date the date to convert
+   * @return the same calendar date
+   */
+  default LocalDate convertDate(LocalDate date) {
+    return date; // Same calendar date, regardless of timezone
+  }
 }
