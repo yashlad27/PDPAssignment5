@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import controller.command.CalendarCommandFactory;
 import controller.command.CommandFactory;
 import controller.parser.CommandParser;
 import model.calendar.CalendarManager;
@@ -129,8 +128,10 @@ public class CalendarController {
     try {
       ICalendar activeCalendar = calendarManager.getActiveCalendar();
       if (this.commandFactory instanceof CommandFactory) {
+        // Create a new CommandFactory with the active calendar
         this.commandFactory = new CommandFactory(activeCalendar, view);
-        this.parser = new CommandParser((CommandFactory)this.commandFactory);
+        // Create a new parser with the updated factory
+        this.parser = new CommandParser(this.commandFactory);
       }
     } catch (CalendarNotFoundException e) {
       view.displayError("Error updating command factory: " + e.getMessage());
