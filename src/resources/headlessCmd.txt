@@ -9,7 +9,6 @@ create event "Team Football Match" from 2025-03-23T09:00 to 2025-03-23T11:00 rep
 use calendar --name Personal
 create event "Gym" from 2025-03-26T18:00 to 2025-03-26T19:30 desc "Workout session" at "Fitness Center"
 create event "Dinner with Friends" from 2025-03-27T19:00 to 2025-03-27T21:00 desc "Catch up" at "Italian Restaurant"
-create event "Dad's Birthday" from 2025-02-01T00:00 to 2025-02-01T23:59 desc "Birthday celebration" at "YZS Bar"
 create event "Yoga Class" from 2025-03-20T17:00 to 2025-03-20T18:00 repeats TRS for 8 times desc "Weekly yoga" at "Wellness Center"
 use calendar --name Travel
 create event "Flight to Paris" from 2025-04-15T08:00 to 2025-04-15T10:30 desc "Flight AA123" at "Airport"

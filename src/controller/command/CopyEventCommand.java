@@ -43,129 +43,254 @@ public class CopyEventCommand implements ICommand {
 
   @Override
   public String execute(String[] args) throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+    System.out.println("*** Debug: Executing copy command with args:");
+    for (int i = 0; i < args.length; i++) {
+      System.out.println("Args[" + i + "]: '" + args[i] + "'");
+    }
+
     if (args.length < 1) {
       return "Error: Insufficient arguments for copy command";
     }
 
     try {
-      // The first arg is either "copy" or a specific format from CalendarCommandFactory
-      if (args[0].equals("copy")) {
-        // This is the direct format from the controller
-        // Format: [copy, event/events, ...] or [copy, events, between/on, ...]
-        if (args.length < 2) {
-          return "Error: Insufficient arguments for copy command";
-        }
+      // Create a context object to hold parsed command data
+      CopyCommandContext context = parseCommandArguments(args);
 
-        String type = args[1];
-
-        if (type.equals("event")) {
-          // copy event <eventName> on <dateTimeStr> --target <targetCalendarName> to <targetDateTimeStr>
-          if (args.length < 9) {
-            return "Error: Insufficient arguments for copy event command";
-          }
-
-          String eventName = args[2];
-          // Remove quotes if present
-          if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
-            eventName = eventName.substring(1, eventName.length() - 1);
-          }
-
-          if (!args[3].equals("on")) {
-            return "Error: Expected 'on' keyword after event name";
-          }
-
-          String dateTimeStr = args[4];
-
-          if (!args[5].equals("--target")) {
-            return "Error: Expected '--target' flag";
-          }
-
-          String targetCalendarName = args[6];
-
-          if (!args[7].equals("to")) {
-            return "Error: Expected 'to' keyword";
-          }
-
-          String targetDateTimeStr = args[8];
-
-          return copyEvent(eventName, dateTimeStr, targetCalendarName, targetDateTimeStr);
-        } else if (type.equals("events")) {
-          if (args.length < 3) {
-            return "Error: Insufficient arguments for copy events command";
-          }
-
-          String subType = args[2];
-
-          if (subType.equals("on")) {
-            // copy events on <dateStr> --target <targetCalendarName> to <targetDateStr>
-            if (args.length < 8) {
-              return "Error: Insufficient arguments for copy events on date command";
-            }
-
-            String dateStr = args[3];
-
-            if (!args[4].equals("--target")) {
-              return "Error: Expected '--target' flag";
-            }
-
-            String targetCalendarName = args[5];
-
-            if (!args[6].equals("to")) {
-              return "Error: Expected 'to' keyword";
-            }
-
-            String targetDateStr = args[7];
-
-            return copyEventsOnDate(dateStr, targetCalendarName, targetDateStr);
-          } else if (subType.equals("between")) {
-            // copy events between <startDateStr> and <endDateStr> --target <targetCalendarName> to <targetStartDateStr>
-            if (args.length < 10) {
-              return "Error: Insufficient arguments for copy events between dates command";
-            }
-
-            String startDateStr = args[3];
-
-            if (!args[4].equals("and")) {
-              return "Error: Expected 'and' keyword";
-            }
-
-            String endDateStr = args[5];
-
-            if (!args[6].equals("--target")) {
-              return "Error: Expected '--target' flag";
-            }
-
-            String targetCalendarName = args[7];
-
-            if (!args[8].equals("to")) {
-              return "Error: Expected 'to' keyword";
-            }
-
-            String targetStartDateStr = args[9];
-
-            return copyEventsBetweenDates(startDateStr, endDateStr, targetCalendarName, targetStartDateStr);
-          }
-        }
-
-        return "Error: Unknown copy command format";
-      } else if (args[0].equals("event")) {
-        // This is the internal format from CalendarCommandFactory
-        return copyEvent(args[1], args[2], args[3], args[4]);
-      } else if (args[0].equals("events_on_date")) {
-        // This is the internal format from CalendarCommandFactory
-        return copyEventsOnDate(args[1], args[2], args[3]);
-      } else if (args[0].equals("events_between_dates")) {
-        // This is the internal format from CalendarCommandFactory
-        return copyEventsBetweenDates(args[1], args[2], args[3], args[4]);
-      } else {
-        return "Error: Unknown copy command: " + args[0];
+      // Execute the appropriate copy strategy based on the command type
+      switch (context.commandType) {
+        case SINGLE_EVENT:
+          return copyEvent(context.eventName, context.sourceDateTime,
+                  context.targetCalendar, context.targetDateTime);
+        case EVENTS_ON_DATE:
+          return copyEventsOnDate(context.sourceDate,
+                  context.targetCalendar, context.targetDate);
+        case EVENTS_BETWEEN_DATES:
+          return copyEventsBetweenDates(context.sourceStartDate,
+                  context.sourceEndDate,
+                  context.targetCalendar,
+                  context.targetStartDate);
+        case UNKNOWN:
+        default:
+          return "Error: Unknown copy command format";
       }
+    } catch (IllegalArgumentException e) {
+      return "Error: " + e.getMessage();
     } catch (CalendarNotFoundException e) {
       return "Error: " + e.getMessage();
     } catch (Exception e) {
       return "Error: " + e.getMessage();
     }
   }
+
+  /**
+   * Command type enumeration to represent different copy operations
+   */
+  private enum CommandType {
+    SINGLE_EVENT, EVENTS_ON_DATE, EVENTS_BETWEEN_DATES, UNKNOWN
+  }
+
+  /**
+   * Context object to hold parsed command parameters
+   */
+  private static class CopyCommandContext {
+    CommandType commandType = CommandType.UNKNOWN;
+    String eventName;
+    String sourceDateTime;
+    String targetDateTime;
+    String sourceDate;
+    String targetDate;
+    String sourceStartDate;
+    String sourceEndDate;
+    String targetStartDate;
+    String targetCalendar;
+  }
+
+  /**
+   * Parses command arguments into a context object
+   */
+  private CopyCommandContext parseCommandArguments(String[] args) {
+    CopyCommandContext context = new CopyCommandContext();
+
+    if (args.length > 2 && "events".equals(args[1]) && "between".equals(args[2])) {
+      System.out.println("DEBUG: Parsing 'copy events between' command");
+      parseEventsBetweenDatesCommand(args, context);
+    }
+
+    if (args[0].equals("copy")) {
+      // Parse controller-format commands
+      if (args.length < 2) {
+        throw new IllegalArgumentException("Insufficient arguments for copy command");
+      }
+
+      if (args[1].equals("event")) {
+        // Handle "copy event <name> on <date> --target <cal> to <date>"
+        parseEventCopyCommand(args, context);
+      } else if (args[1].equals("events")) {
+        if (args.length < 3) {
+          throw new IllegalArgumentException("Insufficient arguments for copy events command");
+        }
+
+        if (args[2].equals("on")) {
+          // Handle "copy events on <date> --target <cal> to <date>"
+          parseEventsOnDateCommand(args, context);
+        } else if (args[2].equals("between")) {
+          // Handle "copy events between <date> and <date> --target <cal> to <date>"
+          parseEventsBetweenDatesCommand(args, context);
+        }
+      }
+    } else if (args[0].equals("event")) {
+      // Parse internal format: [event, name, dateTime, targetCal, targetDateTime]
+      context.commandType = CommandType.SINGLE_EVENT;
+      context.eventName = args[1];
+      context.sourceDateTime = args[2];
+      context.targetCalendar = args[3];
+      context.targetDateTime = args[4];
+    } else if (args[0].equals("events_on_date")) {
+      // Parse internal format: [events_on_date, date, targetCal, targetDate]
+      context.commandType = CommandType.EVENTS_ON_DATE;
+      context.sourceDate = args[1];
+      context.targetCalendar = args[2];
+      context.targetDate = args[3];
+    } else if (args[0].equals("events_between_dates")) {
+      // Parse internal format: [events_between_dates, startDate, endDate, targetCal, targetStartDate]
+      context.commandType = CommandType.EVENTS_BETWEEN_DATES;
+      context.sourceStartDate = args[1];
+      context.sourceEndDate = args[2];
+      context.targetCalendar = args[3];
+      context.targetStartDate = args[4];
+    }
+
+    return context;
+  }
+
+  /**
+   * Parse the "copy event" command format
+   */
+  private void parseEventCopyCommand(String[] args, CopyCommandContext context) {
+    System.out.println("DEBUG: Parsing copy event command");
+    for (int i = 0; i < args.length; i++) {
+      System.out.println("Args[" + i + "]: '" + args[i] + "'");
+    }
+
+    if (args.length < 8) {
+      throw new IllegalArgumentException("Insufficient arguments for copy event command");
+    }
+
+    context.commandType = CommandType.SINGLE_EVENT;
+    context.eventName = args[2];
+
+    // Remove quotes if present
+    if (context.eventName.startsWith("\"") && context.eventName.endsWith("\"")) {
+      context.eventName = context.eventName.substring(1, context.eventName.length() - 1);
+    }
+
+    if (!args[3].equals("on")) {
+      throw new IllegalArgumentException("Expected 'on' keyword after event name");
+    }
+
+    context.sourceDateTime = args[4];
+
+    if (!args[5].equals("--target")) {
+      throw new IllegalArgumentException("Expected '--target' flag");
+    }
+
+    context.targetCalendar = args[6];
+
+    if (!args[7].equals("to")) {
+      throw new IllegalArgumentException("Expected 'to' keyword");
+    }
+
+    context.targetDateTime = args[8];
+  }
+
+  /**
+   * Parse the "copy events on date" command format
+   */
+  private void parseEventsOnDateCommand(String[] args, CopyCommandContext context) {
+    if (args.length < 8) {
+      throw new IllegalArgumentException("Insufficient arguments for copy events on date command");
+    }
+
+    context.commandType = CommandType.EVENTS_ON_DATE;
+    context.sourceDate = args[3];
+
+    if (!args[4].equals("--target")) {
+      throw new IllegalArgumentException("Expected '--target' flag");
+    }
+
+    context.targetCalendar = args[5];
+
+    if (!args[6].equals("to")) {
+      throw new IllegalArgumentException("Expected 'to' keyword");
+    }
+
+    context.targetDate = args[7];
+  }
+
+  /**
+   * Parse the "copy events between dates" command format
+   */
+  private void parseEventsBetweenDatesCommand(String[] args, CopyCommandContext context) {
+
+
+//    if (args.length < 10) {
+//      throw new IllegalArgumentException("Insufficient arguments for copy events between dates command");
+//    }
+//
+//    context.commandType = CommandType.EVENTS_BETWEEN_DATES;
+//    context.sourceStartDate = args[3];
+//
+//    if (!args[4].equals("and")) {
+//      throw new IllegalArgumentException("Expected 'and' keyword");
+//    }
+//
+//    context.sourceEndDate = args[5];
+//
+//    if (!args[6].equals("--target")) {
+//      throw new IllegalArgumentException("Expected '--target' flag");
+//    }
+//
+//    context.targetCalendar = args[7];
+//
+//    if (!args[8].equals("to")) {
+//      throw new IllegalArgumentException("Expected 'to' keyword");
+//    }
+//
+//    context.targetStartDate = args[9];
+
+    System.out.println("DEBUG: Entering parseEventsBetweenDatesCommand()");
+
+    // Print all received arguments
+    for (int i = 0; i < args.length; i++) {
+      System.out.println("Args[" + i + "]: '" + args[i] + "'");
+    }
+
+    if (args.length < 9) {
+      throw new IllegalArgumentException("Insufficient arguments for copy events between dates command. Expected 9, but got: " + args.length);
+    }
+
+    context.commandType = CommandType.EVENTS_BETWEEN_DATES;
+    context.sourceStartDate = args[3];
+
+    if (!args[4].equals("and")) {
+      throw new IllegalArgumentException("Expected 'and' keyword, but got: " + args[4]);
+    }
+
+    context.sourceEndDate = args[5];
+
+    if (!args[6].equals("--target")) {
+      throw new IllegalArgumentException("Expected '--target' flag, but got: " + args[6]);
+    }
+
+    context.targetCalendar = args[7];
+
+    if (!args[8].equals("to")) {
+      throw new IllegalArgumentException("Expected 'to' keyword, but got: " + args[8]);
+    }
+
+    context.targetStartDate = args[9];
+  }
+
 
   /**
    * Copies a single event from the active calendar to a target calendar.
