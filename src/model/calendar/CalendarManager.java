@@ -1,7 +1,5 @@
 package model.calendar;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -11,21 +9,20 @@ import model.exceptions.InvalidTimezoneException;
 import utilities.TimeZoneHandler;
 
 /**
- * Manages multiple calendars with unique names.
- * Provides functionality to create, access, modify, and switch between calendars.
+ * Manages calendar operations and coordinates between the CalendarRegistry and TimeZoneHandler.
+ * Following the Single Responsibility Principle, this class is focused on high-level
+ * calendar management operations rather than storage details.
  */
 public class CalendarManager {
 
-  private final Map<String, Calendar> calendars;
-  private String activeCalendarName;
+  private final CalendarRegistry calendarRegistry;
   private final TimeZoneHandler timezoneHandler;
 
   /**
    * Private constructor used by the builder to create a CalendarManager instance.
    */
   private CalendarManager(Builder builder) {
-    this.calendars = new HashMap<>();
-    this.activeCalendarName = null;
+    this.calendarRegistry = new CalendarRegistry();
     this.timezoneHandler = builder.timezoneHandler;
   }
 
@@ -64,20 +61,6 @@ public class CalendarManager {
   }
 
   /**
-   * Gets a calendar by name.
-   *
-   * @param name the name of the calendar
-   * @return the calendar with the specified name
-   * @throws CalendarNotFoundException if no calendar with the specified name exists
-   */
-  private Calendar getCalendarByName(String name) throws CalendarNotFoundException {
-    if (!calendars.containsKey(name)) {
-      throw new CalendarNotFoundException("Calendar not found: " + name);
-    }
-    return calendars.get(name);
-  }
-
-  /**
    * Creates a new calendar with the specified name and timezone.
    *
    * @param name     the unique name for the calendar
@@ -88,16 +71,6 @@ public class CalendarManager {
    */
   public Calendar createCalendar(String name, String timezone)
           throws DuplicateCalendarException, InvalidTimezoneException {
-    // Validate name
-    if (name == null || name.trim().isEmpty()) {
-      throw new IllegalArgumentException("Calendar name cannot be null or empty");
-    }
-
-    // Check for duplicate name
-    if (calendars.containsKey(name)) {
-      throw new DuplicateCalendarException("Calendar with name '" + name + "' already exists");
-    }
-
     // Validate timezone
     if (!timezoneHandler.isValidTimezone(timezone)) {
       throw new InvalidTimezoneException("Invalid timezone: " + timezone);
@@ -108,12 +81,11 @@ public class CalendarManager {
     calendar.setName(name);
     calendar.setTimezone(timezone);
 
-    // Add to map
-    calendars.put(name, calendar);
-
-    // If this is the first calendar, make it active
-    if (activeCalendarName == null) {
-      activeCalendarName = name;
+    // Register the calendar
+    try {
+      calendarRegistry.registerCalendar(name, calendar);
+    } catch (DuplicateCalendarException e) {
+      throw e;
     }
 
     return calendar;
@@ -143,7 +115,7 @@ public class CalendarManager {
    * @throws CalendarNotFoundException if no calendar with the specified name exists
    */
   public Calendar getCalendar(String name) throws CalendarNotFoundException {
-    return getCalendarByName(name);
+    return calendarRegistry.getCalendarByName(name);
   }
 
   /**
@@ -153,10 +125,7 @@ public class CalendarManager {
    * @throws CalendarNotFoundException if no calendar is currently active
    */
   public Calendar getActiveCalendar() throws CalendarNotFoundException {
-    if (activeCalendarName == null) {
-      throw new CalendarNotFoundException("No active calendar set");
-    }
-    return calendars.get(activeCalendarName);
+    return calendarRegistry.getActiveCalendar();
   }
 
   /**
@@ -171,7 +140,7 @@ public class CalendarManager {
    */
   public <T> T executeOnCalendar(String calendarName, CalendarOperation<T> operation)
           throws CalendarNotFoundException, Exception {
-    Calendar calendar = getCalendarByName(calendarName);
+    Calendar calendar = calendarRegistry.getCalendarByName(calendarName);
     return operation.execute(calendar);
   }
 
@@ -186,7 +155,7 @@ public class CalendarManager {
    */
   public <T> T executeOnActiveCalendar(CalendarOperation<T> operation)
           throws CalendarNotFoundException, Exception {
-    Calendar calendar = getActiveCalendar();
+    Calendar calendar = calendarRegistry.getActiveCalendar();
     return operation.execute(calendar);
   }
 
@@ -199,8 +168,7 @@ public class CalendarManager {
    */
   public void applyToCalendar(String calendarName, Consumer<Calendar> consumer)
           throws CalendarNotFoundException {
-    Calendar calendar = getCalendarByName(calendarName);
-    consumer.accept(calendar);
+    calendarRegistry.applyToCalendar(calendarName, consumer);
   }
 
   /**
@@ -211,8 +179,7 @@ public class CalendarManager {
    */
   public void applyToActiveCalendar(Consumer<Calendar> consumer)
           throws CalendarNotFoundException {
-    Calendar calendar = getActiveCalendar();
-    consumer.accept(calendar);
+    calendarRegistry.applyToActiveCalendar(consumer);
   }
 
   /**
@@ -222,10 +189,7 @@ public class CalendarManager {
    * @throws CalendarNotFoundException if no calendar with the specified name exists
    */
   public void setActiveCalendar(String name) throws CalendarNotFoundException {
-    if (!calendars.containsKey(name)) {
-      throw new CalendarNotFoundException("Calendar not found: " + name);
-    }
-    activeCalendarName = name;
+    calendarRegistry.setActiveCalendar(name);
   }
 
   /**
@@ -234,7 +198,7 @@ public class CalendarManager {
    * @return the name of the active calendar, or null if no calendar is active
    */
   public String getActiveCalendarName() {
-    return activeCalendarName;
+    return calendarRegistry.getActiveCalendarName();
   }
 
   /**
@@ -244,7 +208,7 @@ public class CalendarManager {
    * @return true if a calendar with the specified name exists, false otherwise
    */
   public boolean hasCalendar(String name) {
-    return calendars.containsKey(name);
+    return calendarRegistry.hasCalendar(name);
   }
 
   /**
@@ -253,7 +217,7 @@ public class CalendarManager {
    * @return a set of all calendar names
    */
   public Set<String> getCalendarNames() {
-    return calendars.keySet();
+    return calendarRegistry.getCalendarNames();
   }
 
   /**
@@ -262,7 +226,7 @@ public class CalendarManager {
    * @return the number of calendars
    */
   public int getCalendarCount() {
-    return calendars.size();
+    return calendarRegistry.getCalendarCount();
   }
 
   /**
@@ -275,34 +239,7 @@ public class CalendarManager {
    */
   public void editCalendarName(String oldName, String newName)
           throws CalendarNotFoundException, DuplicateCalendarException {
-    if (newName == null || newName.trim().isEmpty()) {
-      throw new IllegalArgumentException("New calendar name cannot be null or empty");
-    }
-
-    // Check if old name exists
-    if (!calendars.containsKey(oldName)) {
-      throw new CalendarNotFoundException("Calendar not found: " + oldName);
-    }
-
-    // Check if new name already exists
-    if (!oldName.equals(newName) && calendars.containsKey(newName)) {
-      throw new DuplicateCalendarException("Calendar with name '" + newName + "' already exists");
-    }
-
-    // Update calendar name
-    applyToCalendar(oldName, calendar -> {
-      // Update name in calendar object
-      calendar.setName(newName);
-
-      // Remove from map with old name and add with new name
-      calendars.remove(oldName);
-      calendars.put(newName, calendar);
-
-      // Update active calendar name if necessary
-      if (oldName.equals(activeCalendarName)) {
-        activeCalendarName = newName;
-      }
-    });
+    calendarRegistry.renameCalendar(oldName, newName);
   }
 
   /**
@@ -321,7 +258,7 @@ public class CalendarManager {
     }
 
     // Update timezone
-    applyToCalendar(calendarName, calendar -> calendar.setTimezone(newTimezone));
+    calendarRegistry.applyToCalendar(calendarName, calendar -> calendar.setTimezone(newTimezone));
   }
 
   /**
@@ -331,20 +268,7 @@ public class CalendarManager {
    * @throws CalendarNotFoundException if no calendar with the specified name exists
    */
   public void removeCalendar(String name) throws CalendarNotFoundException {
-    if (!calendars.containsKey(name)) {
-      throw new CalendarNotFoundException("Calendar not found: " + name);
-    }
-
-    calendars.remove(name);
-
-    // Update active calendar if necessary
-    if (name.equals(activeCalendarName)) {
-      if (!calendars.isEmpty()) {
-        activeCalendarName = calendars.keySet().iterator().next();
-      } else {
-        activeCalendarName = null;
-      }
-    }
+    calendarRegistry.removeCalendar(name);
   }
 
   /**
