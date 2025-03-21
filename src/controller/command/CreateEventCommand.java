@@ -1,12 +1,16 @@
 package controller.command;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
 import model.calendar.ICalendar;
 import model.event.Event;
+import model.event.EventCreationStrategy;
 import model.event.RecurringEvent;
+import model.exceptions.ConflictingEventException;
+import model.exceptions.InvalidEventException;
 import utilities.DateTimeUtil;
 
 /**
@@ -41,8 +45,8 @@ public class CreateEventCommand implements ICommand {
    * @return a response indicating success or failure
    */
   private String createEvent(String eventName, LocalDateTime startDateTime,
-      LocalDateTime endDateTime, boolean autoDecline, String description, String location,
-      boolean isPublic) {
+                             LocalDateTime endDateTime, boolean autoDecline, String description, String location,
+                             boolean isPublic) {
     if (eventName == null || eventName.trim().isEmpty()) {
       return "Error: Event name cannot be empty";
     }
@@ -50,14 +54,26 @@ public class CreateEventCommand implements ICommand {
       return "Error: Start date/time cannot be null";
     }
 
-    Event event = new Event(eventName, startDateTime, endDateTime, description, location, isPublic);
+    try {
+      EventCreationStrategy strategy = EventCreationStrategy.timedEvent(eventName, startDateTime, endDateTime);
 
-    boolean success = calendar.addEvent(event, autoDecline);
+      if (description != null) {
+        strategy = EventCreationStrategy.withDescription(strategy, description);
+      }
+      if (location != null) {
+        strategy = EventCreationStrategy.withLocation(strategy, location);
+      }
+      strategy = EventCreationStrategy.withVisibility(strategy, isPublic);
 
-    if (success) {
+      // Create the event
+      Event event = strategy.createEvent();
+
+      calendar.addEvent(event, autoDecline);
       return "Event '" + eventName + "' created successfully.";
-    } else {
-      return "Failed to create event due to conflicts.";
+    } catch (ConflictingEventException e) {
+      return "Failed to create event due to conflicts: " + e.getMessage();
+    } catch (InvalidEventException | IllegalArgumentException e) {
+      return "Error creating event: " + e.getMessage();
     }
   }
 
@@ -73,7 +89,8 @@ public class CreateEventCommand implements ICommand {
    * @return a response indicating success or failure
    */
   private String createAllDayEvent(String eventName, LocalDate date, boolean autoDecline,
-      String description, String location, boolean isPublic) {
+                                   String description, String location, boolean isPublic)
+          throws ConflictingEventException {
     if (eventName == null || eventName.trim().isEmpty()) {
       return "Error: Event name cannot be empty";
     }
@@ -83,12 +100,11 @@ public class CreateEventCommand implements ICommand {
 
     Event event = Event.createAllDayEvent(eventName, date, description, location, isPublic);
 
-    boolean success = calendar.addEvent(event, autoDecline);
-
-    if (success) {
+    try {
+      calendar.addEvent(event, autoDecline);
       return "All-day event '" + eventName + "' created successfully.";
-    } else {
-      return "Failed to create all-day event due to conflicts.";
+    } catch (ConflictingEventException e) {
+      return "Failed to create all-day event due to conflicts: " + e.getMessage();
     }
   }
 
@@ -107,8 +123,9 @@ public class CreateEventCommand implements ICommand {
    * @return a response indicating success or failure
    */
   private String createRecurringEvent(String eventName, LocalDateTime startDateTime,
-      LocalDateTime endDateTime, String weekdays, int occurrences, boolean autoDecline,
-      String description, String location, boolean isPublic) {
+                                      LocalDateTime endDateTime, String weekdays,
+                                      int occurrences, boolean autoDecline,
+                                      String description, String location, boolean isPublic) {
     if (eventName == null || eventName.trim().isEmpty()) {
       return "Error: Event name cannot be empty";
     }
@@ -123,21 +140,32 @@ public class CreateEventCommand implements ICommand {
     }
 
     try {
-      Set<java.time.DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
+      Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
 
-      RecurringEvent recurringEvent = new RecurringEvent(eventName, startDateTime, endDateTime,
-          description, location, isPublic, repeatDays, occurrences);
+      // Use EventCreationStrategy to create the recurring event
+      EventCreationStrategy strategy = EventCreationStrategy.recurringEvent(
+              eventName, startDateTime, endDateTime, repeatDays, occurrences);
 
-      boolean success = calendar.addRecurringEvent(recurringEvent, autoDecline);
-
-      if (success) {
-        return "Recurring event '" + eventName + "' created successfully with " + occurrences
-            + " occurrences.";
-      } else {
-        return "Failed to create recurring event due to conflicts.";
+      // Add optional properties
+      if (description != null) {
+        strategy = EventCreationStrategy.withDescription(strategy, description);
       }
-    } catch (IllegalArgumentException e) {
-      return "Error: " + e.getMessage();
+      if (location != null) {
+        strategy = EventCreationStrategy.withLocation(strategy, location);
+      }
+      strategy = EventCreationStrategy.withVisibility(strategy, isPublic);
+
+      // Create the event
+      RecurringEvent recurringEvent = (RecurringEvent) strategy.createEvent();
+
+      // Add to calendar
+      calendar.addRecurringEvent(recurringEvent, autoDecline);
+      return "Recurring event '" + eventName + "' created successfully with " + occurrences
+              + " occurrences.";
+    } catch (ConflictingEventException e) {
+      return "Failed to create recurring event due to conflicts: " + e.getMessage();
+    } catch (InvalidEventException | IllegalArgumentException e) {
+      return "Error creating recurring event: " + e.getMessage();
     }
   }
 
@@ -156,8 +184,9 @@ public class CreateEventCommand implements ICommand {
    * @return a response indicating success or failure
    */
   private String createRecurringEventUntil(String eventName, LocalDateTime startDateTime,
-      LocalDateTime endDateTime, String weekdays, LocalDate untilDate, boolean autoDecline,
-      String description, String location, boolean isPublic) {
+                                           LocalDateTime endDateTime,
+                                           String weekdays, LocalDate untilDate, boolean autoDecline,
+                                           String description, String location, boolean isPublic) {
     if (eventName == null || eventName.trim().isEmpty()) {
       return "Error: Event name cannot be empty";
     }
@@ -172,19 +201,21 @@ public class CreateEventCommand implements ICommand {
     }
 
     try {
-      Set<java.time.DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
+      Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
 
-      RecurringEvent recurringEvent = new RecurringEvent(eventName, startDateTime, endDateTime,
-          description, location, isPublic, repeatDays, untilDate);
+      RecurringEvent recurringEvent = new RecurringEvent.Builder(eventName, startDateTime,
+              endDateTime, repeatDays)
+              .description(description)
+              .location(location)
+              .isPublic(isPublic)
+              .endDate(untilDate)
+              .build();
 
-      boolean success = calendar.addRecurringEvent(recurringEvent, autoDecline);
-
-      if (success) {
-        return "Recurring event '" + eventName + "' created successfully, repeating until "
-            + DateTimeUtil.formatDate(untilDate) + ".";
-      } else {
-        return "Failed to create recurring event due to conflicts.";
-      }
+      calendar.addRecurringEvent(recurringEvent, autoDecline);
+      return "Recurring event '" + eventName + "' created successfully, repeating until "
+              + DateTimeUtil.formatDate(untilDate) + ".";
+    } catch (ConflictingEventException e) {
+      return "Failed to create recurring event due to conflicts: " + e.getMessage();
     } catch (IllegalArgumentException e) {
       return "Error: " + e.getMessage();
     }
@@ -246,7 +277,7 @@ public class CreateEventCommand implements ICommand {
           boolean isPublic = args.length > 9 ? Boolean.parseBoolean(args[9]) : true;
 
           return createRecurringEvent(name, start, end, weekdays, occurrences, autoDecline,
-              description, location, isPublic);
+                  description, location, isPublic);
         } catch (Exception e) {
           return "Error parsing arguments: " + e.getMessage();
         }
@@ -287,7 +318,7 @@ public class CreateEventCommand implements ICommand {
           boolean isPublic = args.length > 9 ? Boolean.parseBoolean(args[9]) : true;
 
           return createRecurringEventUntil(name, start, end, weekdays, untilDate, autoDecline,
-              description, location, isPublic);
+                  description, location, isPublic);
         } catch (Exception e) {
           return "Error creating recurring event: " + e.getMessage();
         }
@@ -307,14 +338,15 @@ public class CreateEventCommand implements ICommand {
           String location = args.length > 7 ? args[7] : null;
           boolean isPublic = args.length > 8 ? Boolean.parseBoolean(args[8]) : true;
 
-          boolean success = calendar.createAllDayRecurringEvent(name, date, weekdays, occurrences,
-              autoDecline, description, location, isPublic);
-
-          if (success) {
+          try {
+            calendar.createAllDayRecurringEvent(name, date, weekdays, occurrences,
+                    autoDecline, description, location, isPublic);
             return "All-day recurring event '" + name + "' created successfully with " + occurrences
-                + " occurrences.";
-          } else {
-            return "Failed to create all-day recurring event due to conflicts.";
+                    + " occurrences.";
+          } catch (ConflictingEventException e) {
+            return "Failed to create all-day recurring event due to conflicts: " + e.getMessage();
+          } catch (InvalidEventException e) {
+            return "Invalid event parameters: " + e.getMessage();
           }
         } catch (Exception e) {
           return "Error creating all-day recurring event: " + e.getMessage();
@@ -335,14 +367,15 @@ public class CreateEventCommand implements ICommand {
           String location = args.length > 7 ? args[7] : null;
           boolean isPublic = args.length > 8 ? Boolean.parseBoolean(args[8]) : true;
 
-          boolean success = calendar.createAllDayRecurringEventUntil(name, date, weekdays,
-              untilDate, autoDecline, description, location, isPublic);
-
-          if (success) {
+          try {
+            calendar.createAllDayRecurringEventUntil(name, date, weekdays,
+                    untilDate, autoDecline, description, location, isPublic);
             return "All-day recurring event '" + name + "' created successfully until " + untilDate
-                + ".";
-          } else {
-            return "Failed to create all-day recurring event due to conflicts.";
+                    + ".";
+          } catch (ConflictingEventException e) {
+            return "Failed to create all-day recurring event due to conflicts: " + e.getMessage();
+          } catch (InvalidEventException e) {
+            return "Invalid event parameters: " + e.getMessage();
           }
         } catch (Exception e) {
           return "Error creating all-day recurring event: " + e.getMessage();

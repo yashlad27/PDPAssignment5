@@ -1,0 +1,40 @@
+create calendar --name Work --timezone America/New_York
+create calendar --name Personal --timezone Europe/London
+create calendar --name Travel --timezone Asia/Tokyo
+
+use calendar --name Work
+
+create event --autoDecline "Team Meeting" from 2025-03-25T10:00 to 2025-03-25T11:00 desc "Weekly team sync" at "Conference Room A"
+create event --autoDecline "Project Deadline" from 2025-03-28T09:00 to 2025-03-28T17:00 desc "Final deliverable due" at "Office"
+
+create event --autoDecline "Daily Standup" from 2025-03-25T08:00 to 2025-03-25T08:30 repeats MWF for 10 times desc "Quick team sync" at "Zoom"
+
+use calendar --name Personal
+create event --autoDecline "Gym" from 2025-03-26T18:00 to 2025-03-26T19:30 desc "Workout session" at "Fitness Center"
+create event --autoDecline "Dinner with Friends" from 2025-03-27T19:00 to 2025-03-27T21:00 desc "Catch up" at "Italian Restaurant"
+
+use calendar --name Travel
+create event --autoDecline "Flight to Paris" from 2025-04-15T08:00 to 2025-04-15T10:30 desc "Flight AA123" at "Airport"
+create event --autoDecline "Hotel Check-in" from 2025-04-15T14:00 to 2025-04-15T15:00 desc "Reservation #12345" at "Hotel Paris"
+
+use calendar --name Work
+copy event "Team Meeting" on 2025-03-25T10:00 --target Personal to 2025-04-01T10:00
+
+copy events on 2025-03-28 --target Personal to 2025-04-05
+
+copy events between 2025-03-25 and 2025-03-28 --target Travel to 2025-04-16
+
+use calendar --name Personal
+edit event subject "Gym" from 2025-03-26T18:00 to 2025-03-26T19:30 with "Yoga Class"
+edit event location "Dinner with Friends" from 2025-03-27T19:00 to 2025-03-27T21:00 with "Mexican Restaurant"
+
+print events on 2025-03-26
+print events from 2025-03-25 to 2025-03-30
+
+show status on 2025-03-26T18:30
+
+edit calendar --name Personal --property timezone Europe/Paris
+
+export cal personal_events.csv
+
+exit
