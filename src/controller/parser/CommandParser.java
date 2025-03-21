@@ -50,8 +50,7 @@ public class CommandParser {
 
     // Add other command patterns...
     registerPattern("edit_single_event",
-            Pattern.compile("edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) to "
-                    + "(\\S+T\\S+) with \"?([^\"]+)\"?"),
+            Pattern.compile("edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) with \"?([^\"]+)\"?"),
             this::parseEditSingleEventCommand);
 
     registerPattern("print_events_date",
@@ -176,13 +175,15 @@ public class CommandParser {
 
     String property = matcher.group(1);
     String subject = matcher.group(2);
+    String startDateTime = matcher.group(3);
+    String newValue = matcher.group(4);
 
     String[] args = {
             "single",
             property,
             subject,
-            matcher.group(3),
-            matcher.group(5)
+            startDateTime,
+            newValue
     };
     return new CommandWithArgs(editCommand, args);
   }
