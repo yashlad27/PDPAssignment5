@@ -17,7 +17,7 @@ public class CalendarCommandFactory implements ICommandFactory {
   private final CalendarManager calendarManager;
   private final ICalendarView view;
   private final TimeZoneHandler timezoneHandler;
-  private final CopyEventCommand copyEventsCommand;
+  private final CopyEventCommand copyEventCommand;  // Changed to CopyEventsCommand
 
   public CalendarCommandFactory(CalendarManager calendarManager, ICalendarView view) {
     if (calendarManager == null) {
@@ -34,7 +34,7 @@ public class CalendarCommandFactory implements ICommandFactory {
     this.timezoneHandler = calendarManager.getTimezoneHandler();
 
     // Create a single instance of the consolidated CopyEventsCommand
-    this.copyEventsCommand = new CopyEventCommand(calendarManager, timezoneHandler);
+    this.copyEventCommand = new CopyEventCommand(calendarManager, timezoneHandler);  // Changed to CopyEventsCommand
 
     registerCommands();
   }
@@ -49,7 +49,8 @@ public class CalendarCommandFactory implements ICommandFactory {
   /**
    * Executes the create calendar command.
    */
-  private String executeCreateCommand(String[] args) throws DuplicateCalendarException, InvalidTimezoneException {
+  private String executeCreateCommand(String[] args) throws DuplicateCalendarException,
+          InvalidTimezoneException {
 
     if (args.length < 4) {
       return "Error: Insufficient arguments for create calendar command";
@@ -78,7 +79,8 @@ public class CalendarCommandFactory implements ICommandFactory {
   /**
    * Executes the edit calendar command.
    */
-  private String executeEditCalendarCommand(String[] args) throws CalendarNotFoundException, DuplicateCalendarException, InvalidTimezoneException {
+  private String executeEditCalendarCommand(String[] args) throws CalendarNotFoundException,
+          DuplicateCalendarException, InvalidTimezoneException {
     if (args.length < 6) {
       return "Error: Insufficient arguments for edit calendar command";
     }
@@ -108,7 +110,8 @@ public class CalendarCommandFactory implements ICommandFactory {
         calendarManager.editCalendarTimezone(calendarName, newValue);
         return "Timezone for calendar '" + calendarName + "' changed to '" + newValue + "'";
       default:
-        return "Error: Unsupported property '" + property + "'. Valid properties are 'name' and 'timezone'";
+        return "Error: Unsupported property '" + property + "'. Valid properties are 'name' "
+                + "and 'timezone'";
     }
   }
 
@@ -143,46 +146,9 @@ public class CalendarCommandFactory implements ICommandFactory {
     }
 
     try {
-      String subCommand = args[1];
-
-      if (subCommand.equals("event")) {
-        // Format from controller: [copy, event, Event Name, on, 2025-03-25T09:00, --target, Personal, to, 2025-03-26T10:00]
-        if (args.length < 9) {
-          return "Error: Insufficient arguments for copy event command";
-        }
-
-        String eventName = args[2];
-        String dateTimeStr = args[4];
-        String targetCalendarName = args[6];
-        String targetDateTimeStr = args[8];
-
-        return copyEventsCommand.execute(new String[]{"event", eventName, dateTimeStr, targetCalendarName, targetDateTimeStr, "true"});
-      } else if (subCommand.equals("events") && args.length > 2 && "on".equals(args[2])) {
-        // Format: [copy, events, on, 2025-03-26, --target, Travel, to, 2025-04-16]
-        if (args.length < 8) {
-          return "Error: Insufficient arguments for copy events on date command";
-        }
-
-        String dateStr = args[3];
-        String targetCalendarName = args[5];
-        String targetDateStr = args[7];
-
-        return copyEventsCommand.execute(new String[]{"events_on_date", dateStr, targetCalendarName, targetDateStr, "true"});
-      } else if (subCommand.equals("events") && args.length > 2 && "between".equals(args[2])) {
-        // Format: [copy, events, between, 2025-03-25, and, 2025-03-28, --target, Personal, to, 2025-04-01]
-        if (args.length < 10) {
-          return "Error: Insufficient arguments for copy events between dates command";
-        }
-
-        String startDateStr = args[3];
-        String endDateStr = args[5];
-        String targetCalendarName = args[7];
-        String targetStartDateStr = args[9];
-
-        return copyEventsCommand.execute(new String[]{"events_between_dates", startDateStr, endDateStr, targetCalendarName, targetStartDateStr, "true"});
-      } else {
-        return "Error: Invalid copy command format";
-      }
+      // Pass the entire args array to the consolidated CopyEventsCommand
+      // The command knows how to handle all types of copy operations
+      return copyEventCommand.execute(args);
     } catch (Exception e) {
       return "Error: " + e.getMessage();
     }
@@ -207,7 +173,7 @@ public class CalendarCommandFactory implements ICommandFactory {
   @Override
   public ICommand getCommand(String commandName) {
     if (commandName.equals("copy")) {
-      return copyEventsCommand;
+      return copyEventCommand;
     }
 
     CalendarCommandHandler handler = commands.get(commandName);

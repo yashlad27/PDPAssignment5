@@ -1,0 +1,36 @@
+create calendar --name Work --timezone America/New_York
+create calendar --name Personal --timezone Europe/London
+create calendar --name Travel --timezone Asia/Tokyo
+use calendar --name Work
+create event "Team Meeting" from 2025-03-25T10:00 to 2025-03-25T11:00 desc "Weekly team sync" at "Conference Room A"
+create event "Project Deadline" from 2025-03-28T09:00 to 2025-03-28T17:00 desc "Final deliverable due" at "Office"
+create event "Daily Standup" from 2025-03-25T08:00 to 2025-03-25T08:30 repeats MWF for 10 times desc "Quick team sync" at "Zoom"
+create event "Team Football Match" from 2025-03-23T09:00 to 2025-03-23T11:00 repeats SU for 5 times desc "Weekly game" at "City Park"
+use calendar --name Personal
+create event "Gym" from 2025-03-26T18:00 to 2025-03-26T19:30 desc "Workout session" at "Fitness Center"
+create event "Dinner with Friends" from 2025-03-27T19:00 to 2025-03-27T21:00 desc "Catch up" at "Italian Restaurant"
+create event "Dad's Birthday" from 2025-02-01T00:00 to 2025-02-01T23:59 desc "Birthday celebration" at "YZS Bar"
+create event "Yoga Class" from 2025-03-20T17:00 to 2025-03-20T18:00 repeats TRS for 8 times desc "Weekly yoga" at "Wellness Center"
+use calendar --name Travel
+create event "Flight to Paris" from 2025-04-15T08:00 to 2025-04-15T10:30 desc "Flight AA123" at "Airport"
+create event "Hotel Check-in" from 2025-04-15T14:00 to 2025-04-15T15:00 desc "Reservation #12345" at "Hotel Paris"
+create event "Museum Visit" from 2025-04-16T10:00 to 2025-04-16T13:00 desc "Louvre Museum" at "Paris"
+use calendar --name Work
+print events on 2025-03-25
+print events from 2025-03-23 to 2025-03-30
+copy event "Team Meeting" on 2025-03-25T10:00 --target Personal to 2025-04-01T10:00
+copy events on 2025-03-28 --target Personal to 2025-04-05
+copy events between 2025-03-23 and 2025-03-28 --target Travel to 2025-04-16
+use calendar --name Personal
+print events on 2025-04-01
+print events from 2025-04-01 to 2025-04-07
+edit event subject "Gym" from 2025-03-26T18:00 to 2025-03-26T19:30 with "Weightlifting Session"
+edit event location "Dinner with Friends" from 2025-03-27T19:00 to 2025-03-27T21:00 with "Mexican Restaurant"
+print events on 2025-03-26
+print events from 2025-03-25 to 2025-03-30
+show status on 2025-03-26T18:30
+edit calendar --name Personal --property timezone Europe/Paris
+use calendar --name Travel
+print events from 2025-04-15 to 2025-04-20
+export cal travel_events.csv
+exit
