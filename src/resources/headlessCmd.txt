@@ -23,8 +23,8 @@ copy events between 2025-03-23 and 2025-03-28 --target Travel to 2025-04-16
 use calendar --name Personal
 print events on 2025-04-01
 print events from 2025-04-01 to 2025-04-07
-edit event subject "Gym" from 2025-03-26T18:00 to 2025-03-26T19:30 with "Weightlifting Session"
-edit event location "Dinner with Friends" from 2025-03-27T19:00 to 2025-03-27T21:00 with "Mexican Restaurant"
+edit event subject "Gym" from 2025-03-26T18:00 with "Weightlifting Session"
+edit event location "Dinner with Friends" from 2025-03-27T19:00 with "Mexican Restaurant"
 print events on 2025-03-26
 print events from 2025-03-25 to 2025-03-30
 show status on 2025-03-26T18:30
