@@ -5,16 +5,13 @@ import java.util.Map;
 
 import controller.ICommandFactory;
 import model.calendar.ICalendar;
-import model.exceptions.ConflictingEventException;
-import model.exceptions.EventNotFoundException;
-import model.exceptions.InvalidEventException;
 import view.ICalendarView;
 
 /**
  * Factory for creating and registering commands using functional interfaces.
  * Implements ICommandFactory to allow for dependency inversion.
  */
-public class CommandFactory implements ICommandFactory{
+public class CommandFactory implements ICommandFactory {
 
   private final Map<String, CommandExecutor> commands;
   private final ICalendar calendar;
@@ -92,7 +89,7 @@ public class CommandFactory implements ICommandFactory{
    * @param name the name of the command
    * @return the command executor, or null if not found
    */
-  public CommandExecutor getCommand(String name) {
+  public CommandExecutor getCommandExecutor(String name) {
     return commands.get(name);
   }
 
@@ -115,7 +112,7 @@ public class CommandFactory implements ICommandFactory{
    */
   @Override
   public ICommand getCommand(String commandName) {
-    CommandExecutor executor = commands.get(commandName);
+    CommandExecutor executor = getCommandExecutor(commandName);
     if (executor == null) {
       return null;
     }
@@ -152,7 +149,7 @@ public class CommandFactory implements ICommandFactory{
   /**
    * Registers a custom command executor.
    *
-   * @param name the name of the command
+   * @param name     the name of the command
    * @param executor the command executor
    */
   public void registerCommand(String name, CommandExecutor executor) {

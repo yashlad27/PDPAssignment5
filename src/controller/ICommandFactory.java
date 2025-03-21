@@ -1,5 +1,7 @@
 package controller;
 
+import controller.command.ICommand;
+
 /**
  * Interface for command factories.
  * This provides an abstraction for different types of command factories.
@@ -19,4 +21,5 @@ public interface ICommandFactory {
    * @param commandName the name of the command
    * @return the command handler
    */
-  controller.command.ICommand getCommand(String commandName);
+  ICommand getCommand(String commandName);
+}

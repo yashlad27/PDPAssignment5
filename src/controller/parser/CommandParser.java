@@ -100,7 +100,7 @@ public class CommandParser {
 
     // Check for exit command
     if (commandString.equalsIgnoreCase("exit")) {
-      CommandExecutor exitExecutor = commandFactory.getCommand("exit");
+      CommandExecutor exitExecutor = commandFactory.getCommandExecutor("exit");
       ICommand exitCommand = new CommandAdapter("exit", exitExecutor);
       return new CommandWithArgs(exitCommand, new String[0]);
     }
@@ -120,7 +120,7 @@ public class CommandParser {
    * Parse create event command.
    */
   private CommandWithArgs parseCreateEventCommand(Matcher matcher) {
-    CommandExecutor createExecutor = commandFactory.getCommand("create");
+    CommandExecutor createExecutor = commandFactory.getCommandExecutor("create");
     ICommand createCommand = new CommandAdapter("create", createExecutor);
 
     boolean autoDecline = matcher.group(1) != null;
@@ -147,7 +147,7 @@ public class CommandParser {
    * Parse create recurring event command.
    */
   private CommandWithArgs parseCreateRecurringEventCommand(Matcher matcher) {
-    CommandExecutor createExecutor = commandFactory.getCommand("create");
+    CommandExecutor createExecutor = commandFactory.getCommandExecutor("create");
     ICommand createCommand = new CommandAdapter("create", createExecutor);
 
     boolean autoDecline = matcher.group(1) != null;
@@ -176,7 +176,7 @@ public class CommandParser {
    * Parse edit single event command.
    */
   private CommandWithArgs parseEditSingleEventCommand(Matcher matcher) {
-    CommandExecutor editExecutor = commandFactory.getCommand("edit");
+    CommandExecutor editExecutor = commandFactory.getCommandExecutor("edit");
     ICommand editCommand = new CommandAdapter("edit", editExecutor);
 
     String property = matcher.group(1);
@@ -196,7 +196,7 @@ public class CommandParser {
    * Parse print events on date command.
    */
   private CommandWithArgs parsePrintEventsDateCommand(Matcher matcher) {
-    CommandExecutor printExecutor = commandFactory.getCommand("print");
+    CommandExecutor printExecutor = commandFactory.getCommandExecutor("print");
     ICommand printCommand = new CommandAdapter("print", printExecutor);
 
     String[] args = {
@@ -210,7 +210,7 @@ public class CommandParser {
    * Parse print events range command.
    */
   private CommandWithArgs parsePrintEventsRangeCommand(Matcher matcher) {
-    CommandExecutor printExecutor = commandFactory.getCommand("print");
+    CommandExecutor printExecutor = commandFactory.getCommandExecutor("print");
     ICommand printCommand = new CommandAdapter("print", printExecutor);
 
     String[] args = {
@@ -225,7 +225,7 @@ public class CommandParser {
    * Parse show status command.
    */
   private CommandWithArgs parseShowStatusCommand(Matcher matcher) {
-    CommandExecutor statusExecutor = commandFactory.getCommand("show");
+    CommandExecutor statusExecutor = commandFactory.getCommandExecutor("show");
     ICommand statusCommand = new CommandAdapter("show", statusExecutor);
 
     String[] args = {
@@ -238,7 +238,7 @@ public class CommandParser {
    * Parse export command.
    */
   private CommandWithArgs parseExportCommand(Matcher matcher) {
-    CommandExecutor exportExecutor = commandFactory.getCommand("export");
+    CommandExecutor exportExecutor = commandFactory.getCommandExecutor("export");
     ICommand exportCommand = new CommandAdapter("export", exportExecutor);
 
     String[] args = {
