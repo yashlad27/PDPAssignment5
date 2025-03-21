@@ -144,6 +144,81 @@ public class CalendarController {
    * @param commandStr the calendar command string
    * @return the result of command execution
    */
+//  private String processCalendarCommand(String commandStr) throws Exception {
+//    String[] parts = parseCommand(commandStr);
+//    if (parts.length < 2) {
+//      return "Error: Invalid calendar command format";
+//    }
+//
+//    String action = parts[0]; // e.g., "create", "edit", "use", "copy"
+//    String targetType = parts[1]; // e.g., "calendar", "event", "events"
+//
+//    // Handle copy commands specially due to their more complex structure
+//    if (action.equals("copy")) {
+//      if (targetType.equals("event")) {
+//        // Format: copy event "Event Name" on DATE --target CAL to DATE
+//        if (parts.length < 9) {
+//          return "Error: Insufficient arguments for copy event command";
+//        }
+//
+//        // First, validate the command structure
+//        if (!parts[3].equals("on") || !parts[5].equals("--target") || !parts[7].equals("to")) {
+//          return "Error: Invalid copy event command format";
+//        }
+//
+//        return calendarCommandFactory.getCommand("copy").execute(parts);
+//      } else if (targetType.equals("events")) {
+//        // Two formats:
+//        // 1. copy events on DATE --target CAL to DATE
+//        // 2. copy events between DATE and DATE --target CAL DATE
+//        if (parts.length < 2) {
+//          return "Error: Insufficient arguments for copy events command";
+//        }
+//
+//        String subtype = parts[2]; // "on" or "between"
+//
+//        if (subtype.equals("on")) {
+//          if (parts.length < 8) {
+//            return "Error: Insufficient arguments for copy events on date command";
+//          }
+//          if (!parts[3].equals("on") || !parts[5].equals("--target") || !parts[7].equals("to")) {
+//            return "Error: Invalid copy events on date command format";
+//          }
+//        } else if (subtype.equals("between")) {
+//          if (parts.length < 10) {
+//            return "Error: Insufficient arguments for copy events between dates command";
+//          }
+//          if (!parts[3].equals("between") || !parts[5].equals("and") ||
+//                  !parts[7].equals("--target")) {
+//            return "Error: Invalid copy events between dates command format";
+//          }
+//        } else {
+//          return "Error: Unknown copy events subcommand: " + subtype;
+//        }
+//
+//        return calendarCommandFactory.getCommand("copy").execute(parts);
+//      } else {
+//        return "Error: Unknown copy target: " + targetType;
+//      }
+//    }
+//
+//    // For other calendar commands
+//    String[] args;
+//    if (targetType.equals("calendar")) {
+//      args = new String[parts.length - 1];
+//      args[0] = "calendar";
+//      System.arraycopy(parts, 2, args, 1, parts.length - 2);
+//    } else {
+//      return "Error: Expected 'calendar' after '" + action + "'";
+//    }
+//
+//    if (calendarCommandFactory.hasCommand(action)) {
+//      return calendarCommandFactory.getCommand(action).execute(args);
+//    } else {
+//      return "Error: Unknown calendar command: " + action;
+//    }
+//  }
+
   private String processCalendarCommand(String commandStr) throws Exception {
     String[] parts = parseCommand(commandStr);
     if (parts.length < 2) {
@@ -153,53 +228,9 @@ public class CalendarController {
     String action = parts[0]; // e.g., "create", "edit", "use", "copy"
     String targetType = parts[1]; // e.g., "calendar", "event", "events"
 
-    // Handle copy commands specially due to their more complex structure
+    // For copy commands, just pass the entire parts array to the copy command handler
     if (action.equals("copy")) {
-      if (targetType.equals("event")) {
-        // Format: copy event "Event Name" on DATE --target CAL to DATE
-        if (parts.length < 9) {
-          return "Error: Insufficient arguments for copy event command";
-        }
-
-        // First, validate the command structure
-        if (!parts[3].equals("on") || !parts[5].equals("--target") || !parts[7].equals("to")) {
-          return "Error: Invalid copy event command format";
-        }
-
-        return calendarCommandFactory.getCommand("copy").execute(parts);
-      } else if (targetType.equals("events")) {
-        // Two formats:
-        // 1. copy events on DATE --target CAL to DATE
-        // 2. copy events between DATE and DATE --target CAL DATE
-        if (parts.length < 2) {
-          return "Error: Insufficient arguments for copy events command";
-        }
-
-        String subtype = parts[2]; // "on" or "between"
-
-        if (subtype.equals("on")) {
-          if (parts.length < 8) {
-            return "Error: Insufficient arguments for copy events on date command";
-          }
-          if (!parts[3].equals("on") || !parts[5].equals("--target") || !parts[7].equals("to")) {
-            return "Error: Invalid copy events on date command format";
-          }
-        } else if (subtype.equals("between")) {
-          if (parts.length < 10) {
-            return "Error: Insufficient arguments for copy events between dates command";
-          }
-          if (!parts[3].equals("between") || !parts[5].equals("and") ||
-                  !parts[7].equals("--target")) {
-            return "Error: Invalid copy events between dates command format";
-          }
-        } else {
-          return "Error: Unknown copy events subcommand: " + subtype;
-        }
-
-        return calendarCommandFactory.getCommand("copy").execute(parts);
-      } else {
-        return "Error: Unknown copy target: " + targetType;
-      }
+      return calendarCommandFactory.getCommand("copy").execute(parts);
     }
 
     // For other calendar commands

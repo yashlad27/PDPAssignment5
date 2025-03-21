@@ -40,6 +40,17 @@ public class CopyEventCommand implements ICommand {
       System.out.println("Args[" + i + "]: '" + args[i] + "'");
     }
 
+    if (args[0].equals("copy") && args[1].equals("events")) {
+      System.out.println("DEBUG: Found 'copy events' command");
+      System.out.println("args[2]: '" + args[2] + "'");
+      if (args[2].equals("on")) {
+        System.out.println("DEBUG: args[2] is 'on'");
+        // Debug other positions
+        if (args.length >= 5) System.out.println("args[4]: '" + args[4] + "'");
+        if (args.length >= 7) System.out.println("args[6]: '" + args[6] + "'");
+      }
+    }
+
     if (args.length < 1) {
       return "Error: Insufficient arguments for copy command";
     }
