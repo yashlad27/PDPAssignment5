@@ -17,7 +17,7 @@ import utilities.TimezoneConverter;
 
 /**
  * Command for copying events between calendars.
- * Refactored to separate concerns and follow SRP.
+ * Consolidated implementation that handles all copying operations with a strategy pattern.
  */
 public class CopyEventCommand implements ICommand {
 
@@ -26,7 +26,7 @@ public class CopyEventCommand implements ICommand {
   private final EventCopyService copyService;
 
   /**
-   * Constructs a new CopyEventCommand.
+   * Constructs a new CopyEventsCommand.
    *
    * @param calendarManager the calendar manager
    * @param timezoneHandler the timezone handler
@@ -52,16 +52,14 @@ public class CopyEventCommand implements ICommand {
     String subCommand = args[0];
 
     try {
-      switch (subCommand) {
-        case "event":
-          return copyEvent(args);
-        case "events_on_date":
-          return copyEventsOnDate(args);
-        case "events_between_dates":
-          return copyEventsBetweenDates(args);
-        default:
-          return "Error: Unknown copy command: " + subCommand;
+      // Choose the appropriate copy strategy based on the subcommand
+      CopyStrategy strategy = getCopyStrategy(subCommand);
+
+      if (strategy == null) {
+        return "Error: Unknown copy command: " + subCommand;
       }
+
+      return strategy.execute(args);
     } catch (CalendarNotFoundException e) {
       return "Error: " + e.getMessage();
     } catch (Exception e) {
@@ -70,99 +68,149 @@ public class CopyEventCommand implements ICommand {
   }
 
   /**
-   * Copies a single event from one calendar to another.
+   * Returns the appropriate copy strategy based on the subcommand.
    */
-  private String copyEvent(String[] args) throws Exception {
-    if (args.length < 6) {
-      return "Error: Insufficient arguments for copy event command";
-    }
-
-    String eventName = args[1];
-    LocalDateTime sourceDateTime = DateTimeUtil.parseDateTime(args[2]);
-    String targetCalendarName = args[3];
-    LocalDateTime targetDateTime = DateTimeUtil.parseDateTime(args[4]);
-    boolean autoDecline = args.length > 5 ? Boolean.parseBoolean(args[5]) : true;
-
-    try {
-      boolean success = copyService.copyEvent(
-              eventName, sourceDateTime, targetCalendarName, targetDateTime, autoDecline);
-
-      if (success) {
-        return "Event '" + eventName + "' copied successfully to calendar '" + targetCalendarName + "'.";
-      } else {
-        return "Failed to copy event due to conflicts.";
-      }
-    } catch (EventNotFoundException e) {
-      return "Error: Event not found: " + e.getMessage();
-    } catch (CalendarNotFoundException e) {
-      return "Error: Calendar not found: " + e.getMessage();
-    } catch (ConflictingEventException e) {
-      return "Error: Event conflicts with existing event: " + e.getMessage();
-    }
-  }
-
-  /**
-   * Copies all events on a specific date from one calendar to another.
-   */
-  private String copyEventsOnDate(String[] args) throws Exception {
-    if (args.length < 4) {
-      return "Error: Insufficient arguments for copy events on date command";
-    }
-
-    LocalDate sourceDate = DateTimeUtil.parseDate(args[1]);
-    String targetCalendarName = args[2];
-    LocalDate targetDate = DateTimeUtil.parseDate(args[3]);
-    boolean autoDecline = args.length > 4 ? Boolean.parseBoolean(args[4]) : true;
-
-    try {
-      CopyResult result = copyService.copyEventsOnDate(
-              sourceDate, targetCalendarName, targetDate, autoDecline);
-
-      if (result.getFailCount() == 0) {
-        return "Successfully copied " + result.getSuccessCount() + " events from " + sourceDate +
-                " to " + targetDate + " in calendar '" + targetCalendarName + "'.";
-      } else {
-        return "Copied " + result.getSuccessCount() + " events, but " + result.getFailCount() +
-                " events could not be copied due to conflicts.";
-      }
-    } catch (CalendarNotFoundException e) {
-      return "Error: Calendar not found: " + e.getMessage();
-    }
-  }
-
-  /**
-   * Copies events within a date range from one calendar to another.
-   */
-  private String copyEventsBetweenDates(String[] args) throws Exception {
-    if (args.length < 5) {
-      return "Error: Insufficient arguments for copy events between dates command";
-    }
-
-    LocalDate sourceStartDate = DateTimeUtil.parseDate(args[1]);
-    LocalDate sourceEndDate = DateTimeUtil.parseDate(args[2]);
-    String targetCalendarName = args[3];
-    LocalDate targetStartDate = DateTimeUtil.parseDate(args[4]);
-    boolean autoDecline = args.length > 5 ? Boolean.parseBoolean(args[5]) : true;
-
-    try {
-      CopyResult result = copyService.copyEventsBetweenDates(
-              sourceStartDate, sourceEndDate, targetCalendarName, targetStartDate, autoDecline);
-
-      if (result.getFailCount() == 0) {
-        return "Successfully copied " + result.getSuccessCount() + " events from date range " +
-                sourceStartDate + " to " + sourceEndDate + " in calendar '" + targetCalendarName + "'.";
-      } else {
-        return "Copied " + result.getSuccessCount() + " events, but " + result.getFailCount() +
-                " events could not be copied due to conflicts.";
-      }
-    } catch (CalendarNotFoundException e) {
-      return "Error: Calendar not found: " + e.getMessage();
+  private CopyStrategy getCopyStrategy(String subCommand) {
+    switch (subCommand) {
+      case "event":
+        return new SingleEventCopyStrategy(copyService);
+      case "events_on_date":
+        return new EventsOnDateCopyStrategy(copyService);
+      case "events_between_dates":
+        return new EventsBetweenDatesCopyStrategy(copyService);
+      default:
+        return null;
     }
   }
 
   @Override
   public String getName() {
     return "copy";
+  }
+
+  /**
+   * Interface defining the contract for copy strategies.
+   */
+  private interface CopyStrategy {
+    String execute(String[] args) throws Exception;
+  }
+
+  /**
+   * Strategy for copying a single event.
+   */
+  private static class SingleEventCopyStrategy implements CopyStrategy {
+    private final EventCopyService copyService;
+
+    public SingleEventCopyStrategy(EventCopyService copyService) {
+      this.copyService = copyService;
+    }
+
+    @Override
+    public String execute(String[] args) throws Exception {
+      if (args.length < 6) {
+        return "Error: Insufficient arguments for copy event command";
+      }
+
+      String eventName = args[1];
+      LocalDateTime sourceDateTime = DateTimeUtil.parseDateTime(args[2]);
+      String targetCalendarName = args[3];
+      LocalDateTime targetDateTime = DateTimeUtil.parseDateTime(args[4]);
+      boolean autoDecline = args.length > 5 ? Boolean.parseBoolean(args[5]) : true;
+
+      try {
+        boolean success = copyService.copyEvent(
+                eventName, sourceDateTime, targetCalendarName, targetDateTime, autoDecline);
+
+        if (success) {
+          return "Event '" + eventName + "' copied successfully to calendar '" + targetCalendarName + "'.";
+        } else {
+          return "Failed to copy event due to conflicts.";
+        }
+      } catch (EventNotFoundException e) {
+        return "Error: Event not found: " + e.getMessage();
+      } catch (CalendarNotFoundException e) {
+        return "Error: Calendar not found: " + e.getMessage();
+      } catch (ConflictingEventException e) {
+        return "Error: Event conflicts with existing event: " + e.getMessage();
+      }
+    }
+  }
+
+  /**
+   * Strategy for copying events on a specific date.
+   */
+  private static class EventsOnDateCopyStrategy implements CopyStrategy {
+    private final EventCopyService copyService;
+
+    public EventsOnDateCopyStrategy(EventCopyService copyService) {
+      this.copyService = copyService;
+    }
+
+    @Override
+    public String execute(String[] args) throws Exception {
+      if (args.length < 4) {
+        return "Error: Insufficient arguments for copy events on date command";
+      }
+
+      LocalDate sourceDate = DateTimeUtil.parseDate(args[1]);
+      String targetCalendarName = args[2];
+      LocalDate targetDate = DateTimeUtil.parseDate(args[3]);
+      boolean autoDecline = args.length > 4 ? Boolean.parseBoolean(args[4]) : true;
+
+      try {
+        CopyResult result = copyService.copyEventsOnDate(
+                sourceDate, targetCalendarName, targetDate, autoDecline);
+
+        if (result.getFailCount() == 0) {
+          return "Successfully copied " + result.getSuccessCount() + " events from " + sourceDate +
+                  " to " + targetDate + " in calendar '" + targetCalendarName + "'.";
+        } else {
+          return "Copied " + result.getSuccessCount() + " events, but " + result.getFailCount() +
+                  " events could not be copied due to conflicts.";
+        }
+      } catch (CalendarNotFoundException e) {
+        return "Error: Calendar not found: " + e.getMessage();
+      }
+    }
+  }
+
+  /**
+   * Strategy for copying events between dates.
+   */
+  private static class EventsBetweenDatesCopyStrategy implements CopyStrategy {
+    private final EventCopyService copyService;
+
+    public EventsBetweenDatesCopyStrategy(EventCopyService copyService) {
+      this.copyService = copyService;
+    }
+
+    @Override
+    public String execute(String[] args) throws Exception {
+      if (args.length < 5) {
+        return "Error: Insufficient arguments for copy events between dates command";
+      }
+
+      LocalDate sourceStartDate = DateTimeUtil.parseDate(args[1]);
+      LocalDate sourceEndDate = DateTimeUtil.parseDate(args[2]);
+      String targetCalendarName = args[3];
+      LocalDate targetStartDate = DateTimeUtil.parseDate(args[4]);
+      boolean autoDecline = args.length > 5 ? Boolean.parseBoolean(args[5]) : true;
+
+      try {
+        CopyResult result = copyService.copyEventsBetweenDates(
+                sourceStartDate, sourceEndDate, targetCalendarName, targetStartDate, autoDecline);
+
+        if (result.getFailCount() == 0) {
+          return "Successfully copied " + result.getSuccessCount() + " events from date range " +
+                  sourceStartDate + " to " + sourceEndDate + " in calendar '" + targetCalendarName + "'.";
+        } else {
+          return "Copied " + result.getSuccessCount() + " events, but " + result.getFailCount() +
+                  " events could not be copied due to conflicts.";
+        }
+      } catch (CalendarNotFoundException e) {
+        return "Error: Calendar not found: " + e.getMessage();
+      }
+    }
   }
 
   /**
@@ -417,5 +465,25 @@ public class CopyEventCommand implements ICommand {
     public int getFailCount() {
       return failCount;
     }
+  }
+
+  /**
+   * Factory method to create an instance that can parse the provided CLI arguments.
+   * This is useful for command-line parsing integration.
+   */
+  public static CopyEventCommand fromArgs(String[] args, CalendarManager calendarManager, TimeZoneHandler timezoneHandler) {
+    return new CopyEventCommand(calendarManager, timezoneHandler);
+  }
+
+  /**
+   * Determines if this command can handle the given command-line arguments.
+   * Useful for command routing in a CLI application.
+   */
+  public static boolean canHandle(String[] args) {
+    if (args.length < 1) return false;
+
+    String command = args[0];
+    return command.equals("copy") || command.equals("event") ||
+            command.equals("events_on_date") || command.equals("events_between_dates");
   }
 }

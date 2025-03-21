@@ -1,12 +1,9 @@
 package controller.command;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import controller.ICommandFactory;
-import controller.command.copy.CopyCommand;
 import model.calendar.CalendarManager;
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
@@ -19,9 +16,8 @@ public class CalendarCommandFactory implements ICommandFactory {
   private final Map<String, CalendarCommandHandler> commands;
   private final CalendarManager calendarManager;
   private final ICalendarView view;
-  private final List<CopyCommand> copyCommands;
   private final TimeZoneHandler timezoneHandler;
-
+  private final CopyEventCommand copyEventsCommand;
 
   public CalendarCommandFactory(CalendarManager calendarManager, ICalendarView view) {
     if (calendarManager == null) {
@@ -35,11 +31,10 @@ public class CalendarCommandFactory implements ICommandFactory {
     this.commands = new HashMap<>();
     this.calendarManager = calendarManager;
     this.view = view;
-
     this.timezoneHandler = calendarManager.getTimezoneHandler();
 
-    this.copyCommands = new ArrayList<>();
-    registerCopyCommands();
+    // Create a single instance of the consolidated CopyEventsCommand
+    this.copyEventsCommand = new CopyEventCommand(calendarManager, timezoneHandler);
 
     registerCommands();
   }
@@ -140,7 +135,7 @@ public class CalendarCommandFactory implements ICommandFactory {
   }
 
   /**
-   * Executes the copy event/events command.
+   * Executes the copy event/events command using the consolidated CopyEventsCommand.
    */
   private String executeCopyCommand(String[] args) {
     if (args.length < 3) {
@@ -161,9 +156,7 @@ public class CalendarCommandFactory implements ICommandFactory {
         String targetCalendarName = args[6];
         String targetDateTimeStr = args[8];
 
-        controller.command.CopyEventCommand copyCommand = new controller.command.CopyEventCommand(calendarManager, timezoneHandler);
-
-        return copyCommand.execute(new String[]{"event", eventName, dateTimeStr, targetCalendarName, targetDateTimeStr, "true"});
+        return copyEventsCommand.execute(new String[]{"event", eventName, dateTimeStr, targetCalendarName, targetDateTimeStr, "true"});
       } else if (subCommand.equals("events") && args.length > 2 && "on".equals(args[2])) {
         // Format: [copy, events, on, 2025-03-26, --target, Travel, to, 2025-04-16]
         if (args.length < 8) {
@@ -174,9 +167,7 @@ public class CalendarCommandFactory implements ICommandFactory {
         String targetCalendarName = args[5];
         String targetDateStr = args[7];
 
-        controller.command.CopyEventCommand copyCommand = new controller.command.CopyEventCommand(calendarManager, timezoneHandler);
-
-        return copyCommand.execute(new String[]{"events_on_date", dateStr, targetCalendarName, targetDateStr, "true"});
+        return copyEventsCommand.execute(new String[]{"events_on_date", dateStr, targetCalendarName, targetDateStr, "true"});
       } else if (subCommand.equals("events") && args.length > 2 && "between".equals(args[2])) {
         // Format: [copy, events, between, 2025-03-25, and, 2025-03-28, --target, Personal, to, 2025-04-01]
         if (args.length < 10) {
@@ -188,15 +179,8 @@ public class CalendarCommandFactory implements ICommandFactory {
         String targetCalendarName = args[7];
         String targetStartDateStr = args[9];
 
-        controller.command.CopyEventCommand copyCommand = new controller.command.CopyEventCommand(calendarManager, timezoneHandler);
-
-        return copyCommand.execute(new String[]{"events_between_dates", startDateStr, endDateStr, targetCalendarName, targetStartDateStr, "true"});
+        return copyEventsCommand.execute(new String[]{"events_between_dates", startDateStr, endDateStr, targetCalendarName, targetStartDateStr, "true"});
       } else {
-        for (CopyCommand command : copyCommands) {
-          if (command.canHandle(args)) {
-            return command.execute(args);
-          }
-        }
         return "Error: Invalid copy command format";
       }
     } catch (Exception e) {
@@ -222,6 +206,10 @@ public class CalendarCommandFactory implements ICommandFactory {
    */
   @Override
   public ICommand getCommand(String commandName) {
+    if (commandName.equals("copy")) {
+      return copyEventsCommand;
+    }
+
     CalendarCommandHandler handler = commands.get(commandName);
     if (handler != null) {
       return new CommandAdapter(commandName, args -> {
@@ -233,11 +221,5 @@ public class CalendarCommandFactory implements ICommandFactory {
       });
     }
     return null;
-  }
-
-  private void registerCopyCommands() {
-    copyCommands.add(new controller.command.copy.CopyEventCommand(calendarManager, timezoneHandler));
-    copyCommands.add(new controller.command.copy.CopyEventsOnDateCommand(calendarManager, timezoneHandler));
-    copyCommands.add(new controller.command.copy.CopyEventsBetweenDatesCommand(calendarManager, timezoneHandler));
   }
 }
