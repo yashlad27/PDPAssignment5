@@ -89,7 +89,8 @@ public class CreateEventCommand implements ICommand {
    * @return a response indicating success or failure
    */
   private String createAllDayEvent(String eventName, LocalDate date, boolean autoDecline,
-                                   String description, String location, boolean isPublic) throws ConflictingEventException {
+                                   String description, String location, boolean isPublic)
+          throws ConflictingEventException {
     if (eventName == null || eventName.trim().isEmpty()) {
       return "Error: Event name cannot be empty";
     }
@@ -122,7 +123,8 @@ public class CreateEventCommand implements ICommand {
    * @return a response indicating success or failure
    */
   private String createRecurringEvent(String eventName, LocalDateTime startDateTime,
-                                      LocalDateTime endDateTime, String weekdays, int occurrences, boolean autoDecline,
+                                      LocalDateTime endDateTime, String weekdays,
+                                      int occurrences, boolean autoDecline,
                                       String description, String location, boolean isPublic) {
     if (eventName == null || eventName.trim().isEmpty()) {
       return "Error: Event name cannot be empty";
@@ -158,7 +160,8 @@ public class CreateEventCommand implements ICommand {
 
       // Add to calendar
       calendar.addRecurringEvent(recurringEvent, autoDecline);
-      return "Recurring event '" + eventName + "' created successfully with " + occurrences + " occurrences.";
+      return "Recurring event '" + eventName + "' created successfully with " + occurrences
+              + " occurrences.";
     } catch (ConflictingEventException e) {
       return "Failed to create recurring event due to conflicts: " + e.getMessage();
     } catch (InvalidEventException | IllegalArgumentException e) {
@@ -181,7 +184,8 @@ public class CreateEventCommand implements ICommand {
    * @return a response indicating success or failure
    */
   private String createRecurringEventUntil(String eventName, LocalDateTime startDateTime,
-                                           LocalDateTime endDateTime, String weekdays, LocalDate untilDate, boolean autoDecline,
+                                           LocalDateTime endDateTime,
+                                           String weekdays, LocalDate untilDate, boolean autoDecline,
                                            String description, String location, boolean isPublic) {
     if (eventName == null || eventName.trim().isEmpty()) {
       return "Error: Event name cannot be empty";
@@ -199,7 +203,8 @@ public class CreateEventCommand implements ICommand {
     try {
       Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
 
-      RecurringEvent recurringEvent = new RecurringEvent.Builder(eventName, startDateTime, endDateTime, repeatDays)
+      RecurringEvent recurringEvent = new RecurringEvent.Builder(eventName, startDateTime,
+              endDateTime, repeatDays)
               .description(description)
               .location(location)
               .isPublic(isPublic)

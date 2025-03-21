@@ -8,26 +8,25 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import controller.command.CalendarCommandFactory;
 import controller.command.CommandFactory;
 import controller.parser.CommandParser;
 import model.calendar.CalendarManager;
 import model.calendar.ICalendar;
 import model.exceptions.CalendarNotFoundException;
-import model.exceptions.DuplicateCalendarException;
-import model.exceptions.InvalidTimezoneException;
 import view.ICalendarView;
 
 /**
  * A controller that handles both event and calendar management commands.
+ * Follows the Dependency Inversion Principle by depending on abstractions instead of
+ * concrete implementations where possible.
  */
 public class CalendarController {
 
   private final ICalendarView view;
   private CommandParser parser;
-  private final CalendarCommandFactory calendarCommandFactory;
+  private final ICommandFactory calendarCommandFactory;
   private final CalendarManager calendarManager;
-  private CommandFactory commandFactory;
+  private ICommandFactory commandFactory;
   private static final String EXIT_COMMAND = "exit";
 
   /**
@@ -35,10 +34,11 @@ public class CalendarController {
    *
    * @param commandFactory         the command factory for event commands
    * @param calendarCommandFactory the command factory for calendar commands
+   * @param calendarManager        the calendar manager
    * @param view                   the view for user interaction
    */
-  public CalendarController(CommandFactory commandFactory,
-                            CalendarCommandFactory calendarCommandFactory,
+  public CalendarController(ICommandFactory commandFactory,
+                            ICommandFactory calendarCommandFactory,
                             CalendarManager calendarManager,
                             ICalendarView view) {
     if (commandFactory == null) {
@@ -81,12 +81,7 @@ public class CalendarController {
 
     try {
       // First, check if it's a calendar management command
-      if (trimmedCommand.startsWith("create calendar") ||
-              trimmedCommand.startsWith("edit calendar") ||
-              trimmedCommand.startsWith("use calendar") ||
-              trimmedCommand.startsWith("copy event") ||
-              trimmedCommand.startsWith("copy events")) {
-
+      if (isCalendarCommand(trimmedCommand)) {
         // Handle calendar-specific commands
         String result = processCalendarCommand(trimmedCommand);
 
@@ -94,18 +89,8 @@ public class CalendarController {
         if (trimmedCommand.startsWith("use calendar")) {
           String calendarName = extractCalendarName(trimmedCommand);
           if (calendarName != null) {
-            // Get the current calendar from the calendarCommandFactory
-            try {
-              // Use the calendarCommandFactory to get the updated calendar instance
-              ICalendar activeCalendar = getUpdatedActiveCalendar();
-              if (activeCalendar != null) {
-                // Create a new CommandFactory with the active calendar
-                this.commandFactory = new CommandFactory(activeCalendar, view);
-                this.parser = new CommandParser(commandFactory);
-              }
-            } catch (Exception e) {
-              return "Error updating command factory: " + e.getMessage();
-            }
+            // Update the command factory with the new active calendar
+            updateCommandFactory();
           }
         }
 
@@ -123,18 +108,35 @@ public class CalendarController {
   }
 
   /**
-   * Refreshes the command factory with the current active calendar.
+   * Checks if the command is a calendar management command.
+   *
+   * @param command the command to check
+   * @return true if it's a calendar command, false otherwise
    */
-  private void refreshCommandFactory() {
+  private boolean isCalendarCommand(String command) {
+    return command.startsWith("create calendar") ||
+            command.startsWith("edit calendar") ||
+            command.startsWith("use calendar") ||
+            command.startsWith("copy event") ||
+            command.startsWith("copy events");
+  }
+
+  /**
+   * Updates the command factory with the current active calendar.
+   */
+  private void updateCommandFactory() {
     try {
       ICalendar activeCalendar = calendarManager.getActiveCalendar();
-      this.commandFactory = new CommandFactory(activeCalendar, view);
-      this.parser = new CommandParser(commandFactory);
+      if (this.commandFactory instanceof CommandFactory) {
+        // Create a new CommandFactory with the active calendar
+        this.commandFactory = new CommandFactory(activeCalendar, view);
+        // Create a new parser with the updated factory
+        this.parser = new CommandParser(this.commandFactory);
+      }
     } catch (CalendarNotFoundException e) {
       view.displayError("Error updating command factory: " + e.getMessage());
     }
   }
-
 
   /**
    * Processes a calendar-specific command.
@@ -142,8 +144,7 @@ public class CalendarController {
    * @param commandStr the calendar command string
    * @return the result of command execution
    */
-  private String processCalendarCommand(String commandStr) throws CalendarNotFoundException,
-          InvalidTimezoneException, DuplicateCalendarException {
+  private String processCalendarCommand(String commandStr) throws Exception {
     String[] parts = parseCommand(commandStr);
     if (parts.length < 2) {
       return "Error: Invalid calendar command format";
@@ -255,23 +256,6 @@ public class CalendarController {
       return matcher.group(1);
     }
     return null;
-  }
-
-  /**
-   * Gets the updated active calendar from the calendar command factory
-   */
-  private ICalendar getUpdatedActiveCalendar() {
-    try {
-      // Execute a dummy command that just returns the active calendar
-      String[] dummyArgs = new String[]{"calendar"};
-      String result = calendarCommandFactory.getCommand("use").execute(dummyArgs);
-
-      // The command factory should have updated its internal reference to the active calendar
-      // We need to get this updated reference
-      return commandFactory.getCalendar();
-    } catch (Exception e) {
-      return null;
-    }
   }
 
   /**
