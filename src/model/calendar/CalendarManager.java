@@ -11,23 +11,22 @@ import model.exceptions.InvalidTimezoneException;
 import utilities.TimeZoneHandler;
 
 /**
- * Manages multiple calendars with unique names and timezones.
+ * Manages multiple calendars with unique names.
  * Provides functionality to create, access, modify, and switch between calendars.
- * Uses functional interfaces for calendar operations.
  */
 public class CalendarManager {
 
   private final Map<String, Calendar> calendars;
-  private final TimeZoneHandler timezoneHandler;
   private String activeCalendarName;
+  private final TimeZoneHandler timezoneHandler;
 
   /**
    * Private constructor used by the builder to create a CalendarManager instance.
    */
   private CalendarManager(Builder builder) {
     this.calendars = new HashMap<>();
-    this.timezoneHandler = builder.timezoneHandler;
     this.activeCalendarName = null;
+    this.timezoneHandler = builder.timezoneHandler;
   }
 
   /**
@@ -62,62 +61,6 @@ public class CalendarManager {
     public CalendarManager build() {
       return new CalendarManager(this);
     }
-  }
-
-  /**
-   * Executes an operation on a calendar by name and returns a result.
-   *
-   * @param <T>          the result type
-   * @param calendarName the name of the calendar
-   * @param operation    the operation to execute
-   * @return the result of the operation
-   * @throws CalendarNotFoundException if the calendar cannot be found
-   * @throws Exception                 if the operation throws an exception
-   */
-  public <T> T executeOnCalendar(String calendarName, CalendarOperation<T> operation)
-          throws CalendarNotFoundException, Exception {
-    Calendar calendar = getCalendarByName(calendarName);
-    return operation.execute(calendar);
-  }
-
-  /**
-   * Executes an operation on the active calendar and returns a result.
-   *
-   * @param <T>       the result type
-   * @param operation the operation to execute
-   * @return the result of the operation
-   * @throws CalendarNotFoundException if there is no active calendar
-   * @throws Exception                 if the operation throws an exception
-   */
-  public <T> T executeOnActiveCalendar(CalendarOperation<T> operation)
-          throws CalendarNotFoundException, Exception {
-    Calendar calendar = getActiveCalendar();
-    return operation.execute(calendar);
-  }
-
-  /**
-   * Applies a consumer to a calendar by name.
-   *
-   * @param calendarName the name of the calendar
-   * @param consumer     the consumer to apply
-   * @throws CalendarNotFoundException if the calendar cannot be found
-   */
-  public void applyToCalendar(String calendarName, Consumer<Calendar> consumer)
-          throws CalendarNotFoundException {
-    Calendar calendar = getCalendarByName(calendarName);
-    consumer.accept(calendar);
-  }
-
-  /**
-   * Applies a consumer to the active calendar.
-   *
-   * @param consumer the consumer to apply
-   * @throws CalendarNotFoundException if there is no active calendar
-   */
-  public void applyToActiveCalendar(Consumer<Calendar> consumer)
-          throws CalendarNotFoundException {
-    Calendar calendar = getActiveCalendar();
-    consumer.accept(calendar);
   }
 
   /**
@@ -214,6 +157,62 @@ public class CalendarManager {
       throw new CalendarNotFoundException("No active calendar set");
     }
     return calendars.get(activeCalendarName);
+  }
+
+  /**
+   * Executes an operation on a calendar by name and returns a result.
+   *
+   * @param <T>          the result type
+   * @param calendarName the name of the calendar
+   * @param operation    the operation to execute
+   * @return the result of the operation
+   * @throws CalendarNotFoundException if the calendar cannot be found
+   * @throws Exception                 if the operation throws an exception
+   */
+  public <T> T executeOnCalendar(String calendarName, CalendarOperation<T> operation)
+          throws CalendarNotFoundException, Exception {
+    Calendar calendar = getCalendarByName(calendarName);
+    return operation.execute(calendar);
+  }
+
+  /**
+   * Executes an operation on the active calendar and returns a result.
+   *
+   * @param <T>       the result type
+   * @param operation the operation to execute
+   * @return the result of the operation
+   * @throws CalendarNotFoundException if there is no active calendar
+   * @throws Exception                 if the operation throws an exception
+   */
+  public <T> T executeOnActiveCalendar(CalendarOperation<T> operation)
+          throws CalendarNotFoundException, Exception {
+    Calendar calendar = getActiveCalendar();
+    return operation.execute(calendar);
+  }
+
+  /**
+   * Applies a consumer to a calendar by name.
+   *
+   * @param calendarName the name of the calendar
+   * @param consumer     the consumer to apply
+   * @throws CalendarNotFoundException if the calendar cannot be found
+   */
+  public void applyToCalendar(String calendarName, Consumer<Calendar> consumer)
+          throws CalendarNotFoundException {
+    Calendar calendar = getCalendarByName(calendarName);
+    consumer.accept(calendar);
+  }
+
+  /**
+   * Applies a consumer to the active calendar.
+   *
+   * @param consumer the consumer to apply
+   * @throws CalendarNotFoundException if there is no active calendar
+   */
+  public void applyToActiveCalendar(Consumer<Calendar> consumer)
+          throws CalendarNotFoundException {
+    Calendar calendar = getActiveCalendar();
+    consumer.accept(calendar);
   }
 
   /**
