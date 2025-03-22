@@ -51,6 +51,10 @@ public class CommandParser {
             Pattern.compile("edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) with \"?([^\"]+)\"?"),
             this::parseEditSingleEventCommand);
 
+    registerPattern("edit_event_time",
+            Pattern.compile("edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) to (\\S+T\\S+) with \"?([^\"]+)\"?"),
+            this::parseEditEventTimeCommand);
+
     registerPattern("print_events_date",
             Pattern.compile("print events on (\\d{4}-\\d{2}-\\d{2})"),
             this::parsePrintEventsDateCommand);
@@ -356,6 +360,25 @@ public class CommandParser {
             matcher.group(1)
     };
     return new CommandWithArgs(exportCommand, args);
+  }
+
+  private CommandWithArgs parseEditEventTimeCommand(Matcher matcher) {
+    ICommand editCommand = commandFactory.getCommand("edit");
+
+    String property = matcher.group(1);
+    String subject = matcher.group(2);
+    String startDateTime = matcher.group(3);
+    String endDateTime = matcher.group(4);
+    String newValue = matcher.group(5);
+
+    String[] args = {
+            "single",
+            property,
+            subject,
+            startDateTime,
+            newValue
+    };
+    return new CommandWithArgs(editCommand, args);
   }
 
   /**
