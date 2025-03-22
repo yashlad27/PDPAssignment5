@@ -12,7 +12,7 @@ import model.exceptions.InvalidEventException;
  * This interface defines the contract for creating and adding different types of events to a calendar.
  * Each concrete implementation handles a specific type of event creation (single, recurring, all-day, etc.).
  */
-public interface EventCreationStrategy {
+public interface EventCreator {
 
   /**
    * Creates an event without adding it to a calendar.
@@ -43,20 +43,20 @@ public interface EventCreationStrategy {
    * @return the appropriate strategy for the specified event type
    * @throws IllegalArgumentException if the event type is unknown or the arguments are invalid
    */
-  static EventCreationStrategy forType(String type, String[] args) {
+  static EventCreator forType(String type, String[] args) {
     switch (type) {
       case "single":
-        return new SingleEventCreationStrategy(args);
+        return new SingleEventCreator(args);
       case "recurring":
-        return new RecurringEventCreationStrategy(args);
+        return new RecurringEventCreator(args);
       case "allday":
-        return new AllDayEventCreationStrategy(args);
+        return new AllDayEventCreator(args);
       case "recurring-until":
-        return new RecurringUntilEventCreationStrategy(args);
+        return new RecurringUntilEventCreator(args);
       case "allday-recurring":
-        return new AllDayRecurringEventCreationStrategy(args);
+        return new AllDayRecurringEventCreator(args);
       case "allday-recurring-until":
-        return new AllDayRecurringUntilEventCreationStrategy(args);
+        return new AllDayRecurringUntilEventCreator(args);
       default:
         throw new IllegalArgumentException("Unknown event type: " + type);
     }

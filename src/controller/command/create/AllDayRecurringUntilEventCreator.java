@@ -1,7 +1,6 @@
 package controller.command.create;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import model.calendar.ICalendar;
 import model.event.Event;
@@ -10,35 +9,35 @@ import model.exceptions.InvalidEventException;
 import utilities.DateTimeUtil;
 
 /**
- * Strategy for creating an all-day recurring event with a specific number of occurrences.
- * Extends AbstractEventCreationStrategy to inherit common functionality.
+ * Strategy for creating an all-day recurring event that repeats until a specific date.
+ * Extends AbstractEventCreator to inherit common functionality.
  */
-public class AllDayRecurringEventCreationStrategy extends AbstractEventCreationStrategy {
+public class AllDayRecurringUntilEventCreator extends AbstractEventCreator {
 
   private final String eventName;
   private final LocalDate date;
   private final String weekdays;
-  private final int occurrences;
+  private final LocalDate untilDate;
   private final boolean autoDecline;
   private final String description;
   private final String location;
   private final boolean isPublic;
 
   /**
-   * Constructs a strategy for creating an all-day recurring event.
+   * Constructs a strategy for creating an all-day recurring event that repeats until a specific date.
    *
    * @param args the arguments for event creation
    */
-  public AllDayRecurringEventCreationStrategy(String[] args) {
+  public AllDayRecurringUntilEventCreator(String[] args) {
     if (args.length < 6) {
-      throw new IllegalArgumentException("Insufficient arguments for all-day recurring event");
+      throw new IllegalArgumentException("Insufficient arguments for all-day recurring event until date");
     }
 
     try {
       this.eventName = args[1];
       this.date = DateTimeUtil.parseDate(args[2]);
       this.weekdays = args[3];
-      this.occurrences = Integer.parseInt(args[4]);
+      this.untilDate = DateTimeUtil.parseDate(args[4]);
       this.autoDecline = Boolean.parseBoolean(args[5]);
 
       this.description = args.length > 6 ? removeQuotes(args[6]) : null;
@@ -59,8 +58,8 @@ public class AllDayRecurringEventCreationStrategy extends AbstractEventCreationS
     if (weekdays == null || weekdays.trim().isEmpty()) {
       throw new InvalidEventException("Weekdays cannot be empty");
     }
-    if (occurrences <= 0) {
-      throw new InvalidEventException("Occurrences must be positive");
+    if (untilDate == null) {
+      throw new InvalidEventException("Until date cannot be null");
     }
 
     // For all-day recurring events, we need to delegate to the calendar
@@ -78,24 +77,24 @@ public class AllDayRecurringEventCreationStrategy extends AbstractEventCreationS
     if (weekdays == null || weekdays.trim().isEmpty()) {
       throw new InvalidEventException("Weekdays cannot be empty");
     }
-    if (occurrences <= 0) {
-      throw new InvalidEventException("Occurrences must be positive");
+    if (untilDate == null) {
+      throw new InvalidEventException("Until date cannot be null");
     }
 
     try {
-      boolean success = calendar.createAllDayRecurringEvent(
-              eventName, date, weekdays, occurrences,
+      boolean success = calendar.createAllDayRecurringEventUntil(
+              eventName, date, weekdays, untilDate,
               autoDecline, description, location, isPublic);
 
       if (!success) {
-        throw new InvalidEventException("Failed to create all-day recurring event");
+        throw new InvalidEventException("Failed to create all-day recurring event until date");
       }
 
       return getSuccessMessage(null);
     } catch (ConflictingEventException e) {
       throw e;
     } catch (Exception e) {
-      throw new InvalidEventException("Error creating all-day recurring event: " + e.getMessage());
+      throw new InvalidEventException("Error creating all-day recurring event until date: " + e.getMessage());
     }
   }
 
@@ -106,7 +105,7 @@ public class AllDayRecurringEventCreationStrategy extends AbstractEventCreationS
 
   @Override
   protected String getSuccessMessage(Event event) {
-    return "All-day recurring event '" + eventName + "' created successfully with "
-            + occurrences + " occurrences.";
+    return "All-day recurring event '" + eventName + "' created successfully until "
+            + DateTimeUtil.formatDate(untilDate) + ".";
   }
 }

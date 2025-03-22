@@ -9,7 +9,7 @@ import model.exceptions.InvalidEventException;
  * Abstract base class for event creation strategies.
  * Provides common functionality and default implementations for event creation strategies.
  */
-public abstract class AbstractEventCreationStrategy implements EventCreationStrategy {
+public abstract class AbstractEventCreator implements EventCreator {
 
   /**
    * Validates common event parameters.

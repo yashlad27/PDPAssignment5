@@ -8,9 +8,9 @@ import utilities.DateTimeUtil;
 
 /**
  * Strategy for creating a single event.
- * Extends AbstractEventCreationStrategy to inherit common functionality.
+ * Extends AbstractEventCreator to inherit common functionality.
  */
-public class SingleEventCreationStrategy extends AbstractEventCreationStrategy {
+public class SingleEventCreator extends AbstractEventCreator {
 
   private final String eventName;
   private final LocalDateTime startDateTime;
@@ -25,7 +25,7 @@ public class SingleEventCreationStrategy extends AbstractEventCreationStrategy {
    *
    * @param args the arguments for event creation
    */
-  public SingleEventCreationStrategy(String[] args) {
+  public SingleEventCreator(String[] args) {
     if (args.length < 4) {
       throw new IllegalArgumentException("Insufficient arguments for creating a single event");
     }

@@ -12,9 +12,9 @@ import utilities.DateTimeUtil;
 
 /**
  * Strategy for creating a recurring event that repeats until a specific date.
- * Extends AbstractEventCreationStrategy to inherit common functionality.
+ * Extends AbstractEventCreator to inherit common functionality.
  */
-public class RecurringUntilEventCreationStrategy extends AbstractEventCreationStrategy {
+public class RecurringUntilEventCreator extends AbstractEventCreator {
 
   private final String eventName;
   private final LocalDateTime startDateTime;
@@ -32,7 +32,7 @@ public class RecurringUntilEventCreationStrategy extends AbstractEventCreationSt
    *
    * @param args the arguments for event creation
    */
-  public RecurringUntilEventCreationStrategy(String[] args) {
+  public RecurringUntilEventCreator(String[] args) {
     if (args.length < 7) {
       throw new IllegalArgumentException("Insufficient arguments for recurring event until date");
     }

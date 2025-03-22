@@ -54,21 +54,14 @@ public class CommandFactory implements ICommandFactory {
     // Use calendar command
     registerUseCommand();
 
-    // Print events command
     commands.put("print", new PrintEventsCommand(calendar)::execute);
 
-    // Show status command
     commands.put("show", new ShowStatusCommand(calendar)::execute);
 
-    // Export calendar command
     commands.put("export", new ExportCalendarCommand(calendar)::execute);
 
-    // Copy event and events commands (these will be delegated to the CalendarCommandFactory)
-    // This allows the CommandFactory to recognize these commands even though
-    // the actual handling is done by CalendarCommandFactory
     commands.put("copy", args -> "Command forwarded to CalendarCommandFactory");
 
-    // Exit command
     commands.put("exit", args -> "Exiting application.");
   }
 
@@ -76,17 +69,20 @@ public class CommandFactory implements ICommandFactory {
    * Registers the create command with all its subcommands.
    */
   private void registerCreateCommand() {
-    // Use a single CreateEventCommand instance for consistency
-    CreateEventCommand createCmd = new CreateEventCommand(calendar);
+//    CreateEventCommand createCmd = new CreateEventCommand(calendar);
+//
+//    commands.put("create", (args) -> {
+//      // Check if it's a calendar creation command, which should be forwarded
+//      if (args.length > 0 && args[0].equals("calendar")) {
+//        return "Command forwarded to CalendarCommandFactory";
+//      }
+//      // Otherwise handle as a normal create event command
+//      return createCmd.execute(args);
+//    });
 
-    commands.put("create", (args) -> {
-      // Check if it's a calendar creation command, which should be forwarded
-      if (args.length > 0 && args[0].equals("calendar")) {
-        return "Command forwarded to CalendarCommandFactory";
-      }
-      // Otherwise handle as a normal create event command
-      return createCmd.execute(args);
-    });
+    CreateEventCommand createCmd = new CreateEventCommand(calendar);
+    commands.put("create", createCmd::execute);
+
   }
 
   /**

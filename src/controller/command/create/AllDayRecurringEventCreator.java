@@ -9,35 +9,35 @@ import model.exceptions.InvalidEventException;
 import utilities.DateTimeUtil;
 
 /**
- * Strategy for creating an all-day recurring event that repeats until a specific date.
- * Extends AbstractEventCreationStrategy to inherit common functionality.
+ * Strategy for creating an all-day recurring event with a specific number of occurrences.
+ * Extends AbstractEventCreator to inherit common functionality.
  */
-public class AllDayRecurringUntilEventCreationStrategy extends AbstractEventCreationStrategy {
+public class AllDayRecurringEventCreator extends AbstractEventCreator {
 
   private final String eventName;
   private final LocalDate date;
   private final String weekdays;
-  private final LocalDate untilDate;
+  private final int occurrences;
   private final boolean autoDecline;
   private final String description;
   private final String location;
   private final boolean isPublic;
 
   /**
-   * Constructs a strategy for creating an all-day recurring event that repeats until a specific date.
+   * Constructs a strategy for creating an all-day recurring event.
    *
    * @param args the arguments for event creation
    */
-  public AllDayRecurringUntilEventCreationStrategy(String[] args) {
+  public AllDayRecurringEventCreator(String[] args) {
     if (args.length < 6) {
-      throw new IllegalArgumentException("Insufficient arguments for all-day recurring event until date");
+      throw new IllegalArgumentException("Insufficient arguments for all-day recurring event");
     }
 
     try {
       this.eventName = args[1];
       this.date = DateTimeUtil.parseDate(args[2]);
       this.weekdays = args[3];
-      this.untilDate = DateTimeUtil.parseDate(args[4]);
+      this.occurrences = Integer.parseInt(args[4]);
       this.autoDecline = Boolean.parseBoolean(args[5]);
 
       this.description = args.length > 6 ? removeQuotes(args[6]) : null;
@@ -58,8 +58,8 @@ public class AllDayRecurringUntilEventCreationStrategy extends AbstractEventCrea
     if (weekdays == null || weekdays.trim().isEmpty()) {
       throw new InvalidEventException("Weekdays cannot be empty");
     }
-    if (untilDate == null) {
-      throw new InvalidEventException("Until date cannot be null");
+    if (occurrences <= 0) {
+      throw new InvalidEventException("Occurrences must be positive");
     }
 
     // For all-day recurring events, we need to delegate to the calendar
@@ -77,24 +77,24 @@ public class AllDayRecurringUntilEventCreationStrategy extends AbstractEventCrea
     if (weekdays == null || weekdays.trim().isEmpty()) {
       throw new InvalidEventException("Weekdays cannot be empty");
     }
-    if (untilDate == null) {
-      throw new InvalidEventException("Until date cannot be null");
+    if (occurrences <= 0) {
+      throw new InvalidEventException("Occurrences must be positive");
     }
 
     try {
-      boolean success = calendar.createAllDayRecurringEventUntil(
-              eventName, date, weekdays, untilDate,
+      boolean success = calendar.createAllDayRecurringEvent(
+              eventName, date, weekdays, occurrences,
               autoDecline, description, location, isPublic);
 
       if (!success) {
-        throw new InvalidEventException("Failed to create all-day recurring event until date");
+        throw new InvalidEventException("Failed to create all-day recurring event");
       }
 
       return getSuccessMessage(null);
     } catch (ConflictingEventException e) {
       throw e;
     } catch (Exception e) {
-      throw new InvalidEventException("Error creating all-day recurring event until date: " + e.getMessage());
+      throw new InvalidEventException("Error creating all-day recurring event: " + e.getMessage());
     }
   }
 
@@ -105,7 +105,7 @@ public class AllDayRecurringUntilEventCreationStrategy extends AbstractEventCrea
 
   @Override
   protected String getSuccessMessage(Event event) {
-    return "All-day recurring event '" + eventName + "' created successfully until "
-            + DateTimeUtil.formatDate(untilDate) + ".";
+    return "All-day recurring event '" + eventName + "' created successfully with "
+            + occurrences + " occurrences.";
   }
 }

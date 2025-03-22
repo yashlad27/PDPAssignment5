@@ -2,16 +2,15 @@ package controller.command.create;
 
 import java.time.LocalDate;
 
-import model.calendar.ICalendar;
 import model.event.Event;
 import model.exceptions.InvalidEventException;
 import utilities.DateTimeUtil;
 
 /**
  * Strategy for creating an all-day event.
- * Extends AbstractEventCreationStrategy to inherit common functionality.
+ * Extends AbstractEventCreator to inherit common functionality.
  */
-public class AllDayEventCreationStrategy extends AbstractEventCreationStrategy {
+public class AllDayEventCreator extends AbstractEventCreator {
 
   private final String eventName;
   private final LocalDate date;
@@ -25,7 +24,7 @@ public class AllDayEventCreationStrategy extends AbstractEventCreationStrategy {
    *
    * @param args the arguments for event creation
    */
-  public AllDayEventCreationStrategy(String[] args) {
+  public AllDayEventCreator(String[] args) {
     if (args.length < 4) {
       throw new IllegalArgumentException("Insufficient arguments for creating an all-day event");
     }

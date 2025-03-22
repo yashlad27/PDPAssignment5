@@ -11,9 +11,9 @@ import utilities.DateTimeUtil;
 
 /**
  * Strategy for creating a recurring event with a specific number of occurrences.
- * Extends AbstractEventCreationStrategy to inherit common functionality.
+ * Extends AbstractEventCreator to inherit common functionality.
  */
-public class RecurringEventCreationStrategy extends AbstractEventCreationStrategy {
+public class RecurringEventCreator extends AbstractEventCreator {
 
   private final String eventName;
   private final LocalDateTime startDateTime;
@@ -31,7 +31,7 @@ public class RecurringEventCreationStrategy extends AbstractEventCreationStrateg
    *
    * @param args the arguments for event creation
    */
-  public RecurringEventCreationStrategy(String[] args) {
+  public RecurringEventCreator(String[] args) {
     if (args.length < 7) {
       throw new IllegalArgumentException("Insufficient arguments for creating a recurring event");
     }
