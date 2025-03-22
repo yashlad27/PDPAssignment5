@@ -1,41 +1,20 @@
 package controller.command.edit;
 
-import java.time.LocalDateTime;
-
 import controller.command.ICommand;
 import model.calendar.ICalendar;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
-import utilities.DateTimeUtil;
 
 /**
- * Command for editing calendar events (both single and recurring events).
+ * Command for editing calendar events using the Strategy pattern.
  */
 public class EditEventCommand implements ICommand {
 
   private final ICalendar calendar;
-  private final String commandType;
-  private final String subject;
-  private final String property;
-  private final String newValue;
-  private final LocalDateTime startDateTime;
 
   /**
-   * Private constructor used by the builder.
-   */
-  private EditEventCommand(Builder builder) {
-    this.calendar = builder.calendar;
-    this.commandType = builder.commandType;
-    this.property = builder.property;
-    this.subject = builder.subject;
-    this.newValue = builder.newValue;
-    this.startDateTime = builder.startDateTime;
-  }
-
-  /**
-   * Constructor that creates a minimal EditEventCommand with just a calendar reference. This
-   * constructor is used for registration with the command factory.
+   * Constructor that creates an EditEventCommand with a calendar reference.
    *
    * @param calendar the calendar to use for editing events
    * @throws IllegalArgumentException if calendar is null
@@ -45,188 +24,40 @@ public class EditEventCommand implements ICommand {
       throw new IllegalArgumentException("Calendar cannot be null");
     }
     this.calendar = calendar;
-    this.commandType = null;
-    this.property = null;
-    this.subject = null;
-    this.newValue = null;
-    this.startDateTime = null;
   }
 
   /**
-   * Builder class for EditEventCommand.
-   */
-  public static class Builder {
-
-    private final ICalendar calendar;
-
-    private String commandType = null;
-    private String subject = null;
-    private String property = null;
-    private String newValue = null;
-    private LocalDateTime startDateTime = null;
-
-    /**
-     * Creates a builder for EditEventCommand.
-     *
-     * @param calendar the calendar to use for editing events
-     * @throws IllegalArgumentException if calendar is null
-     */
-    public Builder(ICalendar calendar) {
-      if (calendar == null) {
-        throw new IllegalArgumentException("Calendar cannot be null");
-      }
-      this.calendar = calendar;
-    }
-
-    /**
-     * Sets the subject of the event(s) to edit.
-     *
-     * @param subject the subject of the event(s)
-     * @return the builder instance
-     */
-    public Builder subject(String subject) {
-      this.subject = subject;
-      return this;
-    }
-
-    /**
-     * Sets the property to edit.
-     *
-     * @param property the property to edit (subject, description, etc.)
-     * @return the builder instance
-     */
-    public Builder property(String property) {
-      this.property = property;
-      return this;
-    }
-
-    /**
-     * Sets the start date/time for identifying the event.
-     *
-     * @param startDateTime the start date/time of the event
-     * @return the builder instance
-     */
-    public Builder startDateTime(LocalDateTime startDateTime) {
-      this.startDateTime = startDateTime;
-      return this;
-    }
-
-  }
-
-  /**
-   * Removes surrounding quotes from a string value if present.
+   * Executes the edit event command with the provided arguments.
+   * Uses the strategy pattern to delegate event editing to the appropriate editor.
    *
-   * @param value the string value to process
-   * @return the string without surrounding quotes
+   * @param args command arguments, where args[0] is the edit type
+   * @return a message indicating the result of the operation
    */
-  private String removeQuotes(String value) {
-    if (value != null && value.length() >= 2) {
-      if ((value.startsWith("\"") && value.endsWith("\"")) ||
-              (value.startsWith("'") && value.endsWith("'"))) {
-        return value.substring(1, value.length() - 1);
-      }
-    }
-    return value;
-  }
-
-  /**
-   * Executes the edit event command with the provided arguments. Handles different types of event
-   * editing including single events, recurring events, all-day events, and their variants.
-   *
-   * @param args an array of arguments for the command: - args[0]: the type of event to edit
-   *             (single, recurring, allday, etc.) - remaining args: parameters specific to each
-   *             event type
-   * @return a string message indicating the result of the command execution
-   */
-
   @Override
-  public String execute(String[] args) throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+  public String execute(String[] args) {
     if (args.length < 3) {
       return "Error: Insufficient arguments for edit command";
     }
 
-    String type = args[0];
-    if (type.equals("single")) {
-      if (args.length < 5) {
-        return "Error: Insufficient arguments for editing a single event";
-      }
+    String editType = args[0];
 
-      String property = args[1];
-      String subject = args[2];
-      LocalDateTime startDateTime;
-      try {
-        startDateTime = DateTimeUtil.parseDateTime(args[3]);
-      } catch (Exception e) {
-        return "Error parsing date/time: " + e.getMessage();
-      }
+    try {
+      // Get the appropriate editor for this edit type
+      EventEditor editor = EventEditor.forType(editType, args);
 
-      String newValue = args[4];
-      newValue = removeQuotes(newValue);
+      // Execute the edit operation
+      return editor.executeEdit(calendar);
 
-      try {
-        calendar.editSingleEvent(subject, startDateTime, property, newValue);
-        return "Successfully edited event '" + subject + "'.";
-      } catch (EventNotFoundException e) {
-        return "Failed to edit event: Event not found - " + e.getMessage();
-      } catch (InvalidEventException e) {
-        return "Failed to edit event: Invalid property or value - " + e.getMessage();
-      } catch (ConflictingEventException e) {
-        return "Failed to edit event: Would create a conflict - " + e.getMessage();
-      }
-    } else if (type.equals("series_from_date")) {
-      if (args.length < 5) {
-        return "Error: Insufficient arguments for editing events from date";
-      }
-
-      String property = args[1];
-      String subject = args[2];
-      LocalDateTime startDateTime;
-      try {
-        startDateTime = DateTimeUtil.parseDateTime(args[3]);
-      } catch (Exception e) {
-        return "Error parsing date/time: " + e.getMessage();
-      }
-
-      String newValue = args[4];
-      newValue = removeQuotes(newValue);
-
-      try {
-        int count = calendar.editEventsFromDate(subject, startDateTime, property, newValue);
-        if (count > 0) {
-          return "Successfully edited " + count + " events in the series.";
-        } else {
-          return "No matching events found to edit.";
-        }
-      } catch (InvalidEventException e) {
-        return "Failed to edit events: Invalid property or value - " + e.getMessage();
-      } catch (ConflictingEventException e) {
-        return "Failed to edit events: Would create a conflict - " + e.getMessage();
-      }
-
-    } else if (type.equals("all")) {
-      if (args.length < 4) {
-        return "Error: Insufficient arguments for editing all events";
-      }
-
-      String property = args[1];
-      String subject = args[2];
-      String newValue = args[3];
-      newValue = removeQuotes(newValue);
-
-      try {
-        int count = calendar.editAllEvents(subject, property, newValue);
-        if (count > 0) {
-          return "Successfully edited " + count + " events.";
-        } else {
-          return "No events found with the subject '" + subject + "'.";
-        }
-      } catch (InvalidEventException e) {
-        return "Failed to edit events: Invalid property or value - " + e.getMessage();
-      } catch (ConflictingEventException e) {
-        return "Failed to edit events: Would create a conflict - " + e.getMessage();
-      }
-    } else {
-      return "Unknown edit command type: " + type;
+    } catch (EventNotFoundException e) {
+      return "Failed to edit event: Event not found - " + e.getMessage();
+    } catch (InvalidEventException e) {
+      return "Failed to edit event: Invalid property or value - " + e.getMessage();
+    } catch (ConflictingEventException e) {
+      return "Failed to edit event: Would create a conflict - " + e.getMessage();
+    } catch (IllegalArgumentException e) {
+      return "Error in command arguments: " + e.getMessage();
+    } catch (Exception e) {
+      return "Unexpected error: " + e.getMessage();
     }
   }
 
@@ -239,5 +70,4 @@ public class EditEventCommand implements ICommand {
   public String getName() {
     return "edit";
   }
-
 }
