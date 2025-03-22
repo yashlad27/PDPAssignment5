@@ -1,7 +1,8 @@
-package controller.command;
+package controller.command.edit;
 
 import java.time.LocalDateTime;
 
+import controller.command.ICommand;
 import model.calendar.ICalendar;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;

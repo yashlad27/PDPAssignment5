@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import controller.ICommandFactory;
+import controller.command.create.CreateEventCommand;
+import controller.command.edit.EditEventCommand;
 import model.calendar.ICalendar;
 import view.ICalendarView;
 
@@ -36,7 +38,6 @@ public class CommandFactory implements ICommandFactory {
     this.calendar = calendar;
     this.view = view;
 
-    // Register all available commands as functional interfaces
     registerCommands();
   }
 
@@ -50,6 +51,9 @@ public class CommandFactory implements ICommandFactory {
     // Edit event command
     registerEditCommand();
 
+    // Use calendar command
+    registerUseCommand();
+
     // Print events command
     commands.put("print", new PrintEventsCommand(calendar)::execute);
 
@@ -58,6 +62,11 @@ public class CommandFactory implements ICommandFactory {
 
     // Export calendar command
     commands.put("export", new ExportCalendarCommand(calendar)::execute);
+
+    // Copy event and events commands (these will be delegated to the CalendarCommandFactory)
+    // This allows the CommandFactory to recognize these commands even though
+    // the actual handling is done by CalendarCommandFactory
+    commands.put("copy", args -> "Command forwarded to CalendarCommandFactory");
 
     // Exit command
     commands.put("exit", args -> "Exiting application.");
@@ -70,7 +79,14 @@ public class CommandFactory implements ICommandFactory {
     // Use a single CreateEventCommand instance for consistency
     CreateEventCommand createCmd = new CreateEventCommand(calendar);
 
-    commands.put("create", createCmd::execute);
+    commands.put("create", (args) -> {
+      // Check if it's a calendar creation command, which should be forwarded
+      if (args.length > 0 && args[0].equals("calendar")) {
+        return "Command forwarded to CalendarCommandFactory";
+      }
+      // Otherwise handle as a normal create event command
+      return createCmd.execute(args);
+    });
   }
 
   /**
@@ -80,7 +96,24 @@ public class CommandFactory implements ICommandFactory {
     // Use a single EditEventCommand instance
     EditEventCommand editCmd = new EditEventCommand(calendar);
 
-    commands.put("edit", editCmd::execute);
+    commands.put("edit", (args) -> {
+      // Check if it's a calendar edit command, which should be forwarded
+      if (args.length > 0 && args[0].equals("calendar")) {
+        return "Command forwarded to CalendarCommandFactory";
+      }
+      // Otherwise handle as a normal edit event command
+      return editCmd.execute(args);
+    });
+  }
+
+  /**
+   * Registers the use command for selecting a calendar.
+   */
+  private void registerUseCommand() {
+    commands.put("use", (args) -> {
+      // The 'use' command is always handled by CalendarCommandFactory
+      return "Command forwarded to CalendarCommandFactory";
+    });
   }
 
   /**

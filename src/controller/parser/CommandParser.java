@@ -62,6 +62,38 @@ public class CommandParser {
                     + "to (\\d{4}-\\d{2}-\\d{2})"),
             this::parsePrintEventsRangeCommand);
 
+    registerPattern("create_calendar",
+            Pattern.compile("create calendar --name ([\\w-]+) --timezone ([\\w/]+)"),
+            this::parseCreateCalendarCommand);
+
+    // Edit calendar pattern
+    registerPattern("edit_calendar",
+            Pattern.compile("edit calendar --name ([\\w-]+) --property (\\w+) ([\\w/]+)"),
+            this::parseEditCalendarCommand);
+
+    // Use calendar pattern
+    registerPattern("use_calendar",
+            Pattern.compile("use calendar --name ([\\w-]+)"),
+            this::parseUseCalendarCommand);
+
+    // Copy single event pattern
+    registerPattern("copy_event",
+            Pattern.compile("copy event \"?([^\"]*)\"? on (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+                    + "--target ([\\w-]+) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"),
+            this::parseCopyEventCommand);
+
+    // Copy events on date pattern
+    registerPattern("copy_events_on_date",
+            Pattern.compile("copy events on (\\d{4}-\\d{2}-\\d{2}) --target ([\\w-]+) "
+                    + "to (\\d{4}-\\d{2}-\\d{2})"),
+            this::parseCopyEventsOnDateCommand);
+
+    // Copy events between dates pattern
+    registerPattern("copy_events_between_dates",
+            Pattern.compile("copy events between (\\d{4}-\\d{2}-\\d{2}) and (\\d{4}-\\d{2}-\\d{2}) "
+                    + "--target ([\\w-]+) to (\\d{4}-\\d{2}-\\d{2})"),
+            this::parseCopyEventsBetweenDatesCommand);
+
     registerPattern("show_status",
             Pattern.compile("show status on (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"),
             this::parseShowStatusCommand);
@@ -213,6 +245,95 @@ public class CommandParser {
             matcher.group(2)
     };
     return new CommandWithArgs(printCommand, args);
+  }
+
+  private CommandWithArgs parseCreateCalendarCommand(Matcher matcher) {
+    ICommand calendarCommand = commandFactory.getCommand("create");
+
+    String[] args = {
+            "calendar",
+            "--name",
+            matcher.group(1),
+            "--timezone",
+            matcher.group(2)
+    };
+    return new CommandWithArgs(calendarCommand, args);
+  }
+
+  private CommandWithArgs parseEditCalendarCommand(Matcher matcher) {
+    ICommand calendarCommand = commandFactory.getCommand("edit");
+
+    String[] args = {
+            "calendar",
+            "--name",
+            matcher.group(1),
+            "--property",
+            matcher.group(2),
+            matcher.group(3)
+    };
+    return new CommandWithArgs(calendarCommand, args);
+  }
+
+  private CommandWithArgs parseUseCalendarCommand(Matcher matcher) {
+    ICommand calendarCommand = commandFactory.getCommand("use");
+
+    String[] args = {
+            "calendar",
+            "--name",
+            matcher.group(1)
+    };
+    return new CommandWithArgs(calendarCommand, args);
+  }
+
+  private CommandWithArgs parseCopyEventCommand(Matcher matcher) {
+    ICommand copyCommand = commandFactory.getCommand("copy");
+
+    String[] args = {
+            "copy",
+            "event",
+            matcher.group(1),
+            "on",
+            matcher.group(2),
+            "--target",
+            matcher.group(3),
+            "to",
+            matcher.group(4)
+    };
+    return new CommandWithArgs(copyCommand, args);
+  }
+
+  private CommandWithArgs parseCopyEventsOnDateCommand(Matcher matcher) {
+    ICommand copyCommand = commandFactory.getCommand("copy");
+
+    String[] args = {
+            "copy",
+            "events",
+            "on",
+            matcher.group(1),
+            "--target",
+            matcher.group(2),
+            "to",
+            matcher.group(3)
+    };
+    return new CommandWithArgs(copyCommand, args);
+  }
+
+  private CommandWithArgs parseCopyEventsBetweenDatesCommand(Matcher matcher) {
+    ICommand copyCommand = commandFactory.getCommand("copy");
+
+    String[] args = {
+            "copy",
+            "events",
+            "between",
+            matcher.group(1),
+            "and",
+            matcher.group(2),
+            "--target",
+            matcher.group(3),
+            "to",
+            matcher.group(4)
+    };
+    return new CommandWithArgs(copyCommand, args);
   }
 
   /**
