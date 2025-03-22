@@ -40,7 +40,6 @@ public class CommandParser {
                     + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
             this::parseCreateEventCommand);
 
-    // Recurring event pattern with occurrences
     registerPattern("create_recurring_event",
             Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) from "
                     + "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
@@ -48,7 +47,6 @@ public class CommandParser {
                     + "(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
             this::parseCreateRecurringEventCommand);
 
-    // Add other command patterns...
     registerPattern("edit_single_event",
             Pattern.compile("edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) with \"?([^\"]+)\"?"),
             this::parseEditSingleEventCommand);
