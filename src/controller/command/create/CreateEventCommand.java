@@ -1,6 +1,7 @@
 package controller.command.create;
 
 import controller.command.ICommand;
+import controller.command.create.strategy.EventCreator;
 import model.calendar.ICalendar;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.InvalidEventException;

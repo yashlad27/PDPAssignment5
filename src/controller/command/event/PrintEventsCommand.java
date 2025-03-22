@@ -1,5 +1,6 @@
-package controller.command;
+package controller.command.event;
 
+import controller.command.ICommand;
 import model.calendar.ICalendar;
 import model.event.Event;
 import utilities.CSVExporter;

@@ -1,4 +1,4 @@
-package controller.command.edit;
+package controller.command.edit.strategy;
 
 import model.exceptions.InvalidEventException;
 

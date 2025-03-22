@@ -2,8 +2,8 @@ package model.factory;
 
 import controller.CalendarController;
 import controller.ICommandFactory;
-import controller.command.CalendarCommandFactory;
-import controller.command.CommandFactory;
+import controller.command.calendar.CalendarCommandFactory;
+import controller.command.event.CommandFactory;
 import model.calendar.CalendarManager;
 import model.calendar.ICalendar;
 import utilities.TimeZoneHandler;

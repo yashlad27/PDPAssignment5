@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import controller.command.CommandFactory;
+import controller.command.event.CommandFactory;
 import controller.parser.CommandParser;
 import model.calendar.CalendarManager;
 import model.calendar.ICalendar;

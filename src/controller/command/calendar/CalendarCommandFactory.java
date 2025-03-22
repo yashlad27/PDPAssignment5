@@ -1,9 +1,12 @@
-package controller.command;
+package controller.command.calendar;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import controller.ICommandFactory;
+import controller.command.CommandAdapter;
+import controller.command.copy.CopyEventCommand;
+import controller.command.ICommand;
 import model.calendar.CalendarManager;
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;

@@ -1,4 +1,4 @@
-package controller.command.copy;
+package controller.command.copy.strategy;
 
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.ConflictingEventException;

@@ -1,4 +1,4 @@
-package controller.command.copy;
+package controller.command.copy.strategy;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

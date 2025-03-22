@@ -1,7 +1,6 @@
-package controller.command.create;
+package controller.command.create.strategy;
 
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -11,30 +10,30 @@ import model.exceptions.InvalidEventException;
 import utilities.DateTimeUtil;
 
 /**
- * Strategy for creating a recurring event that repeats until a specific date.
+ * Strategy for creating a recurring event with a specific number of occurrences.
  * Extends AbstractEventCreator to inherit common functionality.
  */
-public class RecurringUntilEventCreator extends AbstractEventCreator {
+public class RecurringEventCreator extends AbstractEventCreator {
 
   private final String eventName;
   private final LocalDateTime startDateTime;
   private final LocalDateTime endDateTime;
   private final String weekdays;
   private final Set<DayOfWeek> repeatDays;
-  private final LocalDate untilDate;
+  private final int occurrences;
   private final boolean autoDecline;
   private final String description;
   private final String location;
   private final boolean isPublic;
 
   /**
-   * Constructs a strategy for creating a recurring event that repeats until a specific date.
+   * Constructs a strategy for creating a recurring event.
    *
    * @param args the arguments for event creation
    */
-  public RecurringUntilEventCreator(String[] args) {
+  public RecurringEventCreator(String[] args) {
     if (args.length < 7) {
-      throw new IllegalArgumentException("Insufficient arguments for recurring event until date");
+      throw new IllegalArgumentException("Insufficient arguments for creating a recurring event");
     }
 
     try {
@@ -43,7 +42,7 @@ public class RecurringUntilEventCreator extends AbstractEventCreator {
       this.endDateTime = DateTimeUtil.parseDateTime(args[3]);
       this.weekdays = args[4];
       this.repeatDays = DateTimeUtil.parseWeekdays(args[4]);
-      this.untilDate = DateTimeUtil.parseDate(args[5]);
+      this.occurrences = Integer.parseInt(args[5]);
       this.autoDecline = Boolean.parseBoolean(args[6]);
 
       this.description = args.length > 7 ? removeQuotes(args[7]) : null;
@@ -64,17 +63,18 @@ public class RecurringUntilEventCreator extends AbstractEventCreator {
     if (repeatDays == null || repeatDays.isEmpty()) {
       throw new InvalidEventException("Repeat days cannot be empty");
     }
-    if (untilDate == null) {
-      throw new InvalidEventException("Until date cannot be null");
+    if (occurrences <= 0) {
+      throw new InvalidEventException("Occurrences must be positive");
     }
 
     try {
+      // Use the Builder to create the recurring event
       return new RecurringEvent.Builder(
               eventName, startDateTime, endDateTime, repeatDays)
               .description(description)
               .location(location)
               .isPublic(isPublic)
-              .endDate(untilDate)
+              .occurrences(occurrences)
               .build();
     } catch (IllegalArgumentException e) {
       throw new InvalidEventException(e.getMessage());
@@ -88,7 +88,7 @@ public class RecurringUntilEventCreator extends AbstractEventCreator {
 
   @Override
   protected String getSuccessMessage(Event event) {
-    return "Recurring event '" + eventName + "' created successfully, repeating until "
-            + DateTimeUtil.formatDate(untilDate) + ".";
+    return "Recurring event '" + eventName + "' created successfully with " + occurrences
+            + " occurrences.";
   }
 }

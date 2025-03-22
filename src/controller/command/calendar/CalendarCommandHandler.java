@@ -1,4 +1,4 @@
-package controller.command;
+package controller.command.calendar;
 
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;

@@ -1,8 +1,9 @@
-package controller.command;
+package controller.command.event;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import controller.command.ICommand;
 import model.calendar.ICalendar;
 import utilities.DateTimeUtil;
 

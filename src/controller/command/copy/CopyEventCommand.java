@@ -1,7 +1,8 @@
-package controller.command;
+package controller.command.copy;
 
-import controller.command.copy.CopyStrategy;
-import controller.command.copy.CopyStrategyFactory;
+import controller.command.ICommand;
+import controller.command.copy.strategy.CopyStrategy;
+import controller.command.copy.strategy.CopyStrategyFactory;
 import model.calendar.CalendarManager;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;

@@ -1,7 +1,8 @@
-package controller.command;
+package controller.command.event;
 
 import java.io.IOException;
 
+import controller.command.ICommand;
 import model.calendar.ICalendar;
 
 /**

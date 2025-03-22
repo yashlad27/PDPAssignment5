@@ -1,6 +1,7 @@
 package controller.command.edit;
 
 import controller.command.ICommand;
+import controller.command.edit.strategy.EventEditor;
 import model.calendar.ICalendar;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;

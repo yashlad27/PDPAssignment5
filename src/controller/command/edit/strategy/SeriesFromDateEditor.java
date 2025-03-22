@@ -1,10 +1,9 @@
-package controller.command.edit;
+package controller.command.edit.strategy;
 
 import java.time.LocalDateTime;
 
 import model.calendar.ICalendar;
 import model.exceptions.ConflictingEventException;
-import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
 import utilities.DateTimeUtil;
 
