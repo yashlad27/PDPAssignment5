@@ -1,24 +1,21 @@
-package test;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import controller.command.CommandFactory;
-import controller.command.CreateEventCommand;
-import controller.command.EditEventCommand;
-import controller.command.ExitCommand;
-import controller.command.ExportCalendarCommand;
+import controller.ICommandFactory;
 import controller.command.ICommand;
-import controller.command.PrintEventsCommand;
-import controller.command.ShowStatusCommand;
+import controller.command.event.CommandFactory;
 import model.calendar.ICalendar;
+import model.exceptions.ConflictingEventException;
+import model.exceptions.EventNotFoundException;
+import model.exceptions.InvalidEventException;
 import view.ICalendarView;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -32,39 +29,38 @@ public class CommandFactoryTest {
    * Manual mock implementation of ICalendar.
    */
   private static class MockCalendar implements ICalendar {
-
     /**
      * Minimal implementation with no functionality.
      */
     @Override
-    public boolean addEvent(model.event.Event event, boolean autoDecline) {
+    public boolean addEvent(model.event.Event event, boolean autoDecline) throws ConflictingEventException {
       return false;
     }
 
     @Override
     public boolean addRecurringEvent(model.event.RecurringEvent recurringEvent,
-        boolean autoDecline) {
+                                     boolean autoDecline) throws ConflictingEventException {
       return false;
     }
 
     @Override
     public boolean createRecurringEventUntil(String name, java.time.LocalDateTime start,
-        java.time.LocalDateTime end, String weekdays, java.time.LocalDate untilDate,
-        boolean autoDecline) {
+                                             java.time.LocalDateTime end, String weekdays, java.time.LocalDate untilDate,
+                                             boolean autoDecline) throws InvalidEventException, ConflictingEventException {
       return false;
     }
 
     @Override
     public boolean createAllDayRecurringEvent(String name, java.time.LocalDate date,
-        String weekdays, int occurrences, boolean autoDecline, String description, String location,
-        boolean isPublic) {
+                                              String weekdays, int occurrences, boolean autoDecline, String description, String location,
+                                              boolean isPublic) throws InvalidEventException, ConflictingEventException {
       return false;
     }
 
     @Override
     public boolean createAllDayRecurringEventUntil(String name, java.time.LocalDate date,
-        String weekdays, java.time.LocalDate untilDate, boolean autoDecline, String description,
-        String location, boolean isPublic) {
+                                                   String weekdays, java.time.LocalDate untilDate, boolean autoDecline, String description,
+                                                   String location, boolean isPublic) throws InvalidEventException, ConflictingEventException {
       return false;
     }
 
@@ -75,7 +71,7 @@ public class CommandFactoryTest {
 
     @Override
     public java.util.List<model.event.Event> getEventsInRange(java.time.LocalDate startDate,
-        java.time.LocalDate endDate) {
+                                                              java.time.LocalDate endDate) {
       return null;
     }
 
@@ -85,7 +81,7 @@ public class CommandFactoryTest {
     }
 
     @Override
-    public model.event.Event findEvent(String subject, java.time.LocalDateTime startDateTime) {
+    public model.event.Event findEvent(String subject, java.time.LocalDateTime startDateTime) throws EventNotFoundException {
       return null;
     }
 
@@ -96,18 +92,18 @@ public class CommandFactoryTest {
 
     @Override
     public boolean editSingleEvent(String subject, java.time.LocalDateTime startDateTime,
-        String property, String newValue) {
+                                   String property, String newValue) throws EventNotFoundException, InvalidEventException, ConflictingEventException {
       return false;
     }
 
     @Override
     public int editEventsFromDate(String subject, java.time.LocalDateTime startDateTime,
-        String property, String newValue) {
+                                  String property, String newValue) throws InvalidEventException, ConflictingEventException {
       return 0;
     }
 
     @Override
-    public int editAllEvents(String subject, String property, String newValue) {
+    public int editAllEvents(String subject, String property, String newValue) throws InvalidEventException, ConflictingEventException {
       return 0;
     }
 
@@ -131,18 +127,18 @@ public class CommandFactoryTest {
 
     @Override
     public void displayMessage(String message) {
-      int i = 0;
+      // Empty implementation for testing
     }
 
     @Override
     public void displayError(String errorMessage) {
-      int i = 0;
+      // Empty implementation for testing
     }
   }
 
   private ICalendar calendar;
   private ICalendarView view;
-  private CommandFactory factory;
+  private ICommandFactory factory;
 
   @Before
   public void setUp() {
@@ -160,12 +156,21 @@ public class CommandFactoryTest {
     ICommand editCommand = factory.getCommand("edit");
     ICommand exitCommand = factory.getCommand("exit");
 
-    assertTrue(createCommand instanceof CreateEventCommand);
-    assertTrue(printCommand instanceof PrintEventsCommand);
-    assertTrue(showCommand instanceof ShowStatusCommand);
-    assertTrue(exportCommand instanceof ExportCalendarCommand);
-    assertTrue(editCommand instanceof EditEventCommand);
-    assertTrue(exitCommand instanceof ExitCommand);
+    // Check if commands are not null (the command types have changed)
+    assertNotNull(createCommand);
+    assertNotNull(printCommand);
+    assertNotNull(showCommand);
+    assertNotNull(exportCommand);
+    assertNotNull(editCommand);
+    assertNotNull(exitCommand);
+
+    // Check command names
+    assertEquals("create", createCommand.getName());
+    assertEquals("print", printCommand.getName());
+    assertEquals("show", showCommand.getName());
+    assertEquals("export", exportCommand.getName());
+    assertEquals("edit", editCommand.getName());
+    assertEquals("exit", exitCommand.getName());
   }
 
   @Test
@@ -193,7 +198,7 @@ public class CommandFactoryTest {
 
   @Test
   public void testGetCommandNames() {
-    Iterable<String> commandNames = factory.getCommandNames();
+    Iterable<String> commandNames = ((CommandFactory) factory).getCommandNames();
 
     Set<String> nameSet = new HashSet<>();
     for (String name : commandNames) {
@@ -206,18 +211,22 @@ public class CommandFactoryTest {
     assertTrue(nameSet.contains("export"));
     assertTrue(nameSet.contains("edit"));
     assertTrue(nameSet.contains("exit"));
+    // Check for calendar-related commands that should be forwarded
+    assertTrue(nameSet.contains("use"));
+    assertTrue(nameSet.contains("copy"));
 
-    assertEquals(6, nameSet.size());
+    // Should now have 8 commands (added "use" and "copy" to the original 6)
+    assertEquals(8, nameSet.size());
   }
 
   @Test
   public void testGetCalendar() {
-    assertSame(calendar, factory.getCalendar());
+    assertSame(calendar, ((CommandFactory) factory).getCalendar());
   }
 
   @Test
   public void testGetView() {
-    assertSame(view, factory.getView());
+    assertSame(view, ((CommandFactory) factory).getView());
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -232,11 +241,11 @@ public class CommandFactoryTest {
 
   @Test
   public void testCommandInitialization() {
-    CreateEventCommand createCommand = (CreateEventCommand) factory.getCommand("create");
-    PrintEventsCommand printCommand = (PrintEventsCommand) factory.getCommand("print");
-    ShowStatusCommand showCommand = (ShowStatusCommand) factory.getCommand("show");
-    ExportCalendarCommand exportCommand = (ExportCalendarCommand) factory.getCommand("export");
-    EditEventCommand editCommand = (EditEventCommand) factory.getCommand("edit");
+    ICommand createCommand = factory.getCommand("create");
+    ICommand printCommand = factory.getCommand("print");
+    ICommand showCommand = factory.getCommand("show");
+    ICommand exportCommand = factory.getCommand("export");
+    ICommand editCommand = factory.getCommand("edit");
 
     assertEquals("create", createCommand.getName());
     assertEquals("print", printCommand.getName());
@@ -246,9 +255,23 @@ public class CommandFactoryTest {
   }
 
   @Test
+  public void testCalendarCommandForwarding() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+    // Create and use commands should be forwarded to CalendarCommandFactory
+    ICommand useCommand = factory.getCommand("use");
+    String result = useCommand.execute(new String[]{"test"});
+    assertEquals("Command forwarded to CalendarCommandFactory", result);
+
+    // Copy command should also be forwarded
+    ICommand copyCommand = factory.getCommand("copy");
+    result = copyCommand.execute(new String[]{"test"});
+    assertEquals("Command forwarded to CalendarCommandFactory", result);
+  }
+
+  @Test
   public void testRegisterDuplicateCommand() {
+    CommandFactory factoryImpl = (CommandFactory) factory;
     int initialCommandCount = 0;
-    for (String name : factory.getCommandNames()) {
+    for (String name : factoryImpl.getCommandNames()) {
       initialCommandCount++;
     }
 
@@ -268,5 +291,19 @@ public class CommandFactoryTest {
     assertNull(command);
 
     assertFalse(factory.hasCommand(null));
+  }
+
+  @Test
+  public void testRegisterCustomCommand() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+    CommandFactory factoryImpl = (CommandFactory) factory;
+    // Register a custom command
+    factoryImpl.registerCommand("custom", args -> "Custom command executed");
+
+    // Verify the command was registered
+    assertTrue(factoryImpl.hasCommand("custom"));
+
+    // Execute the command
+    ICommand customCommand = factoryImpl.getCommand("custom");
+    assertEquals("Custom command executed", customCommand.execute(new String[]{}));
   }
 }
