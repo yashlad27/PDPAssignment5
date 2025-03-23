@@ -243,6 +243,7 @@ public class CopyEventCommandTest {
 
     // Verify error message contains the conflict information
     assertTrue("Error message should contain conflict information",
-            result.contains("Cannot add event 'Test Meeting' due to conflict with an existing event"));
+            result.contains("Cannot add event 'Test Meeting' due to conflict "
+                    + "with an existing event"));
   }
 }
