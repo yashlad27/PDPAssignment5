@@ -23,6 +23,9 @@ public class SeriesFromDateEditor extends AbstractEventEditor {
    * @param args the edit arguments
    */
   public SeriesFromDateEditor(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 5) {
       throw new IllegalArgumentException("Insufficient arguments for editing events from date");
     }

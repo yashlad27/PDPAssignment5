@@ -28,6 +28,9 @@ public class ShowStatusCommand implements ICommand {
 
   @Override
   public String execute(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 1) {
       return "Error: Missing date/time for status command";
     }
