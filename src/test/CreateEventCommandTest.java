@@ -1,11 +1,9 @@
-package test;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
 
-import controller.command.CreateEventCommand;
+import controller.command.create.CreateEventCommand;
 import model.calendar.Calendar;
 import model.calendar.ICalendar;
 import model.event.Event;

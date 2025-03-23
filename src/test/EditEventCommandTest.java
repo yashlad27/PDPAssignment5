@@ -1,15 +1,15 @@
-package test;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import controller.command.EditEventCommand;
+import controller.command.edit.EditEventCommand;
 import model.calendar.Calendar;
 import model.calendar.ICalendar;
 import model.event.Event;
+import model.exceptions.ConflictingEventException;
+import model.exceptions.InvalidEventException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -23,7 +23,7 @@ public class EditEventCommandTest {
   private EditEventCommand editCommand;
 
   @Before
-  public void setUp() {
+  public void setUp() throws ConflictingEventException, InvalidEventException {
     calendar = new Calendar();
     editCommand = new EditEventCommand(calendar);
 

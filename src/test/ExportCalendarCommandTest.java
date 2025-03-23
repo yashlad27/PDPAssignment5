@@ -1,5 +1,3 @@
-package test;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import controller.command.ExportCalendarCommand;
+import controller.command.event.ExportCalendarCommand;
 import model.calendar.ICalendar;
 import model.event.Event;
 import model.event.RecurringEvent;

@@ -1,5 +1,3 @@
-package test;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,11 +52,13 @@ public class RecurringEventTest {
 
   @Test
   public void testConstructorWithOccurrences() {
-    RecurringEvent event = new RecurringEvent(
-            subject, startDateTime, endDateTime,
-            description, location, isPublic,
-            repeatDays, occurrences
-    );
+    RecurringEvent event = new RecurringEvent.Builder(
+            subject, startDateTime, endDateTime, repeatDays)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .occurrences(occurrences)
+            .build();
 
     assertEquals(subject, event.getSubject());
     assertEquals(startDateTime, event.getStartDateTime());
@@ -74,11 +74,13 @@ public class RecurringEventTest {
 
   @Test
   public void testConstructorWithEndDate() {
-    RecurringEvent event = new RecurringEvent(
-            subject, startDateTime, endDateTime,
-            description, location, isPublic,
-            repeatDays, endDate
-    );
+    RecurringEvent event = new RecurringEvent.Builder(
+            subject, startDateTime, endDateTime, repeatDays)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .endDate(endDate)
+            .build();
 
     assertEquals(subject, event.getSubject());
     assertEquals(startDateTime, event.getStartDateTime());
@@ -95,58 +97,70 @@ public class RecurringEventTest {
   @Test(expected = IllegalArgumentException.class)
   public void testConstructorWithEmptyRepeatDays() {
     Set<DayOfWeek> emptySet = EnumSet.noneOf(DayOfWeek.class);
-    new RecurringEvent(
-            subject, startDateTime, endDateTime,
-            description, location, isPublic,
-            emptySet, occurrences
-    );
+    new RecurringEvent.Builder(
+            subject, startDateTime, endDateTime, emptySet)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .occurrences(occurrences)
+            .build();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testConstructorWithNegativeOccurrences() {
-    new RecurringEvent(
-            subject, startDateTime, endDateTime,
-            description, location, isPublic,
-            repeatDays, -1
-    );
+    new RecurringEvent.Builder(
+            subject, startDateTime, endDateTime, repeatDays)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .occurrences(-1)
+            .build();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testConstructorWithZeroOccurrences() {
-    new RecurringEvent(
-            subject, startDateTime, endDateTime,
-            description, location, isPublic,
-            repeatDays, 0
-    );
+    new RecurringEvent.Builder(
+            subject, startDateTime, endDateTime, repeatDays)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .occurrences(0)
+            .build();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testConstructorWithEndDateBeforeStartDate() {
     LocalDate invalidEndDate = startDateTime.toLocalDate().minusDays(1);
-    new RecurringEvent(
-            subject, startDateTime, endDateTime,
-            description, location, isPublic,
-            repeatDays, invalidEndDate
-    );
+    new RecurringEvent.Builder(
+            subject, startDateTime, endDateTime, repeatDays)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .endDate(invalidEndDate)
+            .build();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testConstructorWithMultiDayEvent() {
     LocalDateTime nextDayEndTime = startDateTime.plusDays(1);
-    new RecurringEvent(
-            subject, startDateTime, nextDayEndTime,
-            description, location, isPublic,
-            repeatDays, occurrences
-    );
+    new RecurringEvent.Builder(
+            subject, startDateTime, nextDayEndTime, repeatDays)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .occurrences(occurrences)
+            .build();
   }
 
   @Test
   public void testGetAllOccurrencesWithOccurrences() {
-    RecurringEvent event = new RecurringEvent(
-            subject, startDateTime, endDateTime,
-            description, location, isPublic,
-            repeatDays, occurrences
-    );
+    RecurringEvent event = new RecurringEvent.Builder(
+            subject, startDateTime, endDateTime, repeatDays)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .occurrences(occurrences)
+            .build();
 
     List<Event> allOccurrences = event.getAllOccurrences();
 
@@ -164,11 +178,13 @@ public class RecurringEventTest {
 
   @Test
   public void testGetAllOccurrencesWithEndDate() {
-    RecurringEvent event = new RecurringEvent(
-            subject, startDateTime, endDateTime,
-            description, location, isPublic,
-            repeatDays, endDate
-    );
+    RecurringEvent event = new RecurringEvent.Builder(
+            subject, startDateTime, endDateTime, repeatDays)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .endDate(endDate)
+            .build();
 
     List<Event> allOccurrences = event.getAllOccurrences();
 
@@ -185,12 +201,14 @@ public class RecurringEventTest {
   @Test
   public void testAllDayRecurringEvent() {
     LocalDate date = LocalDate.of(2023, 5, 1);
-    RecurringEvent recurringEvent = new RecurringEvent(
-            subject, startDateTime, endDateTime,
-            description, location, isPublic,
-            repeatDays, occurrences
-    );
-    recurringEvent.setAllDay(true);
+    RecurringEvent recurringEvent = new RecurringEvent.Builder(
+            subject, startDateTime, endDateTime, repeatDays)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .occurrences(occurrences)
+            .isAllDay(true)
+            .build();
 
     assertTrue(recurringEvent.isAllDay());
 
@@ -202,28 +220,34 @@ public class RecurringEventTest {
 
   @Test
   public void testRecurringIdUniqueness() {
-    RecurringEvent event1 = new RecurringEvent(
-            subject, startDateTime, endDateTime,
-            description, location, isPublic,
-            repeatDays, occurrences
-    );
+    RecurringEvent event1 = new RecurringEvent.Builder(
+            subject, startDateTime, endDateTime, repeatDays)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .occurrences(occurrences)
+            .build();
 
-    RecurringEvent event2 = new RecurringEvent(
-            subject, startDateTime, endDateTime,
-            description, location, isPublic,
-            repeatDays, occurrences
-    );
+    RecurringEvent event2 = new RecurringEvent.Builder(
+            subject, startDateTime, endDateTime, repeatDays)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .occurrences(occurrences)
+            .build();
 
     assertNotEquals(event1.getRecurringId(), event2.getRecurringId());
   }
 
   @Test
   public void testOccurrenceDetailsMatchTemplate() {
-    RecurringEvent template = new RecurringEvent(
-            subject, startDateTime, endDateTime,
-            description, location, isPublic,
-            repeatDays, occurrences
-    );
+    RecurringEvent template = new RecurringEvent.Builder(
+            subject, startDateTime, endDateTime, repeatDays)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .occurrences(occurrences)
+            .build();
 
     List<Event> occurrences = template.getAllOccurrences();
     for (Event occurrence : occurrences) {
@@ -242,11 +266,13 @@ public class RecurringEventTest {
 
   @Test
   public void testUpdateRecurringEventAffectsAllOccurrences() {
-    RecurringEvent recurringEvent = new RecurringEvent(
-            subject, startDateTime, endDateTime,
-            description, location, isPublic,
-            repeatDays, occurrences
-    );
+    RecurringEvent recurringEvent = new RecurringEvent.Builder(
+            subject, startDateTime, endDateTime, repeatDays)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .occurrences(occurrences)
+            .build();
 
     List<Event> initialOccurrences = recurringEvent.getAllOccurrences();
 
@@ -262,11 +288,13 @@ public class RecurringEventTest {
 
   @Test
   public void testGetRepeatDaysReturnsCopy() {
-    RecurringEvent event = new RecurringEvent(
-            subject, startDateTime, endDateTime,
-            description, location, isPublic,
-            repeatDays, occurrences
-    );
+    RecurringEvent event = new RecurringEvent.Builder(
+            subject, startDateTime, endDateTime, repeatDays)
+            .description(description)
+            .location(location)
+            .isPublic(isPublic)
+            .occurrences(occurrences)
+            .build();
 
     Set<DayOfWeek> returnedDays = event.getRepeatDays();
 

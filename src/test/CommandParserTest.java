@@ -1,5 +1,3 @@
-package test;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import controller.command.CommandFactory;
+import controller.command.event.CommandFactory;
 import controller.command.ICommand;
 import controller.parser.CommandParser;
 import model.calendar.ICalendar;
@@ -269,7 +267,7 @@ public class CommandParserTest {
   }
 
   @Test
-  public void testParseExitCommand() {
+  public void testParseExitCommand() throws Exception {
     String commandString = "exit";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);

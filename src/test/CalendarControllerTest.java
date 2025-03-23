@@ -1,5 +1,3 @@
-package test;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import controller.CalendarController;
-import controller.command.CommandFactory;
+import controller.command.event.CommandFactory;
 import controller.command.ICommand;
 import controller.parser.CommandParser;
 import model.calendar.ICalendar;
@@ -564,7 +562,7 @@ public class CalendarControllerTest {
   }
 
   @Test
-  public void testHeadlesModeWithCaseInsensitiveExit() {
+  public void testHeadlessModeWithCaseInsensitiveExit() {
     String mockFileContent = "command1\nEXIT\n";
     BufferedReader reader = new BufferedReader(new StringReader(mockFileContent));
     TestableCalendarController testableController =
