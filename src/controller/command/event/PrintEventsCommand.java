@@ -37,6 +37,9 @@ public class PrintEventsCommand implements ICommand {
    */
   @Override
   public String execute(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 2) {
       return "Error: Insufficient arguments for print command";
     }

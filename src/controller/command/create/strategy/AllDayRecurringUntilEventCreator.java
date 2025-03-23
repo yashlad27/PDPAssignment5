@@ -30,6 +30,9 @@ public class AllDayRecurringUntilEventCreator extends AbstractEventCreator {
    * @param args the arguments for event creation
    */
   public AllDayRecurringUntilEventCreator(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 6) {
       throw new IllegalArgumentException("Insufficient arguments for all-day recurring event "
               + "until date");

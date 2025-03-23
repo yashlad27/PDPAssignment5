@@ -32,6 +32,9 @@ public class RecurringEventCreator extends AbstractEventCreator {
    * @param args the arguments for event creation
    */
   public RecurringEventCreator(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 7) {
       throw new IllegalArgumentException("Insufficient arguments for creating a recurring event");
     }

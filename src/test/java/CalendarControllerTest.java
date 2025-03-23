@@ -26,6 +26,7 @@ import view.ICalendarView;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Test class for calendar control.
@@ -41,7 +42,6 @@ public class CalendarControllerTest {
       super();
     }
 
-    // Minimal implementation with no functionality
     @Override
     public boolean addEvent(Event event, boolean autoDecline) {
       return false;
@@ -324,6 +324,21 @@ public class CalendarControllerTest {
           return false;
         }
 
+        // Check if exit command is present
+        boolean hasExitCommand = false;
+        for (String command : commands) {
+          if (command.toLowerCase().startsWith("exit")) {
+            hasExitCommand = true;
+            break;
+          }
+        }
+
+        if (!hasExitCommand) {
+          view.displayError("Error: Command file must contain an "
+                  + "'exit' command to prevent infinite loops");
+          return false;
+        }
+
         // Process all commands except the last one
         for (int i = 0; i < commands.size() - 1; i++) {
           String command = commands.get(i);
@@ -530,10 +545,15 @@ public class CalendarControllerTest {
             view);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testConstructorWithNullView() {
-    new CalendarController(commandFactory, null, null,
-            null);
+    try {
+      CalendarController controller = new CalendarController(commandFactory,
+              null, null, null);
+      fail("Should have thrown IllegalArgumentException for null view");
+    } catch (IllegalArgumentException e) {
+      assertEquals("CalendarCommandFactory cannot be null", e.getMessage());
+    }
   }
 
   @Test
@@ -547,6 +567,22 @@ public class CalendarControllerTest {
     List<String> errors = view.getErrorMessages();
     assertTrue(errors.contains("Error: Command file is empty. At least one command (exit) "
             + "is required."));
+  }
+
+  @Test
+  public void testHeadlessModeWithNoExitCommand() {
+    String mockFileContent = "create\n" +
+            "use\n" +
+            "show\n";
+    BufferedReader reader = new BufferedReader(new StringReader(mockFileContent));
+    TestableCalendarController testableController =
+            new TestableCalendarController(commandFactory, commandFactory, mockCalendarManager,
+                    view, reader);
+    boolean result = testableController.startHeadlessMode("no_exit.txt");
+    assertFalse("Should return false when file doesn't contain exit command", result);
+    List<String> errors = view.getErrorMessages();
+    assertTrue("Error messages should indicate that file needs an exit command to prevent infinite loops",
+            errors.contains("Error: Command file must contain an 'exit' command to prevent infinite loops"));
   }
 
   @Test

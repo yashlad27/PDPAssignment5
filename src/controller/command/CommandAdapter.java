@@ -33,6 +33,9 @@ public class CommandAdapter implements ICommand {
   @Override
   public String execute(String[] args) throws ConflictingEventException, InvalidEventException,
           EventNotFoundException {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     return executor.execute(args);
   }
 

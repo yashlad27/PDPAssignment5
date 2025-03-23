@@ -19,6 +19,9 @@ public class AllEventsEditor extends AbstractEventEditor {
    * @param args the edit arguments
    */
   public AllEventsEditor(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 4) {
       throw new IllegalArgumentException("Insufficient arguments for editing all events");
     }

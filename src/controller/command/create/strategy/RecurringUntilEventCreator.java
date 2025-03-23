@@ -33,6 +33,9 @@ public class RecurringUntilEventCreator extends AbstractEventCreator {
    * @param args the arguments for event creation
    */
   public RecurringUntilEventCreator(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 7) {
       throw new IllegalArgumentException("Insufficient arguments for recurring event until date");
     }
