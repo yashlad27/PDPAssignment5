@@ -1,92 +1,144 @@
 package controller.parser;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import controller.command.CommandFactory;
+import controller.ICommandFactory;
 import controller.command.ICommand;
-import utilities.DateTimeUtil;
 
 /**
- * Improved parser for command-line input that uses a CommandFactory.
+ * Improved parser for command-line input with extensible command pattern support.
+ * Now accepts the ICommandFactory interface rather than the concrete implementation.
  */
 public class CommandParser {
 
-  private final CommandFactory commandFactory;
-
-  private static final Pattern CREATE_EVENT_PATTERN = Pattern.compile(
-      "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
-          + "from (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"
-          + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?");
-
-  // Recurring event pattern with occurrences
-  private static final Pattern CREATE_RECURRING_EVENT_PATTERN = Pattern.compile(
-      "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) from "
-          + "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) repeats"
-          + " ([MTWRFSU]+) for (\\d+) times(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?"
-          + "(?:\\s+(private))?");
-
-  // Recurring event pattern with end date
-  private static final Pattern CREATE_RECURRING_UNTIL_PATTERN = Pattern.compile(
-      "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) from "
-          + "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
-          + "repeats ([MTWRFSU]+) until (\\d{4}-\\d{2}-\\d{2})(?:\\s+desc\\s+\"([^\"]+)\")?"
-          + "(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?");
-
-  // All-day event pattern
-  private static final Pattern CREATE_ALL_DAY_EVENT_PATTERN = Pattern.compile(
-      "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) on (\\d{4}-\\d{2}-\\d{2})"
-          + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?");
-
-  // All-day recurring event pattern with occurrences
-  private static final Pattern CREATE_ALL_DAY_RECURRING_PATTERN = Pattern.compile(
-      "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) on (\\d{4}-\\d{2}-\\d{2}) "
-          + "repeats ([MTWRFSU]+) for (\\d+) times(?:\\s+desc\\s+\"([^\"]+)\")?"
-          + "(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?");
-
-  // All-day recurring event pattern with end date
-  private static final Pattern CREATE_ALL_DAY_RECURRING_UNTIL_PATTERN = Pattern.compile(
-      "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) on (\\d{4}-\\d{2}-\\d{2})"
-          + " repeats ([MTWRFSU]+) until (\\d{4}-\\d{2}-\\d{2})(?:\\s+desc\\s+\"([^\"]+)\")?"
-          + "(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?");
-
-  // Display event patterns
-  private static final Pattern PRINT_EVENTS_PATTERN = Pattern.compile(
-      "print events on (\\d{4}-\\d{2}-\\d{2})");
-
-  private static final Pattern PRINT_EVENTS_RANGE_PATTERN = Pattern.compile(
-      "print events from (\\d{4}-\\d{2}-\\d{2}) to (\\d{4}-\\d{2}-\\d{2})");
-
-  // Status check pattern
-  private static final Pattern SHOW_STATUS_PATTERN = Pattern.compile(
-      "show status on (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})");
-
-  // Export calendar pattern
-  private static final Pattern EXPORT_CALENDAR_PATTERN = Pattern.compile(
-      "export cal (.+)");
-
-  // Edit event patterns
-  private static final Pattern EDIT_SINGLE_EVENT_PATTERN = Pattern.compile(
-      "edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) to (\\S+T\\S+) with \"?([^\"]+)\"?");
-
-  private static final Pattern EDIT_EVENTS_FROM_DATE_PATTERN = Pattern.compile(
-      "edit events (\\w+) \"([^\"]+)\" from (\\S+T\\S+) with \"?([^\"]+)\"?");
-
-  private static final Pattern EDIT_ALL_EVENTS_PATTERN = Pattern.compile(
-      "edit events (\\w+) \"([^\"]+)\" with \"?([^\"]+)\"?");
-
-  private static final Pattern EDIT_ALL_DAY_EVENT_PATTERN = Pattern.compile(
-      "edit event (\\w+) \"([^\"]+)\" on (\\d{4}-\\d{2}-\\d{2}) with \"?([^\"]+)\"?");
+  private final ICommandFactory commandFactory;
+  private final Map<String, CommandPattern> commandPatterns;
 
   /**
    * Constructs a new CommandParser.
    *
-   * @param commandFactory the factory for creating commands
+   * @param commandFactory the factory for creating commands (using the interface)
    */
-  public CommandParser(CommandFactory commandFactory) {
+  public CommandParser(ICommandFactory commandFactory) {
     this.commandFactory = commandFactory;
+    this.commandPatterns = new HashMap<>();
+    registerDefaultCommandPatterns();
+  }
+
+  /**
+   * Registers default command patterns.
+   */
+  private void registerDefaultCommandPatterns() {
+    // Create event patterns
+    registerPattern("create_event",
+            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
+                    + "from (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+                    + "to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"
+                    + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
+            this::parseCreateEventCommand);
+
+    registerPattern("create_all_day_event",
+            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
+                    + "on (\\d{4}-\\d{2}-\\d{2})"
+                    + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
+            this::parseCreateAllDayEventCommand);
+
+    registerPattern("create_recurring_event",
+            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) from "
+                    + "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+                    + "repeats ([MTWRFSU]+) for (\\d+) times(?:\\s+desc\\s+\"([^\"]+)\")?"
+                    + "(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
+            this::parseCreateRecurringEventCommand);
+
+    registerPattern("create_recurring_until_event",
+            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) from "
+                    + "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+                    + "repeats ([MTWRFSU]+) until (\\d{4}-\\d{2}-\\d{2})"
+                    + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
+            this::parseCreateRecurringUntilEventCommand);
+
+    registerPattern("create_all_day_recurring_event",
+            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
+                    + "on (\\d{4}-\\d{2}-\\d{2}) repeats ([MTWRFSU]+) for (\\d+) times"
+                    + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
+            this::parseCreateAllDayRecurringEventCommand);
+
+    registerPattern("create_all_day_recurring_until_event",
+            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
+                    + "on (\\d{4}-\\d{2}-\\d{2}) repeats ([MTWRFSU]+) until (\\d{4}-\\d{2}-\\d{2})"
+                    + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
+            this::parseCreateAllDayRecurringUntilEventCommand);
+
+    registerPattern("edit_single_event",
+            Pattern.compile("edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) with \"?([^\"]+)\"?"),
+            this::parseEditSingleEventCommand);
+
+    registerPattern("edit_event_time",
+            Pattern.compile("edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) to (\\S+T\\S+) with \"?([^\"]+)\"?"),
+            this::parseEditEventTimeCommand);
+
+    registerPattern("print_events_date",
+            Pattern.compile("print events on (\\d{4}-\\d{2}-\\d{2})"),
+            this::parsePrintEventsDateCommand);
+
+    registerPattern("print_events_range",
+            Pattern.compile("print events from (\\d{4}-\\d{2}-\\d{2}) "
+                    + "to (\\d{4}-\\d{2}-\\d{2})"),
+            this::parsePrintEventsRangeCommand);
+
+    registerPattern("create_calendar",
+            Pattern.compile("create calendar --name ([\\w-]+) --timezone ([\\w/]+)"),
+            this::parseCreateCalendarCommand);
+
+    // Edit calendar pattern
+    registerPattern("edit_calendar",
+            Pattern.compile("edit calendar --name ([\\w-]+) --property (\\w+) ([\\w/]+)"),
+            this::parseEditCalendarCommand);
+
+    // Use calendar pattern
+    registerPattern("use_calendar",
+            Pattern.compile("use calendar --name ([\\w-]+)"),
+            this::parseUseCalendarCommand);
+
+    // Copy single event pattern
+    registerPattern("copy_event",
+            Pattern.compile("copy event \"?([^\"]*)\"? on (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+                    + "--target ([\\w-]+) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"),
+            this::parseCopyEventCommand);
+
+    // Copy events on date pattern
+    registerPattern("copy_events_on_date",
+            Pattern.compile("copy events on (\\d{4}-\\d{2}-\\d{2}) --target ([\\w-]+) "
+                    + "to (\\d{4}-\\d{2}-\\d{2})"),
+            this::parseCopyEventsOnDateCommand);
+
+    // Copy events between dates pattern
+    registerPattern("copy_events_between_dates",
+            Pattern.compile("copy events between (\\d{4}-\\d{2}-\\d{2}) and (\\d{4}-\\d{2}-\\d{2}) "
+                    + "--target ([\\w-]+) to (\\d{4}-\\d{2}-\\d{2})"),
+            this::parseCopyEventsBetweenDatesCommand);
+
+    registerPattern("show_status",
+            Pattern.compile("show status on (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"),
+            this::parseShowStatusCommand);
+
+    registerPattern("export_calendar",
+            Pattern.compile("export cal (.+)"),
+            this::parseExportCommand);
+  }
+
+  /**
+   * Registers a new command pattern.
+   *
+   * @param name    the name of the pattern
+   * @param pattern the regex pattern
+   * @param parser  the parser function for the pattern
+   */
+  public void registerPattern(String name, Pattern pattern, CommandPatternParser parser) {
+    commandPatterns.put(name, new CommandPattern(pattern, parser));
   }
 
   /**
@@ -97,7 +149,6 @@ public class CommandParser {
    * @throws IllegalArgumentException if the command is invalid or unsupported
    */
   public CommandWithArgs parseCommand(String commandString) {
-
     if (commandString == null || commandString.trim().isEmpty()) {
       throw new IllegalArgumentException("Command string cannot be null or empty");
     }
@@ -110,190 +161,362 @@ public class CommandParser {
       return new CommandWithArgs(exitCommand, new String[0]);
     }
 
-    // Parse create event commands
-    if (commandString.startsWith("create event")) {
-      return parseCreateEventCommand(commandString);
-    }
-
-    // Parse edit commands
-    if (commandString.startsWith("edit event") || commandString.startsWith("edit events")) {
-      return parseEditEventCommand(commandString);
-    }
-
-    // Parse print commands
-    if (commandString.startsWith("print events")) {
-      return parsePrintEventsCommand(commandString);
-    }
-
-    // Parse show status command
-    if (commandString.startsWith("show status")) {
-      return parseShowStatusCommand(commandString);
-    }
-
-    // Parse export command
-    if (commandString.startsWith("export cal")) {
-      return parseExportCommand(commandString);
+    // Try all registered patterns
+    for (CommandPattern commandPattern : commandPatterns.values()) {
+      Matcher matcher = commandPattern.getPattern().matcher(commandString);
+      if (matcher.matches()) {
+        return commandPattern.getParser().parse(matcher);
+      }
     }
 
     throw new IllegalArgumentException("Unrecognized or unsupported command: " + commandString);
   }
 
   /**
-   * Parses a create event command.
-   *
-   * @param commandString the command string to parse
-   * @return a CommandWithArgs for creating an event
-   * @throws IllegalArgumentException if the command is invalid
+   * Parse create event command.
    */
-  private CommandWithArgs parseCreateEventCommand(String commandString) {
+  private CommandWithArgs parseCreateEventCommand(Matcher matcher) {
     ICommand createCommand = commandFactory.getCommand("create");
-    Matcher matcher;
 
-    matcher = CREATE_EVENT_PATTERN.matcher(commandString);
-    if (matcher.matches()) {
-      boolean autoDecline = matcher.group(1) != null;
+    boolean autoDecline = matcher.group(1) != null;
 
-      String eventName = matcher.group(2);
-      if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
-        eventName = eventName.substring(1, eventName.length() - 1);
-      }
-
-      String[] args = {
-          "single",
-          eventName,
-          matcher.group(3),
-          matcher.group(4),
-          matcher.group(5),
-          matcher.group(6),
-          matcher.group(7) != null ? "false" : "true",
-          String.valueOf(autoDecline)
-      };
-      return new CommandWithArgs(createCommand, args);
+    String eventName = matcher.group(2);
+    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
+      eventName = eventName.substring(1, eventName.length() - 1);
     }
 
-    matcher = CREATE_RECURRING_EVENT_PATTERN.matcher(commandString);
-    if (matcher.matches()) {
-      boolean autoDecline = matcher.group(1) != null;
+    String[] args = {
+            "single",
+            eventName,
+            matcher.group(3),
+            matcher.group(4),
+            matcher.group(5),
+            matcher.group(6),
+            matcher.group(7) != null ? "false" : "true",
+            String.valueOf(autoDecline)
+    };
+    return new CommandWithArgs(createCommand, args);
+  }
 
-      String eventName = matcher.group(2);
-      if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
-        eventName = eventName.substring(1, eventName.length() - 1);
-      }
+  /**
+   * Parse create all day event command.
+   */
+  private CommandWithArgs parseCreateAllDayEventCommand(Matcher matcher) {
+    ICommand createCommand = commandFactory.getCommand("create");
 
-      String[] args = {
-          "recurring",
-          eventName,  // event name
-          matcher.group(3),  // start date/time
-          matcher.group(4),  // end date/time
-          matcher.group(5),  // weekdays
-          matcher.group(6),  // occurrences
-          String.valueOf(autoDecline),
-          matcher.group(7),  // description
-          matcher.group(8),  // location
-          matcher.group(9) != null ? "false" : "true"  // isPublic
-      };
-      return new CommandWithArgs(createCommand, args);
+    boolean autoDecline = matcher.group(1) != null;
+
+    String eventName = matcher.group(2);
+    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
+      eventName = eventName.substring(1, eventName.length() - 1);
     }
 
-    matcher = CREATE_RECURRING_UNTIL_PATTERN.matcher(commandString);
-    if (matcher.matches()) {
-      boolean autoDecline = matcher.group(1) != null;
+    String[] args = {
+            "allday",
+            eventName,
+            matcher.group(3),
+            String.valueOf(autoDecline),
+            matcher.group(4),
+            matcher.group(5),
+            matcher.group(6) != null ? "false" : "true"
+    };
+    return new CommandWithArgs(createCommand, args);
+  }
 
-      String eventName = matcher.group(2);
-      if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
-        eventName = eventName.substring(1, eventName.length() - 1);
-      }
+  /**
+   * Parse create recurring event command.
+   */
+  private CommandWithArgs parseCreateRecurringEventCommand(Matcher matcher) {
+    ICommand createCommand = commandFactory.getCommand("create");
 
-      String[] args = {
-          "recurring-until",
-          eventName,  // event name
-          matcher.group(3),  // start date/time
-          matcher.group(4),  // end date/time
-          matcher.group(5),  // weekdays
-          matcher.group(6),  // until date
-          String.valueOf(autoDecline),
-          matcher.group(7),  // description
-          matcher.group(8),  // location
-          matcher.group(9) != null ? "false" : "true"  // isPublic
-      };
-      return new CommandWithArgs(createCommand, args);
+    boolean autoDecline = matcher.group(1) != null;
+
+    String eventName = matcher.group(2);
+    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
+      eventName = eventName.substring(1, eventName.length() - 1);
     }
 
-    matcher = CREATE_ALL_DAY_EVENT_PATTERN.matcher(commandString);
-    if (matcher.matches()) {
-      boolean autoDecline = matcher.group(1) != null;
+    String[] args = {
+            "recurring",
+            eventName,
+            matcher.group(3),
+            matcher.group(4),
+            matcher.group(5),
+            matcher.group(6),
+            String.valueOf(autoDecline),
+            matcher.group(7),
+            matcher.group(8),
+            matcher.group(9) != null ? "false" : "true"
+    };
+    return new CommandWithArgs(createCommand, args);
+  }
 
-      String eventName = matcher.group(2);
-      if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
-        eventName = eventName.substring(1, eventName.length() - 1);
-      }
+  /**
+   * Parse create recurring until event command.
+   */
+  private CommandWithArgs parseCreateRecurringUntilEventCommand(Matcher matcher) {
+    ICommand createCommand = commandFactory.getCommand("create");
 
-      String[] args = {
-          "allday",
-          eventName,  // event name
-          matcher.group(3),  // date
-          String.valueOf(autoDecline),
-          matcher.group(4),  // description
-          matcher.group(5),  // location
-          matcher.group(6) != null ? "false" : "true"  // isPublic
-      };
-      return new CommandWithArgs(createCommand, args);
+    boolean autoDecline = matcher.group(1) != null;
+
+    String eventName = matcher.group(2);
+    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
+      eventName = eventName.substring(1, eventName.length() - 1);
     }
 
-    matcher = CREATE_ALL_DAY_RECURRING_PATTERN.matcher(commandString);
-    if (matcher.matches()) {
-      boolean autoDecline = matcher.group(1) != null;
+    String[] args = {
+            "recurring-until",
+            eventName,
+            matcher.group(3),
+            matcher.group(4),
+            matcher.group(5),
+            matcher.group(6),
+            String.valueOf(autoDecline),
+            matcher.group(7),
+            matcher.group(8),
+            matcher.group(9) != null ? "false" : "true"
+    };
+    return new CommandWithArgs(createCommand, args);
+  }
 
-      String eventName = matcher.group(2);
-      if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
-        eventName = eventName.substring(1, eventName.length() - 1);
-      }
+  /**
+   * Parse create all day recurring event command.
+   */
+  private CommandWithArgs parseCreateAllDayRecurringEventCommand(Matcher matcher) {
+    ICommand createCommand = commandFactory.getCommand("create");
 
-      String[] args = {
-          "allday-recurring",
-          eventName,  // event name
-          matcher.group(3),  // date
-          matcher.group(4),  // weekdays
-          matcher.group(5),  // occurrences
-          String.valueOf(autoDecline),
-          matcher.group(6),  // description
-          matcher.group(7),  // location
-          matcher.group(8) != null ? "false" : "true"  // isPublic
-      };
-      return new CommandWithArgs(createCommand, args);
+    boolean autoDecline = matcher.group(1) != null;
+
+    String eventName = matcher.group(2);
+    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
+      eventName = eventName.substring(1, eventName.length() - 1);
     }
 
-    matcher = CREATE_ALL_DAY_RECURRING_UNTIL_PATTERN.matcher(commandString);
-    if (matcher.matches()) {
-      boolean autoDecline = matcher.group(1) != null;
+    String[] args = {
+            "allday-recurring",
+            eventName,
+            matcher.group(3),
+            matcher.group(4),
+            matcher.group(5),
+            String.valueOf(autoDecline),
+            matcher.group(6),
+            matcher.group(7),
+            matcher.group(8) != null ? "false" : "true"
+    };
+    return new CommandWithArgs(createCommand, args);
+  }
 
-      String eventName = matcher.group(2);
-      if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
-        eventName = eventName.substring(1, eventName.length() - 1);
-      }
+  /**
+   * Parse create all day recurring until event command.
+   */
+  private CommandWithArgs parseCreateAllDayRecurringUntilEventCommand(Matcher matcher) {
+    ICommand createCommand = commandFactory.getCommand("create");
 
-      String[] args = {
-          "allday-recurring-until",
-          eventName,  // event name
-          matcher.group(3),  // date
-          matcher.group(4),  // weekdays
-          matcher.group(5),  // until date
-          String.valueOf(autoDecline),
-          matcher.group(6),  // description
-          matcher.group(7),  // location
-          matcher.group(8) != null ? "false" : "true"  // isPublic
-      };
-      return new CommandWithArgs(createCommand, args);
+    boolean autoDecline = matcher.group(1) != null;
+
+    String eventName = matcher.group(2);
+    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
+      eventName = eventName.substring(1, eventName.length() - 1);
     }
 
-    throw new IllegalArgumentException("Invalid create event command format");
+    String[] args = {
+            "allday-recurring-until",
+            eventName,
+            matcher.group(3),
+            matcher.group(4),
+            matcher.group(5),
+            String.valueOf(autoDecline),
+            matcher.group(6),
+            matcher.group(7),
+            matcher.group(8) != null ? "false" : "true"
+    };
+    return new CommandWithArgs(createCommand, args);
+  }
+
+  /**
+   * Parse edit single event command.
+   */
+  private CommandWithArgs parseEditSingleEventCommand(Matcher matcher) {
+    ICommand editCommand = commandFactory.getCommand("edit");
+
+    String property = matcher.group(1);
+    String subject = matcher.group(2);
+    String startDateTime = matcher.group(3);
+    String newValue = matcher.group(4);
+
+    String[] args = {
+            "single",
+            property,
+            subject,
+            startDateTime,
+            newValue
+    };
+    return new CommandWithArgs(editCommand, args);
+  }
+
+  /**
+   * Parse print events on date command.
+   */
+  private CommandWithArgs parsePrintEventsDateCommand(Matcher matcher) {
+    ICommand printCommand = commandFactory.getCommand("print");
+
+    String[] args = {
+            "on_date",
+            matcher.group(1)
+    };
+    return new CommandWithArgs(printCommand, args);
+  }
+
+  /**
+   * Parse print events range command.
+   */
+  private CommandWithArgs parsePrintEventsRangeCommand(Matcher matcher) {
+    ICommand printCommand = commandFactory.getCommand("print");
+
+    String[] args = {
+            "date_range",
+            matcher.group(1),
+            matcher.group(2)
+    };
+    return new CommandWithArgs(printCommand, args);
+  }
+
+  private CommandWithArgs parseCreateCalendarCommand(Matcher matcher) {
+    ICommand calendarCommand = commandFactory.getCommand("create");
+
+    String[] args = {
+            "calendar",
+            "--name",
+            matcher.group(1),
+            "--timezone",
+            matcher.group(2)
+    };
+    return new CommandWithArgs(calendarCommand, args);
+  }
+
+  private CommandWithArgs parseEditCalendarCommand(Matcher matcher) {
+    ICommand calendarCommand = commandFactory.getCommand("edit");
+
+    String[] args = {
+            "calendar",
+            "--name",
+            matcher.group(1),
+            "--property",
+            matcher.group(2),
+            matcher.group(3)
+    };
+    return new CommandWithArgs(calendarCommand, args);
+  }
+
+  private CommandWithArgs parseUseCalendarCommand(Matcher matcher) {
+    ICommand calendarCommand = commandFactory.getCommand("use");
+
+    String[] args = {
+            "calendar",
+            "--name",
+            matcher.group(1)
+    };
+    return new CommandWithArgs(calendarCommand, args);
+  }
+
+  private CommandWithArgs parseCopyEventCommand(Matcher matcher) {
+    ICommand copyCommand = commandFactory.getCommand("copy");
+
+    String[] args = {
+            "copy",
+            "event",
+            matcher.group(1),
+            "on",
+            matcher.group(2),
+            "--target",
+            matcher.group(3),
+            "to",
+            matcher.group(4)
+    };
+    return new CommandWithArgs(copyCommand, args);
+  }
+
+  private CommandWithArgs parseCopyEventsOnDateCommand(Matcher matcher) {
+    ICommand copyCommand = commandFactory.getCommand("copy");
+
+    String[] args = {
+            "copy",
+            "events",
+            "on",
+            matcher.group(1),
+            "--target",
+            matcher.group(2),
+            "to",
+            matcher.group(3)
+    };
+    return new CommandWithArgs(copyCommand, args);
+  }
+
+  private CommandWithArgs parseCopyEventsBetweenDatesCommand(Matcher matcher) {
+    ICommand copyCommand = commandFactory.getCommand("copy");
+
+    String[] args = {
+            "copy",
+            "events",
+            "between",
+            matcher.group(1),
+            "and",
+            matcher.group(2),
+            "--target",
+            matcher.group(3),
+            "to",
+            matcher.group(4)
+    };
+    return new CommandWithArgs(copyCommand, args);
+  }
+
+  /**
+   * Parse show status command.
+   */
+  private CommandWithArgs parseShowStatusCommand(Matcher matcher) {
+    ICommand statusCommand = commandFactory.getCommand("show");
+
+    String[] args = {
+            matcher.group(1)
+    };
+    return new CommandWithArgs(statusCommand, args);
+  }
+
+  /**
+   * Parse export command.
+   */
+  private CommandWithArgs parseExportCommand(Matcher matcher) {
+    ICommand exportCommand = commandFactory.getCommand("export");
+
+    String[] args = {
+            matcher.group(1)
+    };
+    return new CommandWithArgs(exportCommand, args);
+  }
+
+  private CommandWithArgs parseEditEventTimeCommand(Matcher matcher) {
+    ICommand editCommand = commandFactory.getCommand("edit");
+
+    String property = matcher.group(1);
+    String subject = matcher.group(2);
+    String startDateTime = matcher.group(3);
+    String endDateTime = matcher.group(4);
+    String newValue = matcher.group(5);
+
+    String[] args = {
+            "single",
+            property,
+            subject,
+            startDateTime,
+            newValue
+    };
+    return new CommandWithArgs(editCommand, args);
   }
 
   /**
    * Helper class to hold a command and its arguments.
    */
   public static class CommandWithArgs {
-
     private final ICommand command;
     private final String[] args;
 
@@ -310,147 +533,29 @@ public class CommandParser {
       return args;
     }
 
-    public String execute() {
+    public String execute() throws Exception {
       return command.execute(args);
     }
   }
 
-  private CommandWithArgs parseEditEventCommand(String commandString) {
-    ICommand editCommand = commandFactory.getCommand("edit");
-    Matcher matcher;
+  /**
+   * Class that represents a command pattern with its regex and parser.
+   */
+  private static class CommandPattern {
+    private final Pattern pattern;
+    private final CommandPatternParser parser;
 
-    matcher = EDIT_SINGLE_EVENT_PATTERN.matcher(commandString);
-    if (matcher.matches()) {
-      String property = matcher.group(1);
-      String subject = matcher.group(2);
-      if (subject.startsWith("\"") && subject.endsWith("\"")) {
-        subject = subject.substring(1, subject.length() - 1);
-      }
-
-      String[] args = {
-          "single",
-          property,
-          subject,
-          matcher.group(3),
-          matcher.group(5)
-      };
-      return new CommandWithArgs(editCommand, args);
+    public CommandPattern(Pattern pattern, CommandPatternParser parser) {
+      this.pattern = pattern;
+      this.parser = parser;
     }
 
-    matcher = EDIT_EVENTS_FROM_DATE_PATTERN.matcher(commandString);
-    if (matcher.matches()) {
-      String property = matcher.group(1);
-      String subject = matcher.group(2);
-      if (subject.startsWith("\"") && subject.endsWith("\"")) {
-        subject = subject.substring(1, subject.length() - 1);
-      }
-
-      String[] args = {
-          "series_from_date",
-          property,
-          subject,
-          matcher.group(3),  // startDateTime
-          matcher.group(4)   // newValue
-      };
-      return new CommandWithArgs(editCommand, args);
+    public Pattern getPattern() {
+      return pattern;
     }
 
-    matcher = EDIT_ALL_EVENTS_PATTERN.matcher(commandString);
-    if (matcher.matches()) {
-      String property = matcher.group(1);
-      String subject = matcher.group(2);
-      if (subject.startsWith("\"") && subject.endsWith("\"")) {
-        subject = subject.substring(1, subject.length() - 1);
-      }
-
-      String[] args = {
-          "all",
-          property,
-          subject,
-          matcher.group(3)
-      };
-      return new CommandWithArgs(editCommand, args);
+    public CommandPatternParser getParser() {
+      return parser;
     }
-
-    matcher = EDIT_ALL_DAY_EVENT_PATTERN.matcher(commandString);
-    if (matcher.matches()) {
-      String property = matcher.group(1);
-      String subject = matcher.group(2);
-      String dateStr = matcher.group(3);
-      String newValue = matcher.group(4);
-
-      if (newValue.startsWith("\"") && newValue.endsWith("\"")) {
-        newValue = newValue.substring(1, newValue.length() - 1);
-      }
-
-      LocalDateTime startDateTime = LocalDateTime.of(
-          DateTimeUtil.parseDate(dateStr),
-          LocalTime.of(0, 0));
-
-      String[] args = {
-          "single",
-          property,
-          subject,
-          startDateTime.toString(),
-          newValue
-      };
-      return new CommandWithArgs(editCommand, args);
-    }
-
-    throw new IllegalArgumentException("Invalid edit command format: " + commandString);
-  }
-
-  private CommandWithArgs parsePrintEventsCommand(String commandString) {
-    ICommand printCommand = commandFactory.getCommand("print");
-    Matcher matcher;
-
-    matcher = PRINT_EVENTS_PATTERN.matcher(commandString);
-    if (matcher.matches()) {
-      String[] args = {
-          "on_date",
-          matcher.group(1)  // date
-      };
-      return new CommandWithArgs(printCommand, args);
-    }
-
-    matcher = PRINT_EVENTS_RANGE_PATTERN.matcher(commandString);
-    if (matcher.matches()) {
-      String[] args = {
-          "date_range",
-          matcher.group(1),
-          matcher.group(2)
-      };
-      return new CommandWithArgs(printCommand, args);
-    }
-
-    throw new IllegalArgumentException("Invalid print command format: " + commandString);
-  }
-
-  private CommandWithArgs parseShowStatusCommand(String commandString) {
-    ICommand statusCommand = commandFactory.getCommand("show");
-    Matcher matcher = SHOW_STATUS_PATTERN.matcher(commandString);
-
-    if (matcher.matches()) {
-      String[] args = {
-          matcher.group(1)  // dateTime
-      };
-      return new CommandWithArgs(statusCommand, args);
-    }
-
-    throw new IllegalArgumentException("Invalid status command format: " + commandString);
-  }
-
-  private CommandWithArgs parseExportCommand(String commandString) {
-    ICommand exportCommand = commandFactory.getCommand("export");
-    Matcher matcher = EXPORT_CALENDAR_PATTERN.matcher(commandString);
-
-    if (matcher.matches()) {
-      String[] args = {
-          matcher.group(1)  // filename
-      };
-      return new CommandWithArgs(exportCommand, args);
-    }
-
-    throw new IllegalArgumentException("Invalid export command format: " + commandString);
   }
 }

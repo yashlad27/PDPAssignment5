@@ -1,63 +1,92 @@
 import controller.CalendarController;
-import controller.command.CommandFactory;
+import controller.ICommandFactory;
 import model.calendar.Calendar;
+import model.calendar.CalendarManager;
 import model.calendar.ICalendar;
+import model.factory.CalendarFactory;
+import utilities.TimeZoneHandler;
 import view.ConsoleView;
 import view.ICalendarView;
 
 /**
- * Main class for the Calendar Application.
+ * Main entry point for the Calendar Application.
+ * This class handles both interactive and headless modes of operation.
  */
 public class CalendarApp {
 
-  /**
-   * Main method to run the application.
-   *
-   * @param args command line arguments
-   */
-  public static void main(String[] args) {
-    ICalendar calendar = new Calendar();
-    ICalendarView view = new ConsoleView();
+    /**
+     * Main method that serves as the entry point for the application.
+     * 
+     * @param args Command line arguments:
+     *             --mode interactive    : Starts the application in interactive mode
+     *             --mode headless file : Starts the application in headless mode with the specified command file
+     */
+    public static void main(String[] args) {
+        // Initialize factory and core components
+        CalendarFactory factory = new CalendarFactory();
+        ICalendarView view = factory.createView();
+        TimeZoneHandler timezoneHandler = factory.createTimeZoneHandler();
+        CalendarManager calendarManager = factory.createCalendarManager(timezoneHandler);
+        
+        // Create command factories
+        ICalendar calendar = new Calendar();
+        ICommandFactory eventCommandFactory = factory.createEventCommandFactory(calendar, view);
+        ICommandFactory calendarCommandFactory = factory.createCalendarCommandFactory(calendarManager, view);
+        
+        // Create controller with all dependencies
+        CalendarController controller = factory.createController(
+                eventCommandFactory,
+                calendarCommandFactory,
+                calendarManager,
+                view);
 
-    CommandFactory commandFactory = new CommandFactory(calendar, view);
+        try {
+            // Process command line arguments
+            if (args.length < 2) {
+                view.displayError("Usage: java CalendarApp.java --mode [interactive|headless filename]");
+                return;
+            }
 
-    CalendarController controller = new CalendarController(commandFactory, view);
+            String modeArg = args[0].toLowerCase();
+            String modeValue = args[1].toLowerCase();
 
-    if (args.length < 2) {
-      view.displayError(
-          "Insufficient arguments. Usage: --mode [interactive|headless filename.txt]");
-      return;
+            if (!modeArg.equals("--mode")) {
+                view.displayError("Invalid argument. Expected: --mode");
+                return;
+            }
+
+            // Handle different modes
+            switch (modeValue) {
+                case "interactive":
+                    controller.startInteractiveMode();
+                    break;
+
+                case "headless":
+                    if (args.length < 3) {
+                        view.displayError("Headless mode requires a filename. Usage: --mode headless filename");
+                        return;
+                    }
+                    String filename = args[2];
+                    boolean success = controller.startHeadlessMode(filename);
+                    if (!success) {
+                        view.displayError("Headless mode execution failed.");
+                        System.exit(1);
+                    }
+                    break;
+
+                default:
+                    view.displayError("Invalid mode. Expected: interactive or headless");
+                    return;
+            }
+
+        } catch (Exception e) {
+            view.displayError("An error occurred: " + e.getMessage());
+            System.exit(1);
+        } finally {
+            // Clean up resources
+            if (view instanceof ConsoleView) {
+                ((ConsoleView) view).close();
+            }
+        }
     }
-
-    String modeArg = args[0].toLowerCase();
-    String modeValue = args[1].toLowerCase();
-
-    if (!modeArg.equals("--mode")) {
-      view.displayError("Invalid argument. Expected: --mode");
-      return;
-    }
-
-    if (modeValue.equals("interactive")) {
-      controller.startInteractiveMode();
-    } else if (modeValue.equals("headless")) {
-      if (args.length < 3) {
-        view.displayError("Headless mode requires a filename. Usage: --mode headless filename.txt");
-        return;
-      }
-
-      String filename = args[2];
-      boolean success = controller.startHeadlessMode(filename);
-
-      if (!success) {
-        view.displayError("Headless mode execution failed.");
-        System.exit(1);
-      }
-    } else {
-      view.displayError("Invalid mode. Expected: interactive or headless");
-    }
-
-    if (view instanceof ConsoleView) {
-      ((ConsoleView) view).close();
-    }
-  }
 }
