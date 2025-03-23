@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Test class for Calendar.
@@ -523,5 +525,693 @@ public class CalendarTest {
     String newTimezone = "Europe/London";
     calendar.setTimezone(newTimezone);
     assertEquals(newTimezone, calendar.getTimezone());
+  }
+
+  @Test
+  public void testBoundaryConditionsForEventConflicts() throws ConflictingEventException {
+    // Test events that end exactly when another begins
+    Event event1 = new Event("Event 1", 
+        LocalDateTime.of(2023, 5, 15, 10, 0),
+        LocalDateTime.of(2023, 5, 15, 11, 0),
+        null, null, true);
+    Event event2 = new Event("Event 2",
+        LocalDateTime.of(2023, 5, 15, 11, 0),
+        LocalDateTime.of(2023, 5, 15, 12, 0),
+        null, null, true);
+    
+    assertTrue(calendar.addEvent(event1, true));
+    assertTrue(calendar.addEvent(event2, true)); // Should not conflict
+    
+    // Test events that start exactly when another ends
+    Event event3 = new Event("Event 3",
+        LocalDateTime.of(2023, 5, 15, 12, 0),
+        LocalDateTime.of(2023, 5, 15, 13, 0),
+        null, null, true);
+    assertTrue(calendar.addEvent(event3, true)); // Should not conflict
+  }
+
+  @Test
+  public void testBoundaryConditionsForDateRangeQueries() {
+    LocalDate startDate = LocalDate.of(2023, 5, 15);
+    LocalDate endDate = LocalDate.of(2023, 5, 17);
+    
+    // Event exactly on start date
+    Event event1 = new Event("Event 1",
+        startDate.atTime(10, 0),
+        startDate.atTime(11, 0),
+        null, null, true);
+    
+    // Event exactly on end date
+    Event event2 = new Event("Event 2",
+        endDate.atTime(14, 0),
+        endDate.atTime(15, 0),
+        null, null, true);
+    
+    // Event spanning the range
+    Event event3 = new Event("Event 3",
+        startDate.atTime(9, 0),
+        endDate.atTime(16, 0),
+        null, null, true);
+    
+    try {
+      calendar.addEvent(event1, true);
+      calendar.addEvent(event2, true);
+      calendar.addEvent(event3, true);
+    } catch (ConflictingEventException e) {
+      fail("Should not throw conflict exception");
+    }
+    
+    List<Event> events = calendar.getEventsInRange(startDate, endDate);
+    assertEquals(3, events.size());
+    assertTrue(events.contains(event1));
+    assertTrue(events.contains(event2));
+    assertTrue(events.contains(event3));
+  }
+
+  @Test
+  public void testBoundaryConditionsForBusyTime() throws ConflictingEventException {
+    LocalDateTime eventStart = LocalDateTime.of(2023, 5, 15, 10, 0);
+    LocalDateTime eventEnd = LocalDateTime.of(2023, 5, 15, 11, 0);
+    
+    Event event = new Event("Test Event", eventStart, eventEnd, null, null, true);
+    calendar.addEvent(event, true);
+    
+    // Test exactly at start time
+    assertTrue(calendar.isBusy(eventStart));
+    
+    // Test exactly at end time
+    assertTrue(calendar.isBusy(eventEnd));
+    
+    // Test one minute before
+    assertFalse(calendar.isBusy(eventStart.minusMinutes(1)));
+    
+    // Test one minute after
+    assertFalse(calendar.isBusy(eventEnd.plusMinutes(1)));
+  }
+
+  @Test
+  public void testEdgeConditionsForRecurringEvents() throws ConflictingEventException {
+    LocalDateTime start = LocalDateTime.of(2023, 5, 15, 10, 0);
+    LocalDateTime end = LocalDateTime.of(2023, 5, 15, 11, 0);
+    Set<DayOfWeek> weekdays = Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY);
+    
+    // Test recurring event with minimum occurrences (1)
+    RecurringEvent event1 = new RecurringEvent.Builder("Event 1", start, end, weekdays)
+        .occurrences(1)
+        .build();
+    assertTrue(calendar.addRecurringEvent(event1, true));
+    assertEquals(1, calendar.getAllEvents().size());
+    
+    // Test recurring event with large number of occurrences
+    RecurringEvent event2 = new RecurringEvent.Builder("Event 2", 
+        start.plusHours(1), end.plusHours(1), weekdays)
+        .occurrences(100)
+        .build();
+    assertTrue(calendar.addRecurringEvent(event2, true));
+    assertEquals(101, calendar.getAllEvents().size());
+  }
+
+  @Test
+  public void testEdgeConditionsForEventEditing() throws ConflictingEventException {
+    Event event = new Event("Test Event",
+        LocalDateTime.of(2023, 5, 15, 10, 0),
+        LocalDateTime.of(2023, 5, 15, 11, 0),
+        null, null, true);
+    calendar.addEvent(event, true);
+    
+    // Test editing with empty string
+    assertTrue(calendar.editSingleEvent(event.getSubject(), event.getStartDateTime(), "description", ""));
+    assertEquals("", calendar.findEvent(event.getSubject(), event.getStartDateTime()).getDescription());
+    
+    // Test editing with very long string
+    String longDesc = "a".repeat(1000);
+    assertTrue(calendar.editSingleEvent(event.getSubject(), event.getStartDateTime(), "description", longDesc));
+    assertEquals(longDesc, calendar.findEvent(event.getSubject(), event.getStartDateTime()).getDescription());
+    
+    // Test editing with special characters
+    String specialChars = "!@#$%^&*()_+{}|:\"<>?";
+    assertTrue(calendar.editSingleEvent(event.getSubject(), event.getStartDateTime(), "description", specialChars));
+    assertEquals(specialChars, calendar.findEvent(event.getSubject(), event.getStartDateTime()).getDescription());
+  }
+
+  @Test
+  public void testEdgeConditionsForAllDayEvents() throws ConflictingEventException {
+    LocalDate date = LocalDate.of(2023, 5, 15);
+    
+    // Test all-day event at start of day
+    assertTrue(calendar.createAllDayRecurringEvent("Event 1", date, "MWF", 1, true,
+        "Description", "Location", true));
+    
+    // Test all-day event spanning multiple days
+    LocalDate startDate = LocalDate.of(2023, 5, 15);
+    LocalDate endDate = LocalDate.of(2023, 5, 17);
+    
+    Event multiDayEvent = new Event("Multi-day Event",
+        startDate.atStartOfDay(),
+        endDate.atTime(23, 59, 59),
+        "Description", "Location", true);
+    multiDayEvent.setAllDay(true);
+    
+    assertTrue(calendar.addEvent(multiDayEvent, true));
+    
+    // Verify events are found on all days
+    assertTrue(calendar.getEventsOnDate(startDate).contains(multiDayEvent));
+    assertTrue(calendar.getEventsOnDate(startDate.plusDays(1)).contains(multiDayEvent));
+    assertTrue(calendar.getEventsOnDate(endDate).contains(multiDayEvent));
+  }
+
+  @Test
+  public void testBoundaryConditionsForEventOverlap() throws ConflictingEventException {
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
+    
+    // Test events with exact overlap at start
+    Event event1 = new Event("Event 1", baseTime, baseTime.plusHours(1), null, null, true);
+    Event event2 = new Event("Event 2", baseTime, baseTime.plusMinutes(30), null, null, true);
+    
+    assertTrue(calendar.addEvent(event1, true));
+    assertFalse(calendar.addEvent(event2, false)); // Should detect conflict
+    
+    // Test events with exact overlap at end
+    Event event3 = new Event("Event 3", 
+        baseTime.plusHours(2), baseTime.plusHours(3), null, null, true);
+    Event event4 = new Event("Event 4",
+        baseTime.plusHours(2).plusMinutes(30), baseTime.plusHours(3), null, null, true);
+    
+    assertTrue(calendar.addEvent(event3, true));
+    assertFalse(calendar.addEvent(event4, false)); // Should detect conflict
+    
+    // Test events with exact overlap in middle
+    Event event5 = new Event("Event 5",
+        baseTime.plusHours(4), baseTime.plusHours(6), null, null, true);
+    Event event6 = new Event("Event 6",
+        baseTime.plusHours(4).plusMinutes(30), baseTime.plusHours(5).plusMinutes(30), null, null, true);
+    
+    assertTrue(calendar.addEvent(event5, true));
+    assertFalse(calendar.addEvent(event6, false)); // Should detect conflict
+  }
+
+  @Test
+  public void testVoidMethodSideEffects() throws ConflictingEventException {
+    // Test clear() method side effects
+    Event event1 = new Event("Event 1",
+        LocalDateTime.of(2023, 5, 15, 10, 0),
+        LocalDateTime.of(2023, 5, 15, 11, 0),
+        null, null, true);
+    calendar.addEvent(event1, true);
+    assertFalse(calendar.getAllEvents().isEmpty());
+    
+    calendar.clear();
+    assertTrue(calendar.getAllEvents().isEmpty());
+    assertFalse(calendar.isBusy(event1.getStartDateTime()));
+    
+    // Test setTimezone() method side effects
+    String newTimezone = "America/New_York";
+    calendar.setTimezone(newTimezone);
+    assertEquals(newTimezone, calendar.getTimezone());
+    
+    // Test multiple operations after timezone change
+    Event event2 = new Event("Event 2",
+        LocalDateTime.of(2023, 5, 15, 14, 0),
+        LocalDateTime.of(2023, 5, 15, 15, 0),
+        null, null, true);
+    assertTrue(calendar.addEvent(event2, true));
+    assertTrue(calendar.isBusy(event2.getStartDateTime()));
+  }
+
+  @Test
+  public void testBooleanReturnValues() throws ConflictingEventException {
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
+    Event event = new Event("Test Event", baseTime, baseTime.plusHours(1), null, null, true);
+    
+    // Test addEvent with various conditions
+    assertTrue("Should return true for first event add", calendar.addEvent(event, true));
+    assertFalse("Should return false for duplicate event", calendar.addEvent(event, false));
+    
+    // Test isBusy with exact boundaries
+    assertTrue("Should be busy at start time", calendar.isBusy(baseTime));
+    assertTrue("Should be busy at end time", calendar.isBusy(baseTime.plusHours(1)));
+    assertFalse("Should not be busy before start", calendar.isBusy(baseTime.minusSeconds(1)));
+    assertFalse("Should not be busy after end", calendar.isBusy(baseTime.plusHours(1).plusSeconds(1)));
+    
+    // Test editSingleEvent with various fields
+    assertTrue("Should return true for valid edit", 
+        calendar.editSingleEvent(event.getSubject(), event.getStartDateTime(), "description", "New description"));
+    assertTrue("Should return true for empty string edit",
+        calendar.editSingleEvent(event.getSubject(), event.getStartDateTime(), "description", ""));
+    assertFalse("Should return false for non-existent event",
+        calendar.editSingleEvent("Non-existent", baseTime, "description", "New description"));
+  }
+
+  @Test
+  public void testRecurringEventBoundaries() throws ConflictingEventException {
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
+    Set<DayOfWeek> weekdays = Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY);
+    
+    // Test recurring event with exactly matching times
+    RecurringEvent event1 = new RecurringEvent.Builder("Event 1", baseTime, baseTime.plusHours(1), weekdays)
+        .occurrences(4)
+        .build();
+    assertTrue(calendar.addRecurringEvent(event1, true));
+    
+    // Try to add single event at exact recurring event time
+    Event conflictEvent = new Event("Conflict Event",
+        baseTime.plusWeeks(1), // Next week at same time
+        baseTime.plusWeeks(1).plusHours(1),
+        null, null, true);
+    assertFalse(calendar.addEvent(conflictEvent, false));
+    
+    // Test recurring event with adjacent times
+    RecurringEvent event2 = new RecurringEvent.Builder("Event 2",
+        baseTime.plusHours(2), baseTime.plusHours(3), weekdays)
+        .occurrences(4)
+        .build();
+    assertTrue(calendar.addRecurringEvent(event2, true));
+    
+    // Try to add event between recurring events
+    Event betweenEvent = new Event("Between Event",
+        baseTime.plusHours(1).plusMinutes(1), // Just after first event
+        baseTime.plusHours(1).plusMinutes(59), // Just before second event
+        null, null, true);
+    assertTrue(calendar.addEvent(betweenEvent, true));
+  }
+
+  @Test
+  public void testDateTimeBoundaries() throws ConflictingEventException {
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 0, 0);
+    
+    // Test day boundary events
+    Event dayStartEvent = new Event("Day Start",
+        baseTime, baseTime.plusHours(1), null, null, true);
+    Event dayEndEvent = new Event("Day End",
+        baseTime.plusHours(23), baseTime.plusDays(1), null, null, true);
+    
+    assertTrue(calendar.addEvent(dayStartEvent, true));
+    assertTrue(calendar.addEvent(dayEndEvent, true));
+    
+    // Test month boundary events
+    LocalDateTime monthEnd = LocalDateTime.of(2023, 5, 31, 23, 0);
+    LocalDateTime nextMonthStart = LocalDateTime.of(2023, 6, 1, 0, 0);
+    
+    Event monthEndEvent = new Event("Month End",
+        monthEnd, monthEnd.plusHours(1), null, null, true);
+    Event nextMonthEvent = new Event("Next Month Start",
+        nextMonthStart, nextMonthStart.plusHours(1), null, null, true);
+    
+    assertTrue(calendar.addEvent(monthEndEvent, true));
+    assertTrue(calendar.addEvent(nextMonthEvent, true));
+    
+    // Test year boundary events
+    LocalDateTime yearEnd = LocalDateTime.of(2023, 12, 31, 23, 0);
+    LocalDateTime nextYearStart = LocalDateTime.of(2024, 1, 1, 0, 0);
+    
+    Event yearEndEvent = new Event("Year End",
+        yearEnd, yearEnd.plusHours(1), null, null, true);
+    Event nextYearEvent = new Event("Next Year Start",
+        nextYearStart, nextYearStart.plusHours(1), null, null, true);
+    
+    assertTrue(calendar.addEvent(yearEndEvent, true));
+    assertTrue(calendar.addEvent(nextYearEvent, true));
+    
+    // Verify events are found in correct ranges
+    assertTrue(calendar.getEventsInRange(baseTime.toLocalDate(), baseTime.toLocalDate())
+        .contains(dayStartEvent));
+    assertTrue(calendar.getEventsInRange(monthEnd.toLocalDate(), nextMonthStart.toLocalDate())
+        .containsAll(Arrays.asList(monthEndEvent, nextMonthEvent)));
+    assertTrue(calendar.getEventsInRange(yearEnd.toLocalDate(), nextYearStart.toLocalDate())
+        .containsAll(Arrays.asList(yearEndEvent, nextYearEvent)));
+  }
+
+  @Test
+  public void testVoidMethodChainedEffects() throws ConflictingEventException {
+    // Setup initial events
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
+    Event event1 = new Event("Event 1", baseTime, baseTime.plusHours(1), "Desc1", "Loc1", true);
+    Event event2 = new Event("Event 2", baseTime.plusHours(2), baseTime.plusHours(3), "Desc2", "Loc2", true);
+    
+    calendar.addEvent(event1, true);
+    calendar.addEvent(event2, true);
+    
+    // Test clear() followed by other operations
+    calendar.clear();
+    assertTrue(calendar.getAllEvents().isEmpty());
+    assertTrue(calendar.addEvent(event1, true)); // Should work after clear
+    assertEquals(1, calendar.getAllEvents().size());
+    
+    // Test setTimezone() effects on event queries
+    calendar.setTimezone("America/New_York");
+    assertTrue(calendar.isBusy(event1.getStartDateTime()));
+    assertEquals(1, calendar.getEventsInRange(baseTime.toLocalDate(), baseTime.toLocalDate()).size());
+    
+    // Test multiple void method calls in sequence
+    calendar.clear();
+    calendar.setTimezone("UTC");
+    assertTrue(calendar.getAllEvents().isEmpty());
+    assertEquals("UTC", calendar.getTimezone());
+    
+    // Test void methods with recurring events
+    Set<DayOfWeek> weekdays = Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY);
+    RecurringEvent recurringEvent = new RecurringEvent.Builder("Recurring",
+        baseTime, baseTime.plusHours(1), weekdays)
+        .occurrences(3)
+        .build();
+    
+    calendar.addRecurringEvent(recurringEvent, true);
+    calendar.clear();
+    assertTrue(calendar.getAllEvents().isEmpty());
+    
+    // Verify state after multiple operations
+    calendar.addRecurringEvent(recurringEvent, true);
+    calendar.setTimezone("Europe/London");
+    assertTrue(calendar.isBusy(baseTime));
+    assertEquals("Europe/London", calendar.getTimezone());
+  }
+
+  @Test
+  public void testMinuteAndSecondBoundaries() throws ConflictingEventException {
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0, 0);
+    
+    // Test minute boundary events
+    Event minuteStartEvent = new Event("Minute Start",
+        baseTime, baseTime.plusMinutes(1), null, null, true);
+    Event minuteEndEvent = new Event("Minute End",
+        baseTime.plusMinutes(59), baseTime.plusHours(1), null, null, true);
+    
+    assertTrue(calendar.addEvent(minuteStartEvent, true));
+    assertTrue(calendar.addEvent(minuteEndEvent, true));
+    
+    // Test second boundary events
+    LocalDateTime preciseTime = LocalDateTime.of(2023, 5, 15, 10, 0, 0);
+    Event secondStartEvent = new Event("Second Start",
+        preciseTime, preciseTime.plusSeconds(30), null, null, true);
+    Event secondEndEvent = new Event("Second End",
+        preciseTime.plusSeconds(30), preciseTime.plusMinutes(1), null, null, true);
+    
+    assertTrue(calendar.addEvent(secondStartEvent, true));
+    assertTrue(calendar.addEvent(secondEndEvent, true));
+    
+    // Verify precise time boundaries
+    assertTrue(calendar.isBusy(preciseTime));
+    assertTrue(calendar.isBusy(preciseTime.plusSeconds(30)));
+    assertFalse(calendar.isBusy(preciseTime.minusSeconds(1)));
+    assertFalse(calendar.isBusy(preciseTime.plusMinutes(1).plusSeconds(1)));
+  }
+
+  @Test
+  public void testExactEventOverlaps() throws ConflictingEventException {
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
+    
+    // Test exact start time overlap
+    Event event1 = new Event("Event 1", baseTime, baseTime.plusHours(1), null, null, true);
+    Event event2 = new Event("Event 2", baseTime, baseTime.plusMinutes(30), null, null, true);
+    
+    assertTrue(calendar.addEvent(event1, true));
+    assertFalse(calendar.addEvent(event2, false));
+    
+    // Test exact end time overlap
+    Event event3 = new Event("Event 3",
+        baseTime.plusHours(2), baseTime.plusHours(3), null, null, true);
+    Event event4 = new Event("Event 4",
+        baseTime.plusHours(2).plusMinutes(30), baseTime.plusHours(3), null, null, true);
+    
+    assertTrue(calendar.addEvent(event3, true));
+    assertFalse(calendar.addEvent(event4, false));
+    
+    // Test contained event
+    Event event5 = new Event("Event 5",
+        baseTime.plusHours(4), baseTime.plusHours(6), null, null, true);
+    Event event6 = new Event("Event 6",
+        baseTime.plusHours(4).plusMinutes(30), baseTime.plusHours(5).plusMinutes(30), null, null, true);
+    
+    assertTrue(calendar.addEvent(event5, true));
+    assertFalse(calendar.addEvent(event6, false));
+    
+    // Test exact boundary (no overlap)
+    Event event7 = new Event("Event 7",
+        baseTime.plusHours(7), baseTime.plusHours(8), null, null, true);
+    Event event8 = new Event("Event 8",
+        baseTime.plusHours(8), baseTime.plusHours(9), null, null, true);
+    
+    assertTrue(calendar.addEvent(event7, true));
+    assertTrue(calendar.addEvent(event8, true));
+  }
+
+  @Test
+  public void testDateRangeEdgeCases() throws ConflictingEventException {
+    LocalDate baseDate = LocalDate.of(2023, 5, 15);
+    
+    // Test single-day event at range start
+    Event startEvent = new Event("Start Event",
+        baseDate.atStartOfDay(),
+        baseDate.atTime(23, 59, 59),
+        null, null, true);
+    
+    // Test single-day event at range end
+    Event endEvent = new Event("End Event",
+        baseDate.plusDays(2).atStartOfDay(),
+        baseDate.plusDays(2).atTime(23, 59, 59),
+        null, null, true);
+    
+    // Test event spanning entire range
+    Event spanningEvent = new Event("Spanning Event",
+        baseDate.atStartOfDay(),
+        baseDate.plusDays(2).atTime(23, 59, 59),
+        null, null, true);
+    
+    assertTrue(calendar.addEvent(startEvent, true));
+    assertTrue(calendar.addEvent(endEvent, true));
+    assertTrue(calendar.addEvent(spanningEvent, true));
+    
+    // Test exact range queries
+    List<Event> exactStartEvents = calendar.getEventsInRange(baseDate, baseDate);
+    assertEquals(2, exactStartEvents.size());
+    assertTrue(exactStartEvents.contains(startEvent));
+    assertTrue(exactStartEvents.contains(spanningEvent));
+    
+    List<Event> exactEndEvents = calendar.getEventsInRange(
+        baseDate.plusDays(2), baseDate.plusDays(2));
+    assertEquals(2, exactEndEvents.size());
+    assertTrue(exactEndEvents.contains(endEvent));
+    assertTrue(exactEndEvents.contains(spanningEvent));
+    
+    // Test range containing all events
+    List<Event> allEvents = calendar.getEventsInRange(baseDate, baseDate.plusDays(2));
+    assertEquals(3, allEvents.size());
+    assertTrue(allEvents.containsAll(Arrays.asList(startEvent, endEvent, spanningEvent)));
+    
+    // Test range before all events
+    List<Event> beforeEvents = calendar.getEventsInRange(
+        baseDate.minusDays(2), baseDate.minusDays(1));
+    assertTrue(beforeEvents.isEmpty());
+    
+    // Test range after all events
+    List<Event> afterEvents = calendar.getEventsInRange(
+        baseDate.plusDays(3), baseDate.plusDays(4));
+    assertTrue(afterEvents.isEmpty());
+  }
+
+  @Test
+  public void testBusyTimeEdgeCases() throws ConflictingEventException {
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
+    
+    // Test busy status at exact start and end times
+    Event event1 = new Event("Event 1", baseTime, baseTime.plusHours(1), null, null, true);
+    assertTrue(calendar.addEvent(event1, true));
+    
+    assertTrue("Should be busy at start time", calendar.isBusy(baseTime));
+    assertTrue("Should be busy at end time", calendar.isBusy(baseTime.plusHours(1)));
+    assertFalse("Should not be busy just before start", calendar.isBusy(baseTime.minusSeconds(1)));
+    assertFalse("Should not be busy just after end", calendar.isBusy(baseTime.plusHours(1).plusSeconds(1)));
+    
+    // Test busy status with zero-duration event
+    Event event2 = new Event("Event 2",
+        baseTime.plusHours(2),
+        baseTime.plusHours(2),
+        null, null, true);
+    assertTrue(calendar.addEvent(event2, true));
+    assertTrue("Should be busy at zero-duration event time", calendar.isBusy(baseTime.plusHours(2)));
+    
+    // Test busy status with all-day event
+    Event allDayEvent = new Event("All Day Event",
+        baseTime.toLocalDate().atStartOfDay(),
+        baseTime.toLocalDate().atTime(23, 59, 59),
+        null, null, true);
+    allDayEvent.setAllDay(true);
+    assertTrue(calendar.addEvent(allDayEvent, true));
+    
+    assertTrue("Should be busy at start of all-day event",
+        calendar.isBusy(baseTime.toLocalDate().atStartOfDay()));
+    assertTrue("Should be busy at end of all-day event",
+        calendar.isBusy(baseTime.toLocalDate().atTime(23, 59, 59)));
+    assertTrue("Should be busy during all-day event",
+        calendar.isBusy(baseTime.toLocalDate().atTime(12, 0)));
+  }
+
+  @Test
+  public void testPropertyUpdateEdgeCases() throws ConflictingEventException {
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
+    Event event = new Event("Test Event", baseTime, baseTime.plusHours(1), null, null, true);
+    assertTrue(calendar.addEvent(event, true));
+    
+    // Test empty string updates
+    assertTrue("Should accept empty subject",
+        calendar.editSingleEvent(event.getSubject(), event.getStartDateTime(), "subject", ""));
+    assertTrue("Should accept empty description",
+        calendar.editSingleEvent("", event.getStartDateTime(), "description", ""));
+    assertTrue("Should accept empty location",
+        calendar.editSingleEvent("", event.getStartDateTime(), "location", ""));
+    
+    // Test null property updates
+    assertFalse("Should reject null property",
+        calendar.editSingleEvent("", event.getStartDateTime(), null, "value"));
+    assertFalse("Should reject null value",
+        calendar.editSingleEvent("", event.getStartDateTime(), "subject", null));
+    
+    // Test case sensitivity in property names
+    assertTrue("Should accept uppercase property",
+        calendar.editSingleEvent("", event.getStartDateTime(), "SUBJECT", "New Subject"));
+    assertTrue("Should accept mixed case property",
+        calendar.editSingleEvent("New Subject", event.getStartDateTime(), "DeScRiPtIoN", "New Description"));
+    
+    // Test invalid property names
+    assertFalse("Should reject invalid property",
+        calendar.editSingleEvent("New Subject", event.getStartDateTime(), "invalid_property", "value"));
+    
+    // Test time format variations
+    assertTrue("Should accept ISO datetime format",
+        calendar.editSingleEvent("New Subject", event.getStartDateTime(), "startDateTime", "2023-05-15T11:00:00"));
+    assertTrue("Should accept time-only format",
+        calendar.editSingleEvent("New Subject", event.getStartDateTime(), "endTime", "12:00"));
+  }
+
+  @Test
+  public void testRecurringEventBoundaryConditions() throws ConflictingEventException {
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
+    Set<DayOfWeek> weekdays = Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY);
+    
+    // Test recurring event with single occurrence
+    RecurringEvent singleOccurrence = new RecurringEvent.Builder("Single",
+        baseTime, baseTime.plusHours(1), weekdays)
+        .occurrences(1)
+        .build();
+    assertTrue(calendar.addRecurringEvent(singleOccurrence, true));
+    assertEquals(1, calendar.getAllEvents().size());
+    
+    // Test recurring event with end date exactly on occurrence
+    LocalDate endDate = baseTime.plusWeeks(2).toLocalDate();
+    RecurringEvent endDateEvent = new RecurringEvent.Builder("End Date",
+        baseTime.plusHours(2), baseTime.plusHours(3), weekdays)
+        .endDate(endDate)
+        .build();
+    assertTrue(calendar.addRecurringEvent(endDateEvent, true));
+    
+    // Test recurring event with end date between occurrences
+    LocalDate betweenDate = baseTime.plusWeeks(1).plusDays(1).toLocalDate();
+    RecurringEvent betweenEvent = new RecurringEvent.Builder("Between",
+        baseTime.plusHours(4), baseTime.plusHours(5), weekdays)
+        .endDate(betweenDate)
+        .build();
+    assertTrue(calendar.addRecurringEvent(betweenEvent, true));
+    
+    // Test recurring event with exact conflict
+    RecurringEvent conflictEvent = new RecurringEvent.Builder("Conflict",
+        baseTime, baseTime.plusHours(1), weekdays)
+        .occurrences(2)
+        .build();
+    assertFalse(calendar.addRecurringEvent(conflictEvent, false));
+    
+    // Test recurring event with partial overlap
+    RecurringEvent overlapEvent = new RecurringEvent.Builder("Overlap",
+        baseTime.plusMinutes(30), baseTime.plusHours(1).plusMinutes(30), weekdays)
+        .occurrences(2)
+        .build();
+    assertFalse(calendar.addRecurringEvent(overlapEvent, false));
+    
+    // Test recurring event with adjacent times (no overlap)
+    RecurringEvent adjacentEvent = new RecurringEvent.Builder("Adjacent",
+        baseTime.plusHours(1), baseTime.plusHours(2), weekdays)
+        .occurrences(2)
+        .build();
+    assertTrue(calendar.addRecurringEvent(adjacentEvent, true));
+  }
+
+  @Test
+  public void testCalendarOperationBoundaries() throws ConflictingEventException {
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
+    
+    // Test clear() with empty calendar
+    calendar.clear();
+    assertTrue(calendar.getAllEvents().isEmpty());
+    assertTrue(calendar.getAllRecurringEvents().isEmpty());
+    
+    // Test clear() with single event
+    Event event = new Event("Test Event", baseTime, baseTime.plusHours(1), null, null, true);
+    calendar.addEvent(event, true);
+    calendar.clear();
+    assertTrue(calendar.getAllEvents().isEmpty());
+    
+    // Test clear() with recurring event
+    Set<DayOfWeek> weekdays = Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY);
+    RecurringEvent recurringEvent = new RecurringEvent.Builder("Recurring",
+        baseTime, baseTime.plusHours(1), weekdays)
+        .occurrences(3)
+        .build();
+    calendar.addRecurringEvent(recurringEvent, true);
+    calendar.clear();
+    assertTrue(calendar.getAllEvents().isEmpty());
+    assertTrue(calendar.getAllRecurringEvents().isEmpty());
+    
+    // Test timezone changes
+    calendar.setTimezone("UTC");
+    assertEquals("UTC", calendar.getTimezone());
+    calendar.addEvent(event, true);
+    assertTrue(calendar.isBusy(event.getStartDateTime()));
+    
+    calendar.setTimezone("America/New_York");
+    assertEquals("America/New_York", calendar.getTimezone());
+    assertTrue(calendar.isBusy(event.getStartDateTime()));
+    
+    // Test name changes
+    calendar.setName("Test Calendar");
+    assertEquals("Test Calendar", calendar.getName());
+    calendar.setName("");
+    assertEquals("", calendar.getName());
+    calendar.setName("New Name");
+    assertEquals("New Name", calendar.getName());
+  }
+
+  @Test
+  public void testRecurringEventEdgeCases() throws ConflictingEventException {
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
+    Set<DayOfWeek> weekdays = Set.of(DayOfWeek.MONDAY);
+    
+    // Test recurring event with maximum occurrences
+    RecurringEvent maxEvent = new RecurringEvent.Builder("Max",
+        baseTime, baseTime.plusHours(1), weekdays)
+        .occurrences(Integer.MAX_VALUE)
+        .build();
+    assertTrue(calendar.addRecurringEvent(maxEvent, true));
+    
+    // Test recurring event with far future end date
+    LocalDate farFuture = LocalDate.of(9999, 12, 31);
+    RecurringEvent farFutureEvent = new RecurringEvent.Builder("Far Future",
+        baseTime.plusHours(2), baseTime.plusHours(3), weekdays)
+        .endDate(farFuture)
+        .build();
+    assertTrue(calendar.addRecurringEvent(farFutureEvent, true));
+    
+    // Test recurring event with minimum duration
+    RecurringEvent minDurationEvent = new RecurringEvent.Builder("Min Duration",
+        baseTime.plusHours(4), baseTime.plusHours(4), weekdays)
+        .occurrences(2)
+        .build();
+    assertTrue(calendar.addRecurringEvent(minDurationEvent, true));
+    
+    // Test recurring event with maximum duration
+    LocalDateTime maxEndTime = baseTime.plusHours(4).plusDays(1);
+    RecurringEvent maxDurationEvent = new RecurringEvent.Builder("Max Duration",
+        baseTime.plusHours(4), maxEndTime, weekdays)
+        .occurrences(2)
+        .build();
+    assertTrue(calendar.addRecurringEvent(maxDurationEvent, true));
   }
 }

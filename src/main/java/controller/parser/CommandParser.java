@@ -40,12 +40,37 @@ public class CommandParser {
                     + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
             this::parseCreateEventCommand);
 
+    registerPattern("create_all_day_event",
+            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
+                    + "on (\\d{4}-\\d{2}-\\d{2})"
+                    + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
+            this::parseCreateAllDayEventCommand);
+
     registerPattern("create_recurring_event",
             Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) from "
                     + "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
                     + "repeats ([MTWRFSU]+) for (\\d+) times(?:\\s+desc\\s+\"([^\"]+)\")?"
                     + "(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
             this::parseCreateRecurringEventCommand);
+
+    registerPattern("create_recurring_until_event",
+            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) from "
+                    + "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+                    + "repeats ([MTWRFSU]+) until (\\d{4}-\\d{2}-\\d{2})"
+                    + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
+            this::parseCreateRecurringUntilEventCommand);
+
+    registerPattern("create_all_day_recurring_event",
+            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
+                    + "on (\\d{4}-\\d{2}-\\d{2}) repeats ([MTWRFSU]+) for (\\d+) times"
+                    + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
+            this::parseCreateAllDayRecurringEventCommand);
+
+    registerPattern("create_all_day_recurring_until_event",
+            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
+                    + "on (\\d{4}-\\d{2}-\\d{2}) repeats ([MTWRFSU]+) until (\\d{4}-\\d{2}-\\d{2})"
+                    + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
+            this::parseCreateAllDayRecurringUntilEventCommand);
 
     registerPattern("edit_single_event",
             Pattern.compile("edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) with \"?([^\"]+)\"?"),
@@ -174,6 +199,31 @@ public class CommandParser {
   }
 
   /**
+   * Parse create all day event command.
+   */
+  private CommandWithArgs parseCreateAllDayEventCommand(Matcher matcher) {
+    ICommand createCommand = commandFactory.getCommand("create");
+
+    boolean autoDecline = matcher.group(1) != null;
+
+    String eventName = matcher.group(2);
+    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
+      eventName = eventName.substring(1, eventName.length() - 1);
+    }
+
+    String[] args = {
+            "allday",
+            eventName,
+            matcher.group(3),
+            String.valueOf(autoDecline),
+            matcher.group(4),
+            matcher.group(5),
+            matcher.group(6) != null ? "false" : "true"
+    };
+    return new CommandWithArgs(createCommand, args);
+  }
+
+  /**
    * Parse create recurring event command.
    */
   private CommandWithArgs parseCreateRecurringEventCommand(Matcher matcher) {
@@ -197,6 +247,88 @@ public class CommandParser {
             matcher.group(7),
             matcher.group(8),
             matcher.group(9) != null ? "false" : "true"
+    };
+    return new CommandWithArgs(createCommand, args);
+  }
+
+  /**
+   * Parse create recurring until event command.
+   */
+  private CommandWithArgs parseCreateRecurringUntilEventCommand(Matcher matcher) {
+    ICommand createCommand = commandFactory.getCommand("create");
+
+    boolean autoDecline = matcher.group(1) != null;
+
+    String eventName = matcher.group(2);
+    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
+      eventName = eventName.substring(1, eventName.length() - 1);
+    }
+
+    String[] args = {
+            "recurring-until",
+            eventName,
+            matcher.group(3),
+            matcher.group(4),
+            matcher.group(5),
+            matcher.group(6),
+            String.valueOf(autoDecline),
+            matcher.group(7),
+            matcher.group(8),
+            matcher.group(9) != null ? "false" : "true"
+    };
+    return new CommandWithArgs(createCommand, args);
+  }
+
+  /**
+   * Parse create all day recurring event command.
+   */
+  private CommandWithArgs parseCreateAllDayRecurringEventCommand(Matcher matcher) {
+    ICommand createCommand = commandFactory.getCommand("create");
+
+    boolean autoDecline = matcher.group(1) != null;
+
+    String eventName = matcher.group(2);
+    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
+      eventName = eventName.substring(1, eventName.length() - 1);
+    }
+
+    String[] args = {
+            "allday-recurring",
+            eventName,
+            matcher.group(3),
+            matcher.group(4),
+            matcher.group(5),
+            String.valueOf(autoDecline),
+            matcher.group(6),
+            matcher.group(7),
+            matcher.group(8) != null ? "false" : "true"
+    };
+    return new CommandWithArgs(createCommand, args);
+  }
+
+  /**
+   * Parse create all day recurring until event command.
+   */
+  private CommandWithArgs parseCreateAllDayRecurringUntilEventCommand(Matcher matcher) {
+    ICommand createCommand = commandFactory.getCommand("create");
+
+    boolean autoDecline = matcher.group(1) != null;
+
+    String eventName = matcher.group(2);
+    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
+      eventName = eventName.substring(1, eventName.length() - 1);
+    }
+
+    String[] args = {
+            "allday-recurring-until",
+            eventName,
+            matcher.group(3),
+            matcher.group(4),
+            matcher.group(5),
+            String.valueOf(autoDecline),
+            matcher.group(6),
+            matcher.group(7),
+            matcher.group(8) != null ? "false" : "true"
     };
     return new CommandWithArgs(createCommand, args);
   }
