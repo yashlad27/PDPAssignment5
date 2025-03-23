@@ -19,7 +19,6 @@
         <testSourceDirectory>src/test/java</testSourceDirectory>
 
         <plugins>
-            <!-- Maven Compiler Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -29,7 +28,6 @@
                     <target>11</target>
                 </configuration>
             </plugin>
-            <!-- Maven Surefire Plugin for running tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -40,7 +38,6 @@
                     </includes>
                 </configuration>
             </plugin>
-            <!-- PIT Mutation Testing Plugin -->
             <plugin>
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
@@ -55,7 +52,6 @@
     </build>
 
     <dependencies>
-        <!-- JUnit Dependency -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
