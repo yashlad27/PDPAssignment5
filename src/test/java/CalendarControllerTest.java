@@ -211,7 +211,7 @@ public class CalendarControllerTest {
       } else if ("error".equals(name)) {
         return errorCommand;
       } else if (name.equals("create")) {
-        return new MockCommand("Calendar 'Work' created with timezone 'America/New_York'",
+        return new MockCommand("Calendar 'My Calendar' created with timezone 'America/New_York'",
                 "create");
       } else if (name.equals("use")) {
         return new MockCommand("Now using calendar: 'Work'", "use");
@@ -596,5 +596,142 @@ public class CalendarControllerTest {
     assertTrue("Should return true with only exit command", result);
     List<String> messages = view.getDisplayedMessages();
     assertTrue(messages.contains("Exiting application."));
+  }
+
+  @Test
+  public void testProcessCalendarCommandCreate() {
+    String result = controller.processCommand("create calendar Work");
+    assertEquals("Calendar 'Work' created with timezone 'America/New_York'", result);
+  }
+
+  @Test
+  public void testProcessCalendarCommandUse() {
+    String result = controller.processCommand("use calendar --name Work");
+    assertEquals("Now using calendar: 'Work'", result);
+  }
+
+  @Test
+  public void testProcessCalendarCommandInvalidFormat() {
+    String result = controller.processCommand("create invalid");
+    assertEquals("Error: Expected 'calendar' after 'create'", result);
+  }
+
+  @Test
+  public void testProcessCalendarCommandUnknown() {
+    String result = controller.processCommand("unknown calendar");
+    assertEquals("Error: Unknown calendar command: unknown", result);
+  }
+
+  @Test
+  public void testProcessCalendarCommandCopy() {
+    String result = controller.processCommand("copy event Meeting");
+    assertEquals("Command executed successfully", result);
+  }
+
+  @Test
+  public void testProcessCalendarCommandCopyEvents() {
+    String result = controller.processCommand("copy events Meeting");
+    assertEquals("Command executed successfully", result);
+  }
+
+  @Test
+  public void testProcessCommandWithQuotedStrings() {
+    String result = controller.processCommand("create calendar \"My Calendar\"");
+    assertEquals("Calendar 'My Calendar' created with timezone 'America/New_York'", result);
+  }
+
+  @Test
+  public void testProcessCommandWithSingleQuotedStrings() {
+    String result = controller.processCommand("create calendar 'My Calendar'");
+    assertEquals("Calendar 'My Calendar' created with timezone 'America/New_York'", result);
+  }
+
+  @Test
+  public void testProcessCommandWithMixedQuotes() {
+    String result = controller.processCommand("create calendar \"My 'Calendar'\"");
+    assertEquals("Calendar 'My 'Calendar'' created with timezone 'America/New_York'", result);
+  }
+
+  @Test
+  public void testProcessCommandWithMultipleSpaces() {
+    String result = controller.processCommand("create    calendar    Work");
+    assertEquals("Calendar 'Work' created with timezone 'America/New_York'", result);
+  }
+
+  @Test
+  public void testProcessCommandWithLeadingSpaces() {
+    String result = controller.processCommand("   create calendar Work");
+    assertEquals("Calendar 'Work' created with timezone 'America/New_York'", result);
+  }
+
+  @Test
+  public void testProcessCommandWithTrailingSpaces() {
+    String result = controller.processCommand("create calendar Work   ");
+    assertEquals("Calendar 'Work' created with timezone 'America/New_York'", result);
+  }
+
+  @Test
+  public void testProcessCommandWithCalendarNotFound() {
+    // Set up the mock calendar manager to throw CalendarNotFoundException
+    MockCalendarManager mockManager = new MockCalendarManager(mockCalendar) {
+        @Override
+        public Calendar getActiveCalendar() throws CalendarNotFoundException {
+            throw new CalendarNotFoundException("Calendar not found");
+        }
+    };
+    
+    controller = new CalendarController(commandFactory, commandFactory, mockManager, view);
+    String result = controller.processCommand("use calendar --name NonExistent");
+    assertTrue(result.contains("Error: Calendar not found"));
+  }
+
+  @Test
+  public void testProcessCommandWithInvalidCalendarName() {
+    String result = controller.processCommand("use calendar --name invalid@name");
+    assertTrue(result.contains("Error: Invalid calendar name"));
+  }
+
+  @Test
+  public void testProcessCommandWithEmptyCalendarName() {
+    String result = controller.processCommand("use calendar --name ");
+    assertTrue(result.contains("Error: Calendar name cannot be empty"));
+  }
+
+  @Test
+  public void testProcessCommandWithNullCalendarName() {
+    String result = controller.processCommand("use calendar --name null");
+    assertTrue(result.contains("Error: Calendar name cannot be null"));
+  }
+
+  @Test
+  public void testProcessCommandWithCalendarCommandFactoryUpdate() {
+    // First create a calendar
+    controller.processCommand("create calendar Work");
+    // Then use it
+    String result = controller.processCommand("use calendar --name Work");
+    assertEquals("Now using calendar: 'Work'", result);
+    
+    // Verify that the command factory was updated
+    String eventResult = controller.processCommand("show");
+    assertEquals("Status on 2023-05-15T10:30: Busy", eventResult);
+  }
+
+  @Test
+  public void testProcessCommandWithCalendarCommandFactoryUpdateFailure() {
+    // Set up the mock calendar manager to throw CalendarNotFoundException
+    MockCalendarManager mockManager = new MockCalendarManager(mockCalendar) {
+        @Override
+        public Calendar getActiveCalendar() throws CalendarNotFoundException {
+            throw new CalendarNotFoundException("Calendar not found");
+        }
+    };
+    
+    controller = new CalendarController(commandFactory, commandFactory, mockManager, view);
+    String result = controller.processCommand("use calendar --name Work");
+    assertTrue(result.contains("Error: Calendar not found"));
+    
+    // Verify that the command factory wasn't updated
+    String eventResult = controller.processCommand("show");
+    assertEquals("Command executed successfully", eventResult);
   }
 }
