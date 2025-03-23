@@ -45,7 +45,7 @@ public interface EventCreator {
    * @return the appropriate strategy for the specified event type
    * @throws IllegalArgumentException if the event type is unknown or the arguments are invalid
    */
-  static EventCreator forType(String type, String[] args) {
+  static EventCreator forType(String type, String[] args) throws InvalidEventException {
     switch (type) {
       case "single":
         return new SingleEventCreator(args);
