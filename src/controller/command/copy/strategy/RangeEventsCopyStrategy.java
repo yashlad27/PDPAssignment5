@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import model.calendar.Calendar;
 import model.calendar.CalendarManager;
 import model.calendar.ICalendar;
 import model.event.Event;
@@ -36,9 +37,11 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
 
   @Override
   public String execute(String[] args) throws CalendarNotFoundException, InvalidEventException {
-    // Validate format: copy events between <dateString> and <dateString> --target <calendarName> to <dateString>
+    // Validate format: copy events between <dateString> and <dateString> --target <calendarName>
+    // to <dateString>
     if (args.length < 10) {
-      throw new InvalidEventException("Insufficient arguments for copy events between dates command");
+      throw new InvalidEventException("Insufficient arguments for copy events between "
+              + "dates command");
     }
 
     if (!args[0].equals("copy") || !args[1].equals("events") || !args[2].equals("between")) {
@@ -66,7 +69,8 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
     String targetStartDate = args[9];
 
     try {
-      return copyEventsBetweenDates(sourceStartDate, sourceEndDate, targetCalendar, targetStartDate);
+      return copyEventsBetweenDates(sourceStartDate, sourceEndDate, targetCalendar,
+              targetStartDate);
     } catch (Exception e) {
       throw new InvalidEventException("Error copying events: " + e.getMessage());
     }
@@ -82,7 +86,8 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
   /**
    * Copies events within a date range from the active calendar to a target calendar.
    */
-  private String copyEventsBetweenDates(String startDateStr, String endDateStr, String targetCalendarName,
+  private String copyEventsBetweenDates(String startDateStr, String endDateStr,
+                                        String targetCalendarName,
                                         String targetStartDateStr) throws Exception {
     // Parse the dates
     LocalDate sourceStartDate = DateTimeUtil.parseDate(startDateStr);
@@ -91,7 +96,8 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
 
     // Validate target calendar exists
     if (!calendarManager.hasCalendar(targetCalendarName)) {
-      throw new CalendarNotFoundException("Target calendar '" + targetCalendarName + "' does not exist");
+      throw new CalendarNotFoundException("Target calendar '" + targetCalendarName
+              + "' does not exist");
     }
 
     // Get source calendar (active calendar)
@@ -105,7 +111,7 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
     }
 
     // Get the source and target timezones
-    String sourceTimezone = ((model.calendar.Calendar) sourceCalendar).getTimezone();
+    String sourceTimezone = ((Calendar) sourceCalendar).getTimezone();
     String targetTimezone = calendarManager.executeOnCalendar(targetCalendarName,
             calendar -> ((model.calendar.Calendar) calendar).getTimezone());
 
@@ -170,7 +176,8 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
 
     if (failCount == 0) {
       return "Successfully copied " + successCount + " events from date range " +
-              sourceStartDate + " to " + sourceEndDate + " in calendar '" + targetCalendarName + "'.";
+              sourceStartDate + " to " + sourceEndDate + " in calendar '" + targetCalendarName
+              + "'.";
     } else {
       return "Copied " + successCount + " events, but " + failCount +
               " events could not be copied due to conflicts.";

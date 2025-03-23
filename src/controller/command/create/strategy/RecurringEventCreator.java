@@ -68,7 +68,6 @@ public class RecurringEventCreator extends AbstractEventCreator {
     }
 
     try {
-      // Use the Builder to create the recurring event
       return new RecurringEvent.Builder(
               eventName, startDateTime, endDateTime, repeatDays)
               .description(description)

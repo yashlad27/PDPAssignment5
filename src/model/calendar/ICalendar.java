@@ -32,7 +32,8 @@ public interface ICalendar {
    * @param autoDecline    if true, the addition will be declined if any occurrence conflicts
    * @return
    */
-  boolean addRecurringEvent(RecurringEvent recurringEvent, boolean autoDecline) throws ConflictingEventException;
+  boolean addRecurringEvent(RecurringEvent recurringEvent, boolean autoDecline)
+          throws ConflictingEventException;
 
   /**
    * Creates a recurring event that repeats until a specific date.
@@ -46,7 +47,8 @@ public interface ICalendar {
    * @return
    */
   boolean createRecurringEventUntil(String name, LocalDateTime start, LocalDateTime end,
-                                    String weekdays, LocalDate untilDate, boolean autoDecline) throws InvalidEventException, ConflictingEventException;
+                                    String weekdays, LocalDate untilDate, boolean autoDecline)
+          throws InvalidEventException, ConflictingEventException;
 
   /**
    * Creates an all-day recurring event.
@@ -59,7 +61,9 @@ public interface ICalendar {
    * @return
    */
   boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays, int occurrences,
-                                     boolean autoDecline, String description, String location, boolean isPublic) throws InvalidEventException, ConflictingEventException;
+                                     boolean autoDecline, String description,
+                                     String location, boolean isPublic)
+          throws InvalidEventException, ConflictingEventException;
 
   /**
    * Creates an all-day recurring event that repeats until a specific date.
@@ -72,8 +76,10 @@ public interface ICalendar {
    * @return
    */
   boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
-                                          LocalDate untilDate, boolean autoDecline, String description, String location,
-                                          boolean isPublic) throws InvalidEventException, ConflictingEventException;
+                                          LocalDate untilDate, boolean autoDecline,
+                                          String description, String location,
+                                          boolean isPublic)
+          throws InvalidEventException, ConflictingEventException;
 
   /**
    * Gets all events occurring on a specific date.
@@ -127,7 +133,8 @@ public interface ICalendar {
    * @return true if the event was found and edited, false otherwise
    */
   boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property,
-                          String newValue) throws EventNotFoundException, InvalidEventException, ConflictingEventException;
+                          String newValue)
+          throws EventNotFoundException, InvalidEventException, ConflictingEventException;
 
   /**
    * Edits all events in a recurring series starting from a specific date.
@@ -149,7 +156,8 @@ public interface ICalendar {
    * @param newValue the new value for the property
    * @return the number of events that were edited
    */
-  int editAllEvents(String subject, String property, String newValue) throws InvalidEventException, ConflictingEventException;
+  int editAllEvents(String subject, String property, String newValue)
+          throws InvalidEventException, ConflictingEventException;
 
   /**
    * Gets all recurring events in the calendar.

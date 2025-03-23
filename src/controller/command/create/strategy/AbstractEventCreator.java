@@ -2,6 +2,7 @@ package controller.command.create.strategy;
 
 import model.calendar.ICalendar;
 import model.event.Event;
+import model.event.RecurringEvent;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.InvalidEventException;
 
@@ -49,11 +50,12 @@ public abstract class AbstractEventCreator implements EventCreator {
    * @throws InvalidEventException     if event parameters are invalid
    */
   @Override
-  public String executeCreation(ICalendar calendar) throws ConflictingEventException, InvalidEventException {
+  public String executeCreation(ICalendar calendar) throws ConflictingEventException,
+          InvalidEventException {
     Event event = createEvent();
 
-    if (event instanceof model.event.RecurringEvent) {
-      calendar.addRecurringEvent((model.event.RecurringEvent) event, getAutoDecline());
+    if (event instanceof RecurringEvent) {
+      calendar.addRecurringEvent((RecurringEvent) event, getAutoDecline());
     } else {
       calendar.addEvent(event, getAutoDecline());
     }

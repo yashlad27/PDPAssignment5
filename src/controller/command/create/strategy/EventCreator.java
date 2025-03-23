@@ -8,9 +8,10 @@ import model.exceptions.InvalidEventException;
 /**
  * Strategy interface for different event creation methods.
  * Following the Strategy Pattern to encapsulate different event creation algorithms.
- *
+ * <p>
  * This interface defines the contract for creating and adding different types of events to a calendar.
- * Each concrete implementation handles a specific type of event creation (single, recurring, all-day, etc.).
+ * Each concrete implementation handles a specific type of event creation (single, recurring,
+ * all-day, etc.).
  */
 public interface EventCreator {
 
@@ -25,12 +26,13 @@ public interface EventCreator {
 
   /**
    * Executes the event creation strategy by creating an event and adding it to the calendar.
-   * This is the main method that will be called by clients to perform the complete event creation operation.
+   * This is the main method that will be called by clients to perform the complete event
+   * creation operation.
    *
    * @param calendar the calendar in which to create the event
    * @return a result message indicating success or failure
    * @throws ConflictingEventException if the event conflicts with existing events
-   * @throws InvalidEventException if the event parameters are invalid
+   * @throws InvalidEventException     if the event parameters are invalid
    */
   String executeCreation(ICalendar calendar) throws ConflictingEventException, InvalidEventException;
 

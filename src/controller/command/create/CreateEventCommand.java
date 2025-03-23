@@ -41,10 +41,9 @@ public class CreateEventCommand implements ICommand {
     String eventType = args[0];
 
     try {
-      // Get the appropriate strategy for this event type
       EventCreator creator = EventCreator.forType(eventType, args);
 
-      // Execute the strategy to create and add the event
+      // execute the strategy for create and add events
       return creator.executeCreation(calendar);
 
     } catch (InvalidEventException e) {

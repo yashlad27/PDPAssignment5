@@ -42,7 +42,7 @@ public class ShowStatusCommand implements ICommand {
     boolean isBusy = calendar.isBusy(dateTime);
 
     return "Status on " + dateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + ": " + (isBusy
-        ? "Busy" : "Available");
+            ? "Busy" : "Available");
   }
 
   @Override

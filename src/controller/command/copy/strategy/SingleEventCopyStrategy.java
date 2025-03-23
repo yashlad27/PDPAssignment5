@@ -15,7 +15,8 @@ import utilities.TimezoneConverter;
 
 /**
  * Strategy for copying a single event from one calendar to another.
- * Format: copy event <eventName> on <dateStringTtimeString> --target <calendarName> to <dateStringTtimeString>
+ * Format: copy event <eventName> on <dateStringTtimeString> --target <calendarName>
+ * to <dateStringTtimeString>
  */
 public class SingleEventCopyStrategy implements CopyStrategy {
 
@@ -27,8 +28,15 @@ public class SingleEventCopyStrategy implements CopyStrategy {
    *
    * @param calendarManager the calendar manager
    * @param timezoneHandler the timezone handler
+   * @throws IllegalArgumentException if either calendarManager or timezoneHandler is null
    */
   public SingleEventCopyStrategy(CalendarManager calendarManager, TimeZoneHandler timezoneHandler) {
+    if (calendarManager == null) {
+      throw new IllegalArgumentException("CalendarManager cannot be null");
+    }
+    if (timezoneHandler == null) {
+      throw new IllegalArgumentException("TimeZoneHandler cannot be null");
+    }
     this.calendarManager = calendarManager;
     this.timezoneHandler = timezoneHandler;
   }
@@ -38,7 +46,8 @@ public class SingleEventCopyStrategy implements CopyStrategy {
           EventNotFoundException,
           ConflictingEventException,
           InvalidEventException {
-    // Validate format: copy event <eventName> on <dateStringTtimeString> --target <calendarName> to <dateStringTtimeString>
+    // Validate format: copy event <eventName> on <dateStringTtimeString> --target <calendarName>
+    // to <dateStringTtimeString>
     if (args.length < 9) {
       throw new InvalidEventException("Insufficient arguments for copy event command");
     }
@@ -48,7 +57,6 @@ public class SingleEventCopyStrategy implements CopyStrategy {
     }
 
     String eventName = args[2];
-    // Remove quotes if present
     if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
       eventName = eventName.substring(1, eventName.length() - 1);
     }
@@ -88,7 +96,8 @@ public class SingleEventCopyStrategy implements CopyStrategy {
   /**
    * Copies a single event from the active calendar to a target calendar.
    */
-  private String copyEvent(String eventName, String dateTimeStr, String targetCalendarName, String targetDateTimeStr)
+  private String copyEvent(String eventName, String dateTimeStr, String targetCalendarName,
+                           String targetDateTimeStr)
           throws Exception {
     // Parse the date/time
     LocalDateTime sourceDateTime = DateTimeUtil.parseDateTime(dateTimeStr);
@@ -96,7 +105,8 @@ public class SingleEventCopyStrategy implements CopyStrategy {
 
     // Validate target calendar exists
     if (!calendarManager.hasCalendar(targetCalendarName)) {
-      throw new CalendarNotFoundException("Target calendar '" + targetCalendarName + "' does not exist");
+      throw new CalendarNotFoundException("Target calendar '" + targetCalendarName + "' does not "
+              + "exist");
     }
 
     // Get source calendar (active calendar)
@@ -135,7 +145,8 @@ public class SingleEventCopyStrategy implements CopyStrategy {
             calendar -> calendar.addEvent(newEvent, true));
 
     if (success) {
-      return "Event '" + eventName + "' copied successfully to calendar '" + targetCalendarName + "'.";
+      return "Event '" + eventName + "' copied successfully to calendar '" + targetCalendarName
+              + "'.";
     } else {
       return "Failed to copy event due to conflicts.";
     }

@@ -62,13 +62,12 @@ public class AllDayRecurringEventCreator extends AbstractEventCreator {
       throw new InvalidEventException("Occurrences must be positive");
     }
 
-    // For all-day recurring events, we need to delegate to the calendar
-    // because the model doesn't provide a direct way to create them
     return null;
   }
 
   @Override
-  public String executeCreation(ICalendar calendar) throws ConflictingEventException, InvalidEventException {
+  public String executeCreation(ICalendar calendar) throws ConflictingEventException,
+          InvalidEventException {
     validateEventParameters(eventName);
 
     if (date == null) {

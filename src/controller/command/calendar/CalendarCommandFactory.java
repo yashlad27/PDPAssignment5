@@ -5,8 +5,8 @@ import java.util.Map;
 
 import controller.ICommandFactory;
 import controller.command.CommandAdapter;
-import controller.command.copy.CopyEventCommand;
 import controller.command.ICommand;
+import controller.command.copy.CopyEventCommand;
 import model.calendar.CalendarManager;
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
@@ -133,7 +133,8 @@ public class CalendarCommandFactory implements ICommandFactory {
           view.displayMessage(success);
           return success;
         default:
-          String error = "Error: Unsupported property '" + property + "'. Valid properties are 'name' "
+          String error = "Error: Unsupported property '" + property
+                  + "'. Valid properties are 'name' "
                   + "and 'timezone'";
           view.displayError(error);
           return error;

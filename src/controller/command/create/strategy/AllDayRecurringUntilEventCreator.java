@@ -24,13 +24,15 @@ public class AllDayRecurringUntilEventCreator extends AbstractEventCreator {
   private final boolean isPublic;
 
   /**
-   * Constructs a strategy for creating an all-day recurring event that repeats until a specific date.
+   * Constructs a strategy for creating an all-day recurring event that repeats until a specific
+   * date.
    *
    * @param args the arguments for event creation
    */
   public AllDayRecurringUntilEventCreator(String[] args) {
     if (args.length < 6) {
-      throw new IllegalArgumentException("Insufficient arguments for all-day recurring event until date");
+      throw new IllegalArgumentException("Insufficient arguments for all-day recurring event "
+              + "until date");
     }
 
     try {
@@ -62,13 +64,12 @@ public class AllDayRecurringUntilEventCreator extends AbstractEventCreator {
       throw new InvalidEventException("Until date cannot be null");
     }
 
-    // For all-day recurring events, we need to delegate to the calendar
-    // because the model doesn't provide a direct way to create them
     return null;
   }
 
   @Override
-  public String executeCreation(ICalendar calendar) throws ConflictingEventException, InvalidEventException {
+  public String executeCreation(ICalendar calendar) throws ConflictingEventException,
+          InvalidEventException {
     validateEventParameters(eventName);
 
     if (date == null) {
@@ -94,7 +95,8 @@ public class AllDayRecurringUntilEventCreator extends AbstractEventCreator {
     } catch (ConflictingEventException e) {
       throw e;
     } catch (Exception e) {
-      throw new InvalidEventException("Error creating all-day recurring event until date: " + e.getMessage());
+      throw new InvalidEventException("Error creating all-day recurring event until date: "
+              + e.getMessage());
     }
   }
 

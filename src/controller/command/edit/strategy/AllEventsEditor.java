@@ -29,7 +29,8 @@ public class AllEventsEditor extends AbstractEventEditor {
   }
 
   @Override
-  public String executeEdit(ICalendar calendar) throws InvalidEventException, ConflictingEventException {
+  public String executeEdit(ICalendar calendar) throws InvalidEventException,
+          ConflictingEventException {
     validateParameters(subject, property);
 
     int count = calendar.editAllEvents(subject, property, newValue);
