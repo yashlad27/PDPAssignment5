@@ -1,9 +1,0 @@
-Subject,Start Date,Start Time,End Date,End Time,All Day Event,Description,Location,Private
-Flight to Paris,04/15/2025,08:00 AM,04/15/2025,10:30 AM,False,Flight AA123,Airport,False
-Hotel Check-in,04/15/2025,02:00 PM,04/15/2025,03:00 PM,False,Reservation #12345,Hotel Paris,False
-Museum Visit,04/16/2025,10:00 AM,04/16/2025,01:00 PM,False,Louvre Museum,Paris,False
-Team Meeting,04/18/2025,11:00 PM,04/19/2025,12:00 AM,False,Weekly team sync,Conference Room A,False
-Project Deadline,04/21/2025,10:00 PM,04/22/2025,06:00 AM,False,Final deliverable due,Office,False
-Daily Standup,04/19/2025,09:00 PM,04/19/2025,09:30 PM,False,Quick team sync,Zoom,False
-Daily Standup,04/21/2025,09:00 PM,04/21/2025,09:30 PM,False,Quick team sync,Zoom,False
-Team Football Match,04/16/2025,10:00 PM,04/17/2025,12:00 AM,False,Weekly game,City Park,False

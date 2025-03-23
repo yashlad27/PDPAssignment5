@@ -40,8 +40,12 @@ public class CalendarFactory {
    *
    * @param timezoneHandler the timezone handler to use
    * @return a CalendarManager instance
+   * @throws IllegalArgumentException if timezoneHandler is null
    */
   public CalendarManager createCalendarManager(TimeZoneHandler timezoneHandler) {
+    if (timezoneHandler == null) {
+      throw new IllegalArgumentException("TimeZoneHandler cannot be null");
+    }
     return new CalendarManager.Builder()
             .timezoneHandler(timezoneHandler)
             .build();
