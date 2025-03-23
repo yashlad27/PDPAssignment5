@@ -1,7 +1,7 @@
+package model.calendar;
+
 import controller.CalendarController;
 import controller.ICommandFactory;
-import model.calendar.CalendarManager;
-import model.calendar.ICalendar;
 import model.factory.CalendarFactory;
 import utilities.TimeZoneHandler;
 import view.ConsoleView;
