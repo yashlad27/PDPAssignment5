@@ -11,7 +11,8 @@ import static org.junit.Assert.assertTrue;
 public class CalendarCommandHandlerTest {
 
   @Test
-  public void testExceptionHandlingWrapper() throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
+  public void testExceptionHandlingWrapper() throws CalendarNotFoundException,
+          InvalidTimezoneException, DuplicateCalendarException {
     // Create a handler that throws an exception
     CalendarCommandHandler throwingHandler = args -> {
       throw new CalendarNotFoundException("Test calendar not found");
@@ -26,7 +27,8 @@ public class CalendarCommandHandlerTest {
   }
 
   @Test
-  public void testExceptionHandlingWrapperWithMultipleExceptions() throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
+  public void testExceptionHandlingWrapperWithMultipleExceptions() throws CalendarNotFoundException,
+          InvalidTimezoneException, DuplicateCalendarException {
     // Create a handler that throws different exceptions
     CalendarCommandHandler throwingHandler = args -> {
       if (args.length == 0) {
@@ -55,7 +57,8 @@ public class CalendarCommandHandlerTest {
   }
 
   @Test
-  public void testExceptionHandlingWrapperWithUnexpectedException() throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
+  public void testExceptionHandlingWrapperWithUnexpectedException()
+          throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
     // Create a handler that throws an unexpected exception
     CalendarCommandHandler throwingHandler = args -> {
       throw new RuntimeException("Unexpected error");
@@ -70,7 +73,8 @@ public class CalendarCommandHandlerTest {
   }
 
   @Test
-  public void testExceptionHandlingWrapperWithSuccessfulExecution() throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
+  public void testExceptionHandlingWrapperWithSuccessfulExecution()
+          throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
     // Create a handler that returns successfully
     CalendarCommandHandler successfulHandler = args -> "Success";
 
@@ -83,7 +87,8 @@ public class CalendarCommandHandlerTest {
   }
 
   @Test
-  public void testExceptionHandlingWrapperWithNullArgs() throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
+  public void testExceptionHandlingWrapperWithNullArgs()
+          throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
     // Create a handler that handles null args
     CalendarCommandHandler nullHandler = args -> {
       if (args == null) {

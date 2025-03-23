@@ -17,9 +17,9 @@ public interface CopyStrategy {
    * @param args The command arguments
    * @return Result message of the copy operation
    * @throws CalendarNotFoundException if the target calendar is not found
-   * @throws EventNotFoundException if the source event is not found
+   * @throws EventNotFoundException    if the source event is not found
    * @throws ConflictingEventException if there's a conflict in the target calendar
-   * @throws InvalidEventException if the event parameters are invalid
+   * @throws InvalidEventException     if the event parameters are invalid
    */
   String execute(String[] args) throws CalendarNotFoundException,
           EventNotFoundException,

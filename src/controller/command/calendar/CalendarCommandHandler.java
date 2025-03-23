@@ -18,7 +18,8 @@ public interface CalendarCommandHandler {
    * @param args the command arguments
    * @return a string result representing the outcome of the command execution
    * @throws CalendarNotFoundException  if a referenced calendar cannot be found
-   * @throws DuplicateCalendarException if attempting to create a calendar with a name that already exists
+   * @throws DuplicateCalendarException if attempting to create a calendar with a name
+   *                                    that already exists
    * @throws InvalidTimezoneException   if an invalid timezone is specified
    */
   String execute(String[] args) throws CalendarNotFoundException,

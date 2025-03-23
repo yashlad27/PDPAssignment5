@@ -258,7 +258,8 @@ public class CalendarManager {
     }
 
     // Update timezone
-    calendarRegistry.applyToCalendar(calendarName, calendar -> calendar.setTimezone(newTimezone));
+    calendarRegistry.applyToCalendar(calendarName,
+            calendar -> calendar.setTimezone(newTimezone));
   }
 
   /**

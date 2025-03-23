@@ -73,12 +73,12 @@ public class CommandParser {
             this::parseCreateAllDayRecurringUntilEventCommand);
 
     registerPattern("edit_single_event",
-            Pattern.compile("edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) with \"?([^\"]+)\"?"),
-            this::parseEditSingleEventCommand);
+            Pattern.compile("edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) "
+                    + "with \"?([^\"]+)\"?"), this::parseEditSingleEventCommand);
 
     registerPattern("edit_event_time",
-            Pattern.compile("edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) to (\\S+T\\S+) with \"?([^\"]+)\"?"),
-            this::parseEditEventTimeCommand);
+            Pattern.compile("edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) "
+                    + "to (\\S+T\\S+) with \"?([^\"]+)\"?"), this::parseEditEventTimeCommand);
 
     registerPattern("print_events_date",
             Pattern.compile("print events on (\\d{4}-\\d{2}-\\d{2})"),
@@ -105,7 +105,8 @@ public class CommandParser {
 
     // Copy single event pattern
     registerPattern("copy_event",
-            Pattern.compile("copy event \"?([^\"]*)\"? on (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+            Pattern.compile("copy event \"?([^\"]*)\"? "
+                    + "on (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
                     + "--target ([\\w-]+) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"),
             this::parseCopyEventCommand);
 
@@ -117,7 +118,8 @@ public class CommandParser {
 
     // Copy events between dates pattern
     registerPattern("copy_events_between_dates",
-            Pattern.compile("copy events between (\\d{4}-\\d{2}-\\d{2}) and (\\d{4}-\\d{2}-\\d{2}) "
+            Pattern.compile("copy events between (\\d{4}-\\d{2}-\\d{2}) "
+                    + "and (\\d{4}-\\d{2}-\\d{2}) "
                     + "--target ([\\w-]+) to (\\d{4}-\\d{2}-\\d{2})"),
             this::parseCopyEventsBetweenDatesCommand);
 

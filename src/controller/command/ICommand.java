@@ -16,7 +16,8 @@ public interface ICommand {
    * @param args the command arguments
    * @return a string representing the result of command execution
    */
-  String execute(String[] args) throws ConflictingEventException, InvalidEventException, EventNotFoundException;
+  String execute(String[] args) throws ConflictingEventException, InvalidEventException,
+          EventNotFoundException;
 
   /**
    * Gets the name of the command.

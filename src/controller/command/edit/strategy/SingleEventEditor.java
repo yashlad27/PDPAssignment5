@@ -41,7 +41,8 @@ public class SingleEventEditor extends AbstractEventEditor {
   }
 
   @Override
-  public String executeEdit(ICalendar calendar) throws EventNotFoundException, InvalidEventException, ConflictingEventException {
+  public String executeEdit(ICalendar calendar) throws EventNotFoundException,
+          InvalidEventException, ConflictingEventException {
     validateParameters(subject, property);
 
     boolean success = calendar.editSingleEvent(subject, startDateTime, property, newValue);

@@ -26,7 +26,8 @@ public interface EventCreationStrategy {
    * @throws ConflictingEventException if the event conflicts with existing events
    * @throws InvalidEventException     if the event parameters are invalid
    */
-  String executeCreation(ICalendar calendar) throws ConflictingEventException, InvalidEventException;
+  String executeCreation(ICalendar calendar) throws ConflictingEventException,
+          InvalidEventException;
 
 
   /**

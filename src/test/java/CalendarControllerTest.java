@@ -12,16 +12,16 @@ import java.util.List;
 
 import controller.CalendarController;
 import controller.ICommandFactory;
-import controller.command.event.CommandFactory;
 import controller.command.ICommand;
+import controller.command.event.CommandFactory;
 import controller.parser.CommandParser;
+import model.calendar.Calendar;
 import model.calendar.CalendarManager;
 import model.calendar.ICalendar;
 import model.event.Event;
 import model.event.RecurringEvent;
 import model.exceptions.CalendarNotFoundException;
 import view.ICalendarView;
-import model.calendar.Calendar;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -54,24 +54,24 @@ public class CalendarControllerTest {
 
     @Override
     public boolean createRecurringEventUntil(String name, LocalDateTime start, LocalDateTime end,
-        String weekdays, LocalDate untilDate,
-        boolean autoDecline) {
+                                             String weekdays, LocalDate untilDate,
+                                             boolean autoDecline) {
       return false;
     }
 
     @Override
     public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-        int occurrences, boolean autoDecline,
-        String description, String location,
-        boolean isPublic) {
+                                              int occurrences, boolean autoDecline,
+                                              String description, String location,
+                                              boolean isPublic) {
       return false;
     }
 
     @Override
     public boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
-        LocalDate untilDate, boolean autoDecline,
-        String description, String location,
-        boolean isPublic) {
+                                                   LocalDate untilDate, boolean autoDecline,
+                                                   String description, String location,
+                                                   boolean isPublic) {
       return false;
     }
 
@@ -102,13 +102,13 @@ public class CalendarControllerTest {
 
     @Override
     public boolean editSingleEvent(String subject, LocalDateTime startDateTime,
-        String property, String newValue) {
+                                   String property, String newValue) {
       return false;
     }
 
     @Override
     public int editEventsFromDate(String subject, LocalDateTime startDateTime,
-        String property, String newValue) {
+                                  String property, String newValue) {
       return 0;
     }
 
@@ -211,7 +211,8 @@ public class CalendarControllerTest {
       } else if ("error".equals(name)) {
         return errorCommand;
       } else if (name.equals("create")) {
-        return new MockCommand("Calendar 'Work' created with timezone 'America/New_York'", "create");
+        return new MockCommand("Calendar 'Work' created with timezone 'America/New_York'",
+                "create");
       } else if (name.equals("use")) {
         return new MockCommand("Now using calendar: 'Work'", "use");
       } else if (name.equals("show")) {
@@ -223,12 +224,12 @@ public class CalendarControllerTest {
 
     @Override
     public boolean hasCommand(String name) {
-      return name.equalsIgnoreCase("exit") || 
-             "error".equals(name) || 
-             "mock".equals(name) ||
-             "create".equals(name) ||
-             "use".equals(name) ||
-             "show".equals(name);
+      return name.equalsIgnoreCase("exit") ||
+              "error".equals(name) ||
+              "mock".equals(name) ||
+              "create".equals(name) ||
+              "use".equals(name) ||
+              "show".equals(name);
     }
 
     @Override
@@ -318,7 +319,8 @@ public class CalendarControllerTest {
         }
 
         if (commands.isEmpty()) {
-          view.displayError("Error: Command file is empty. At least one command (exit) is required.");
+          view.displayError("Error: Command file is empty. "
+                  + "At least one command (exit) is required.");
           return false;
         }
 
@@ -327,7 +329,7 @@ public class CalendarControllerTest {
           String command = commands.get(i);
           String result = processCommand(command);
           view.displayMessage(result);
-          
+
           if (result.startsWith("Error:")) {
             view.displayError("Command failed, stopping execution: " + result);
             return false;
@@ -338,7 +340,7 @@ public class CalendarControllerTest {
         String lastCommand = commands.get(commands.size() - 1);
         String result = processCommand(lastCommand);
         view.displayMessage(result);
-        
+
         if (!result.equals("Exiting application.")) {
           view.displayError("Headless mode requires the last command to be 'exit'");
           return false;
@@ -483,29 +485,11 @@ public class CalendarControllerTest {
     assertTrue(messages.contains("Calendar Application Terminated"));
   }
 
-//  @Test
-//  public void testStartHeadlessModeWithValidCommands() {
-//    String mockFileContent = "create calendar --name Work --timezone America/New_York\n" +
-//        "use calendar --name Work\n" +
-//        "create single Meeting 2023-05-15T10:00 2023-05-15T11:00\n" +
-//        "show 2023-05-15T10:30\n" +
-//        "exit\n";
-//    BufferedReader reader = new BufferedReader(new StringReader(mockFileContent));
-//    TestableCalendarController testableController =
-//        new TestableCalendarController(commandFactory, commandFactory, mockCalendarManager, view, reader);
-//    boolean result = testableController.startHeadlessMode("valid_file.txt");
-//    assertTrue("Headless mode should complete successfully", result);
-//    List<String> messages = view.getDisplayedMessages();
-//    assertTrue("Should contain calendar creation success message", messages.contains("Calendar 'Work' created with timezone 'America/New_York'"));
-//    assertTrue("Should contain calendar selection message", messages.contains("Now using calendar: 'Work'"));
-//    assertTrue("Should contain event creation success message", messages.contains("Event 'Meeting' created successfully"));
-//    assertTrue("Should contain status message", messages.contains("Status on 2023-05-15T10:30: Busy"));
-//  }
-
   @Test
   public void testStartHeadlessModeWithEmptyFilePath() {
     TestableCalendarController testableController = new TestableCalendarController(
-        commandFactory, commandFactory, mockCalendarManager, view, new BufferedReader(new StringReader("")));
+            commandFactory, commandFactory, mockCalendarManager, view,
+            new BufferedReader(new StringReader("")));
     boolean result = testableController.startHeadlessMode("");
     assertFalse(result);
     List<String> errors = view.getErrorMessages();
@@ -515,7 +499,8 @@ public class CalendarControllerTest {
   @Test
   public void testStartHeadlessModeWithNullFilePath() {
     TestableCalendarController testableController = new TestableCalendarController(
-        commandFactory, commandFactory, mockCalendarManager, view, new BufferedReader(new StringReader("")));
+            commandFactory, commandFactory, mockCalendarManager, view,
+            new BufferedReader(new StringReader("")));
     boolean result = testableController.startHeadlessMode(null);
     assertFalse(result);
     List<String> errors = view.getErrorMessages();
@@ -532,7 +517,7 @@ public class CalendarControllerTest {
     };
 
     TestableCalendarController testableController = new TestableCalendarController(
-        commandFactory, commandFactory, mockCalendarManager, view, errorReader);
+            commandFactory, commandFactory, mockCalendarManager, view, errorReader);
     boolean result = testableController.startHeadlessMode("file.txt");
     assertFalse(result);
     List<String> errors = view.getErrorMessages();
@@ -541,70 +526,39 @@ public class CalendarControllerTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testConstructorWithNullCommandFactory() {
-    new CalendarController(null, null, null, view);
+    new CalendarController(null, null, null,
+            view);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testConstructorWithNullView() {
-    new CalendarController(commandFactory, null, null, null);
+    new CalendarController(commandFactory, null, null,
+            null);
   }
 
   @Test
   public void testHeadlessModeWithEmptyFile() {
     BufferedReader reader = new BufferedReader(new StringReader(""));
     TestableCalendarController testableController =
-        new TestableCalendarController(commandFactory, commandFactory, mockCalendarManager, view, reader);
+            new TestableCalendarController(commandFactory, commandFactory, mockCalendarManager,
+                    view, reader);
     boolean result = testableController.startHeadlessMode("empty_file.txt");
     assertFalse("Should return false for empty file", result);
     List<String> errors = view.getErrorMessages();
-    assertTrue(errors.contains("Error: Command file is empty. At least one command (exit) is required."));
+    assertTrue(errors.contains("Error: Command file is empty. At least one command (exit) "
+            + "is required."));
   }
-
-//  @Test
-//  public void testHeadlessModeWithNoExitCommand() {
-//    String mockFileContent = "command1\ncommand2\n";
-//    BufferedReader reader = new BufferedReader(new StringReader(mockFileContent));
-//    TestableCalendarController testableController =
-//        new TestableCalendarController(commandFactory, commandFactory, mockCalendarManager, view, reader);
-//    boolean result = testableController.startHeadlessMode("no_exit.txt");
-//    assertFalse("Should return false when exit command is missing", result);
-//    List<String> errors = view.getErrorMessages();
-//    assertTrue(errors.contains("Headless mode requires the last command to be 'exit'"));
-//  }
 
   @Test
   public void testHeadlessModeWithOnlyExitCommand() {
     String mockFileContent = "exit\n";
     BufferedReader reader = new BufferedReader(new StringReader(mockFileContent));
     TestableCalendarController testableController =
-        new TestableCalendarController(commandFactory, commandFactory, mockCalendarManager, view, reader);
+            new TestableCalendarController(commandFactory, commandFactory, mockCalendarManager,
+                    view, reader);
     boolean result = testableController.startHeadlessMode("only_exit.txt");
     assertTrue("Should return true with only exit command", result);
     List<String> messages = view.getDisplayedMessages();
     assertTrue(messages.contains("Exiting application."));
   }
-
-//   @Test
-//   public void testHeadlessModeWithEmptyLines() {
-//     String mockFileContent = "\ncommand1\n\ncommand2\n\nexit\n";
-//     BufferedReader reader = new BufferedReader(new StringReader(mockFileContent));
-//     TestableCalendarController testableController =
-//         new TestableCalendarController(commandFactory, commandFactory, mockCalendarManager, view, reader);
-//     boolean result = testableController.startHeadlessMode("valid_file.txt");
-//     assertTrue(result);
-//     List<String> messages = view.getDisplayedMessages();
-//     assertTrue(messages.contains("Command executed successfully"));
-//   }
-
-  // @Test
-  // public void testStartHeadlessModeWithValidCommands() {
-  //   String mockFileContent = "command1\ncommand2\nexit\n";
-  //   BufferedReader reader = new BufferedReader(new StringReader(mockFileContent));
-  //   TestableCalendarController testableController =
-  //       new TestableCalendarController(commandFactory, commandFactory, mockCalendarManager, view, reader);
-  //   boolean result = testableController.startHeadlessMode("valid_file.txt");
-  //   assertTrue(result);
-  //   List<String> messages = view.getDisplayedMessages();
-  //   assertTrue(messages.contains("Command executed successfully"));
-  // }
 }

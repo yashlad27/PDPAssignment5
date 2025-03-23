@@ -164,7 +164,8 @@ public class Event {
     if (endDateTime == null) {
       // Converting to all-day event
       this.isAllDay = true;
-      this.endDateTime = LocalDateTime.of(startDateTime.toLocalDate(), LocalTime.of(23, 59, 59));
+      this.endDateTime = LocalDateTime.of(startDateTime.toLocalDate(),
+              LocalTime.of(23, 59, 59));
     } else {
       if (endDateTime.isBefore(startDateTime)) {
         throw new IllegalArgumentException("End date/time cannot be before start date/time");
@@ -219,7 +220,8 @@ public class Event {
     this.isAllDay = isAllDay;
 
     if (isAllDay) {
-      this.endDateTime = LocalDateTime.of(startDateTime.toLocalDate(), LocalTime.of(23, 59, 59));
+      this.endDateTime = LocalDateTime.of(startDateTime.toLocalDate(),
+              LocalTime.of(23, 59, 59));
     }
   }
 

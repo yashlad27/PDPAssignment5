@@ -49,7 +49,8 @@ public class CalendarCommandFactoryTest {
   }
 
   @Test
-  public void testCreateCalendarCommand() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+  public void testCreateCalendarCommand() throws ConflictingEventException,
+          InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name", "TestCalendar", "--timezone", "America/New_York"};
     String result = factory.getCommand("create").execute(args);
     assertTrue(result.contains("Calendar 'TestCalendar' created"));
@@ -60,7 +61,8 @@ public class CalendarCommandFactoryTest {
   }
 
   @Test
-  public void testCreateCalendarCommandWithInvalidArgs() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+  public void testCreateCalendarCommandWithInvalidArgs() throws ConflictingEventException,
+          InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name", "TestCalendar"}; // Missing timezone
     String result = factory.getCommand("create").execute(args);
     assertTrue(result.contains("Error: Insufficient arguments"));
@@ -70,7 +72,8 @@ public class CalendarCommandFactoryTest {
   }
 
   @Test
-  public void testEditCalendarCommand() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+  public void testEditCalendarCommand() throws ConflictingEventException,
+          InvalidEventException, EventNotFoundException {
     // First create a calendar
     String[] createArgs = {"calendar", "--name", "TestCalendar", "--timezone", "America/New_York"};
     factory.getCommand("create").execute(createArgs);
@@ -87,14 +90,16 @@ public class CalendarCommandFactoryTest {
   }
 
   @Test
-  public void testEditCalendarTimezone() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+  public void testEditCalendarTimezone() throws ConflictingEventException,
+          InvalidEventException, EventNotFoundException {
     // First create a calendar
     String[] createArgs = {"calendar", "--name", "TestCalendar", "--timezone", "America/New_York"};
     factory.getCommand("create").execute(createArgs);
     mockView.clear();
 
     // Then edit timezone
-    String[] editArgs = {"calendar", "--name", "TestCalendar", "--property", "timezone", "America/Los_Angeles"};
+    String[] editArgs = {"calendar", "--name", "TestCalendar", "--property",
+            "timezone", "America/Los_Angeles"};
     String result = factory.getCommand("edit").execute(editArgs);
     assertTrue(result.contains("Timezone for calendar"));
 
@@ -103,7 +108,8 @@ public class CalendarCommandFactoryTest {
   }
 
   @Test
-  public void testUseCalendarCommand() throws ConflictingEventException, InvalidEventException, EventNotFoundException, CalendarNotFoundException {
+  public void testUseCalendarCommand() throws ConflictingEventException,
+          InvalidEventException, EventNotFoundException, CalendarNotFoundException {
     // First create a calendar
     String[] createArgs = {"calendar", "--name", "TestCalendar", "--timezone", "America/New_York"};
     factory.getCommand("create").execute(createArgs);
@@ -120,7 +126,8 @@ public class CalendarCommandFactoryTest {
   }
 
   @Test
-  public void testUseNonExistentCalendar() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+  public void testUseNonExistentCalendar() throws ConflictingEventException,
+          InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name", "NonExistentCalendar"};
     String result = factory.getCommand("use").execute(args);
     assertTrue(result.contains("Error"));
@@ -130,7 +137,8 @@ public class CalendarCommandFactoryTest {
   }
 
   @Test
-  public void testEditNonExistentCalendar() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+  public void testEditNonExistentCalendar() throws ConflictingEventException,
+          InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name", "NonExistentCalendar", "--property", "name", "NewName"};
     String result = factory.getCommand("edit").execute(args);
     assertTrue(result.contains("Error"));
@@ -140,7 +148,8 @@ public class CalendarCommandFactoryTest {
   }
 
   @Test
-  public void testCreateDuplicateCalendar() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+  public void testCreateDuplicateCalendar() throws ConflictingEventException,
+          InvalidEventException, EventNotFoundException {
     // First create a calendar
     String[] createArgs = {"calendar", "--name", "TestCalendar", "--timezone", "America/New_York"};
     factory.getCommand("create").execute(createArgs);
@@ -155,7 +164,8 @@ public class CalendarCommandFactoryTest {
   }
 
   @Test
-  public void testEditCalendarWithInvalidProperty() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+  public void testEditCalendarWithInvalidProperty() throws ConflictingEventException,
+          InvalidEventException, EventNotFoundException {
     // First create a calendar
     String[] createArgs = {"calendar", "--name", "TestCalendar", "--timezone", "America/New_York"};
     factory.getCommand("create").execute(createArgs);
@@ -181,7 +191,8 @@ public class CalendarCommandFactoryTest {
   }
 
   @Test
-  public void testCreateCalendarWithInvalidTimezone() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+  public void testCreateCalendarWithInvalidTimezone() throws ConflictingEventException,
+          InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name", "TestCalendar", "--timezone", "Invalid/Timezone"};
     String result = factory.getCommand("create").execute(args);
     assertTrue(result.contains("Error"));
@@ -191,7 +202,8 @@ public class CalendarCommandFactoryTest {
   }
 
   @Test
-  public void testEditCalendarWithInvalidTimezone() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+  public void testEditCalendarWithInvalidTimezone() throws ConflictingEventException,
+          InvalidEventException, EventNotFoundException {
     // First create a calendar
     String[] createArgs = {"calendar", "--name", "TestCalendar", "--timezone", "America/New_York"};
     factory.getCommand("create").execute(createArgs);

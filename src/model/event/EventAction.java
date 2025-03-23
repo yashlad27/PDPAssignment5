@@ -2,6 +2,19 @@ package model.event;
 
 import java.time.LocalDateTime;
 
+/**
+ * A functional interface representing an action to be performed on an Event object.
+ * This interface provides a flexible way to define and compose event modifications
+ * through a chain of operations.
+ *
+ * <p> The interface includes:
+ * <ul>
+ *   <li>A single abstract method {@code apply(Event event)} for executing the action</li>
+ *   <li>A default method {@code andThen(EventAction after)} for composing multiple actions</li>
+ *   <li>Static factory methods for common event modifications</li>
+ * </ul>
+ * <p>
+ */
 @FunctionalInterface
 public interface EventAction {
 
