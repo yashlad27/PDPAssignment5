@@ -1,12 +1,12 @@
 import org.junit.Test;
 
 import java.io.IOException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.time.DayOfWeek;
 
 import controller.command.create.strategy.RecurringEventCreator;
 import model.calendar.ICalendar;
@@ -35,18 +35,20 @@ public class RecurringEventCreatorTest {
 
   @Test
   public void testConstructorWithInsufficientArgs() {
-    String[] args = {"recurring", "Meeting", "2023-05-15T10:00", "2023-05-15T11:00", "MWF"}; // Missing occurrences and autoDecline
+    String[] args = {"recurring", "Meeting", "2023-05-15T10:00", "2023-05-15T11:00", "MWF"};
     try {
       new RecurringEventCreator(args);
       fail("Should throw IllegalArgumentException for insufficient args");
     } catch (IllegalArgumentException | InvalidEventException e) {
-      assertEquals("Insufficient arguments for creating a recurring event", e.getMessage());
+      assertEquals("Insufficient arguments for creating a recurring event",
+              e.getMessage());
     }
   }
 
   @Test
   public void testConstructorWithInvalidDateTime() {
-    String[] args = {"recurring", "Meeting", "invalid-datetime", "2023-05-15T11:00", "MWF", "3", "false"};
+    String[] args = {"recurring", "Meeting", "invalid-datetime", "2023-05-15T11:00", "MWF", "3",
+            "false"};
     try {
       new RecurringEventCreator(args);
       fail("Should throw IllegalArgumentException for invalid datetime");
@@ -57,7 +59,8 @@ public class RecurringEventCreatorTest {
 
   @Test
   public void testCreateEventWithNullEventName() throws InvalidEventException {
-    String[] args = {"recurring", null, "2023-05-15T10:00", "2023-05-15T11:00", "MWF", "3", "false"};
+    String[] args = {"recurring", null, "2023-05-15T10:00", "2023-05-15T11:00", "MWF", "3",
+            "false"};
     RecurringEventCreator creator = new RecurringEventCreator(args);
     try {
       creator.createEvent();
@@ -69,9 +72,10 @@ public class RecurringEventCreatorTest {
 
   @Test
   public void testCreateEventWithEmptyWeekdays() {
-    String[] args = {"recurring", "Meeting", "2023-05-15T10:00", "2023-05-15T11:00", "", "3", "false"};
+    String[] args = {"recurring", "Meeting", "2023-05-15T10:00", "2023-05-15T11:00", "", "3",
+            "false"};
     try {
-      new RecurringEventCreator(args);  // Exception should be thrown during construction
+      new RecurringEventCreator(args);
       fail("Should throw InvalidEventException for empty weekdays");
     } catch (InvalidEventException e) {
       assertEquals("Repeat days cannot be empty", e.getMessage());
@@ -80,7 +84,8 @@ public class RecurringEventCreatorTest {
 
   @Test
   public void testCreateEventWithInvalidOccurrences() throws InvalidEventException {
-    String[] args = {"recurring", "Meeting", "2023-05-15T10:00", "2023-05-15T11:00", "MWF", "0", "false"};
+    String[] args = {"recurring", "Meeting", "2023-05-15T10:00", "2023-05-15T11:00", "MWF", "0",
+            "false"};
     RecurringEventCreator creator = new RecurringEventCreator(args);
     try {
       creator.createEvent();
@@ -92,24 +97,24 @@ public class RecurringEventCreatorTest {
 
   @Test
   public void testCreateEventSuccess() throws InvalidEventException {
-    String[] args = {"recurring", "Meeting", "2023-05-15T10:00", "2023-05-15T11:00", "MWF", "3", "false",
+    String[] args = {"recurring", "Meeting", "2023-05-15T10:00", "2023-05-15T11:00", "MWF", "3",
+            "false",
             "Team meeting", "Conference Room", "true"};
     RecurringEventCreator creator = new RecurringEventCreator(args);
     Event event = creator.createEvent();
 
-    // First verify it's a RecurringEvent
     assertTrue("Event should be a RecurringEvent", event instanceof RecurringEvent);
     RecurringEvent recurringEvent = (RecurringEvent) event;
 
-    // Verify the event was created with correct parameters
     assertEquals("Meeting", recurringEvent.getSubject());
-    assertEquals(LocalDateTime.of(2023, 5, 15, 10, 0), recurringEvent.getStartDateTime());
-    assertEquals(LocalDateTime.of(2023, 5, 15, 11, 0), recurringEvent.getEndDateTime());
-    
-    // Verify the repeat days are correctly set
+    assertEquals(LocalDateTime.of(2023, 5, 15, 10, 0),
+            recurringEvent.getStartDateTime());
+    assertEquals(LocalDateTime.of(2023, 5, 15, 11, 0),
+            recurringEvent.getEndDateTime());
+
     Set<DayOfWeek> expectedDays = Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY);
     assertEquals(expectedDays, recurringEvent.getRepeatDays());
-    
+
     assertEquals(3, recurringEvent.getOccurrences());
     assertEquals("Team meeting", recurringEvent.getDescription());
     assertEquals("Conference Room", recurringEvent.getLocation());
@@ -129,7 +134,6 @@ public class RecurringEventCreatorTest {
       return true;
     }
 
-    // Implement other required methods with minimal implementation
     @Override
     public boolean addEvent(Event event, boolean autoDecline) throws ConflictingEventException {
       return true;
@@ -144,15 +148,19 @@ public class RecurringEventCreatorTest {
 
     @Override
     public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-                                              int occurrences, boolean autoDecline, String description, String location,
-                                              boolean isPublic) throws InvalidEventException, ConflictingEventException {
+                                              int occurrences, boolean autoDecline,
+                                              String description, String location,
+                                              boolean isPublic)
+            throws InvalidEventException, ConflictingEventException {
       return true;
     }
 
     @Override
     public boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
-                                                   LocalDate untilDate, boolean autoDecline, String description, String location,
-                                                   boolean isPublic) throws InvalidEventException, ConflictingEventException {
+                                                   LocalDate untilDate, boolean autoDecline,
+                                                   String description, String location,
+                                                   boolean isPublic)
+            throws InvalidEventException, ConflictingEventException {
       return true;
     }
 
@@ -183,14 +191,16 @@ public class RecurringEventCreatorTest {
 
     @Override
     public boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property,
-                                   String newValue) throws EventNotFoundException, InvalidEventException,
+                                   String newValue)
+            throws EventNotFoundException, InvalidEventException,
             ConflictingEventException {
       return false;
     }
 
     @Override
     public int editEventsFromDate(String subject, LocalDateTime startDateTime, String property,
-                                  String newValue) throws InvalidEventException, ConflictingEventException {
+                                  String newValue)
+            throws InvalidEventException, ConflictingEventException {
       return 0;
     }
 
