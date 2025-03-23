@@ -1,6 +1,8 @@
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,6 +10,8 @@ import controller.ICommandFactory;
 import controller.command.ICommand;
 import controller.command.event.CommandFactory;
 import model.calendar.ICalendar;
+import model.event.Event;
+import model.event.RecurringEvent;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
@@ -33,55 +37,55 @@ public class CommandFactoryTest {
      * Minimal implementation with no functionality.
      */
     @Override
-    public boolean addEvent(model.event.Event event, boolean autoDecline) throws ConflictingEventException {
+    public boolean addEvent(Event event, boolean autoDecline) throws ConflictingEventException {
       return false;
     }
 
     @Override
-    public boolean addRecurringEvent(model.event.RecurringEvent recurringEvent,
+    public boolean addRecurringEvent(RecurringEvent recurringEvent,
                                      boolean autoDecline) throws ConflictingEventException {
       return false;
     }
 
     @Override
-    public boolean createRecurringEventUntil(String name, java.time.LocalDateTime start,
-                                             java.time.LocalDateTime end, String weekdays, java.time.LocalDate untilDate,
+    public boolean createRecurringEventUntil(String name, LocalDateTime start,
+                                             LocalDateTime end, String weekdays, LocalDate untilDate,
                                              boolean autoDecline) throws InvalidEventException, ConflictingEventException {
       return false;
     }
 
     @Override
-    public boolean createAllDayRecurringEvent(String name, java.time.LocalDate date,
+    public boolean createAllDayRecurringEvent(String name, LocalDate date,
                                               String weekdays, int occurrences, boolean autoDecline, String description, String location,
                                               boolean isPublic) throws InvalidEventException, ConflictingEventException {
       return false;
     }
 
     @Override
-    public boolean createAllDayRecurringEventUntil(String name, java.time.LocalDate date,
-                                                   String weekdays, java.time.LocalDate untilDate, boolean autoDecline, String description,
+    public boolean createAllDayRecurringEventUntil(String name, LocalDate date,
+                                                   String weekdays, LocalDate untilDate, boolean autoDecline, String description,
                                                    String location, boolean isPublic) throws InvalidEventException, ConflictingEventException {
       return false;
     }
 
     @Override
-    public java.util.List<model.event.Event> getEventsOnDate(java.time.LocalDate date) {
+    public java.util.List<model.event.Event> getEventsOnDate(LocalDate date) {
       return null;
     }
 
     @Override
-    public java.util.List<model.event.Event> getEventsInRange(java.time.LocalDate startDate,
-                                                              java.time.LocalDate endDate) {
+    public java.util.List<model.event.Event> getEventsInRange(LocalDate startDate,
+                                                              LocalDate endDate) {
       return null;
     }
 
     @Override
-    public boolean isBusy(java.time.LocalDateTime dateTime) {
+    public boolean isBusy(LocalDateTime dateTime) {
       return false;
     }
 
     @Override
-    public model.event.Event findEvent(String subject, java.time.LocalDateTime startDateTime) throws EventNotFoundException {
+    public model.event.Event findEvent(String subject, LocalDateTime startDateTime) throws EventNotFoundException {
       return null;
     }
 
@@ -91,13 +95,13 @@ public class CommandFactoryTest {
     }
 
     @Override
-    public boolean editSingleEvent(String subject, java.time.LocalDateTime startDateTime,
+    public boolean editSingleEvent(String subject, LocalDateTime startDateTime,
                                    String property, String newValue) throws EventNotFoundException, InvalidEventException, ConflictingEventException {
       return false;
     }
 
     @Override
-    public int editEventsFromDate(String subject, java.time.LocalDateTime startDateTime,
+    public int editEventsFromDate(String subject, LocalDateTime startDateTime,
                                   String property, String newValue) throws InvalidEventException, ConflictingEventException {
       return 0;
     }
@@ -108,7 +112,7 @@ public class CommandFactoryTest {
     }
 
     @Override
-    public java.util.List<model.event.RecurringEvent> getAllRecurringEvents() {
+    public java.util.List<RecurringEvent> getAllRecurringEvents() {
       return null;
     }
 

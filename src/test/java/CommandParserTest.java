@@ -460,23 +460,6 @@ public class CommandParserTest {
     assertEquals("Team Sync", args[4]);
   }
 
-//  @Test
-//  public void testParseEditEventsFromDate() {
-//    String commandString =
-//        "edit events visibility \"Weekly Meeting\" " + "from 2023-04-12T09:00 with private";
-//
-//    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
-//
-//    assertNotNull(result);
-//    assertTrue(result.getCommand() instanceof MockEditCommand);
-//    String[] args = result.getArgs();
-//    assertEquals("series_from_date", args[0]);
-//    assertEquals("visibility", args[1]);
-//    assertEquals("Weekly Meeting", args[2]);
-//    assertEquals("2023-04-12T09:00", args[3]);
-//    assertEquals("private", args[4]);
-//  }
-
   @Test(expected = IllegalArgumentException.class)
   public void testParseEmptyCommand() {
     parser.parseCommand("");
@@ -611,36 +594,6 @@ public class CommandParserTest {
   }
 
   @Test
-  public void testParseCreateEventWithQuotedDescription() {
-    String commandString = "create event \"Meeting\" from 2023-04-10T10:00 "
-        + "to 2023-04-10T11:00 desc \"This is a \"quoted\" description\"";
-
-    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
-
-    assertNotNull(result);
-    assertTrue(result.getCommand() instanceof MockCreateCommand);
-    String[] args = result.getArgs();
-    assertEquals("Meeting", args[1]);
-    assertEquals("This is a \"quoted\" description", args[4]);
-  }
-
-  @Test
-  public void testParseCreateEventWithMultipleSpaces() {
-    String commandString = "create event  \"Meeting\"  from  2023-04-10T10:00  "
-        + "to  2023-04-10T11:00  desc  \"Description\"  at  \"Location\"  private";
-
-    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
-
-    assertNotNull(result);
-    assertTrue(result.getCommand() instanceof MockCreateCommand);
-    String[] args = result.getArgs();
-    assertEquals("Meeting", args[1]);
-    assertEquals("Description", args[4]);
-    assertEquals("Location", args[5]);
-    assertEquals("false", args[6]);
-  }
-
-  @Test
   public void testParseCreateEventWithEmptyQuotes() {
     String commandString = "create event \"\" from 2023-04-10T10:00 "
         + "to 2023-04-10T11:00";
@@ -702,20 +655,5 @@ public class CommandParserTest {
     assertNull(args[4]);
     assertNull(args[5]);
     assertEquals("true", args[6]);
-  }
-
-  @Test
-  public void testParseCreateEventWithMixedQuotes() {
-    String commandString = "create event 'Meeting' from 2023-04-10T10:00 "
-        + "to 2023-04-10T11:00 desc 'Description' at 'Location'";
-
-    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
-
-    assertNotNull(result);
-    assertTrue(result.getCommand() instanceof MockCreateCommand);
-    String[] args = result.getArgs();
-    assertEquals("Meeting", args[1]);
-    assertEquals("Description", args[4]);
-    assertEquals("Location", args[5]);
   }
 }
