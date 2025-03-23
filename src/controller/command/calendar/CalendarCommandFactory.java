@@ -175,6 +175,10 @@ public class CalendarCommandFactory implements ICommandFactory {
    */
   @Override
   public ICommand getCommand(String commandName) {
+    if (commandName == null) {
+      return null;
+    }
+
     if (commandName.equals("copy")) {
       return copyEventCommand;
     }
