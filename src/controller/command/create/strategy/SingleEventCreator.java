@@ -55,7 +55,6 @@ public class SingleEventCreator extends AbstractEventCreator {
       throw new InvalidEventException("Start date/time cannot be null");
     }
 
-    // Create an event directly
     return new Event(
             eventName,
             startDateTime,

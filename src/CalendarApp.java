@@ -7,6 +7,9 @@ import model.factory.CalendarFactory;
 import utilities.TimeZoneHandler;
 import view.ConsoleView;
 import view.ICalendarView;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * Main entry point for the Calendar Application.
@@ -22,18 +25,15 @@ public class CalendarApp {
      *             --mode headless file : Starts the application in headless mode with the specified command file
      */
     public static void main(String[] args) {
-        // Initialize factory and core components
         CalendarFactory factory = new CalendarFactory();
         ICalendarView view = factory.createView();
         TimeZoneHandler timezoneHandler = factory.createTimeZoneHandler();
         CalendarManager calendarManager = factory.createCalendarManager(timezoneHandler);
         
-        // Create command factories
         ICalendar calendar = new Calendar();
         ICommandFactory eventCommandFactory = factory.createEventCommandFactory(calendar, view);
         ICommandFactory calendarCommandFactory = factory.createCalendarCommandFactory(calendarManager, view);
         
-        // Create controller with all dependencies
         CalendarController controller = factory.createController(
                 eventCommandFactory,
                 calendarCommandFactory,
