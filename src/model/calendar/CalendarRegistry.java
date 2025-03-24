@@ -49,20 +49,16 @@ public class CalendarRegistry {
    */
   public void registerCalendar(String name, Calendar calendar)
           throws DuplicateCalendarException {
-    // Validate name
     if (name == null || name.trim().isEmpty()) {
       throw new IllegalArgumentException("Calendar name cannot be null or empty");
     }
 
-    // Check for duplicate name
     if (calendars.containsKey(name)) {
       throw new DuplicateCalendarException("Calendar with name '" + name + "' already exists");
     }
 
-    // Add to map
     calendars.put(name, calendar);
 
-    // If this is the first calendar, make it active
     if (activeCalendarName == null) {
       activeCalendarName = name;
     }
@@ -81,7 +77,6 @@ public class CalendarRegistry {
 
     calendars.remove(name);
 
-    // Update active calendar if necessary
     if (name.equals(activeCalendarName)) {
       if (!calendars.isEmpty()) {
         activeCalendarName = calendars.keySet().iterator().next();
@@ -105,27 +100,21 @@ public class CalendarRegistry {
       throw new IllegalArgumentException("New calendar name cannot be null or empty");
     }
 
-    // Check if old name exists
     if (!calendars.containsKey(oldName)) {
       throw new CalendarNotFoundException("Calendar not found: " + oldName);
     }
 
-    // Check if new name already exists
     if (!oldName.equals(newName) && calendars.containsKey(newName)) {
       throw new DuplicateCalendarException("Calendar with name '" + newName + "' already exists");
     }
 
-    // Get the calendar
     Calendar calendar = calendars.get(oldName);
 
-    // Update name in calendar object
     calendar.setName(newName);
 
-    // Remove from map with old name and add with new name
     calendars.remove(oldName);
     calendars.put(newName, calendar);
 
-    // Update active calendar name if necessary
     if (oldName.equals(activeCalendarName)) {
       activeCalendarName = newName;
     }
