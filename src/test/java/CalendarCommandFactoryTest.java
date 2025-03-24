@@ -1,5 +1,6 @@
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.After;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,8 @@ import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
 import view.ICalendarView;
+import utilities.CalendarNameValidator;
+import utilities.TimeZoneHandler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -24,9 +27,18 @@ public class CalendarCommandFactoryTest {
 
   @Before
   public void setUp() {
-    calendarManager = new CalendarManager.Builder().build();
+    TimeZoneHandler timezoneHandler = new TimeZoneHandler();
+    calendarManager = new CalendarManager.Builder()
+            .timezoneHandler(timezoneHandler)
+            .build();
     mockView = new MockCalendarView();
     factory = new CalendarCommandFactory(calendarManager, mockView);
+    CalendarNameValidator.clear(); // Clear the validator before each test
+  }
+
+  @After
+  public void tearDown() {
+    CalendarNameValidator.clear();
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -51,10 +63,10 @@ public class CalendarCommandFactoryTest {
   @Test
   public void testCreateCalendarCommand() throws ConflictingEventException,
           InvalidEventException, EventNotFoundException {
-    String[] args = {"calendar", "--name", "TestCalendar", "--timezone", "America/New_York"};
+    String[] args = {"calendar", "--name", "OneTestCalendar", "--timezone", "America/New_York"};
     String result = factory.getCommand("create").execute(args);
-    assertTrue(result.contains("Calendar 'TestCalendar' created"));
-    assertTrue(calendarManager.getCalendarNames().contains("TestCalendar"));
+    assertTrue(result.contains("Calendar 'OneTestCalendar' created with timezone 'America/New_York'"));
+    assertTrue(calendarManager.getCalendarNames().contains("OneTestCalendar"));
 
     // Verify view interactions
     assertTrue(mockView.getDisplayedMessages().contains(result));
@@ -75,12 +87,12 @@ public class CalendarCommandFactoryTest {
   public void testEditCalendarCommand() throws ConflictingEventException,
           InvalidEventException, EventNotFoundException {
     // First create a calendar
-    String[] createArgs = {"calendar", "--name", "TestCalendar", "--timezone", "America/New_York"};
+    String[] createArgs = {"calendar", "--name", "NewTestCalendar", "--timezone", "America/New_York"};
     factory.getCommand("create").execute(createArgs);
     mockView.clear();
 
     // Then edit it
-    String[] editArgs = {"calendar", "--name", "TestCalendar", "--property", "name", "NewName"};
+    String[] editArgs = {"calendar", "--name", "NewTestCalendar", "--property", "name", "NewName"};
     String result = factory.getCommand("edit").execute(editArgs);
     assertTrue(result.contains("Calendar name changed"));
     assertTrue(calendarManager.getCalendarNames().contains("NewName"));
@@ -93,12 +105,12 @@ public class CalendarCommandFactoryTest {
   public void testEditCalendarTimezone() throws ConflictingEventException,
           InvalidEventException, EventNotFoundException {
     // First create a calendar
-    String[] createArgs = {"calendar", "--name", "TestCalendar", "--timezone", "America/New_York"};
+    String[] createArgs = {"calendar", "--name", "NewnewTestCalendar", "--timezone", "America/New_York"};
     factory.getCommand("create").execute(createArgs);
     mockView.clear();
 
     // Then edit timezone
-    String[] editArgs = {"calendar", "--name", "TestCalendar", "--property",
+    String[] editArgs = {"calendar", "--name", "NewnewTestCalendar", "--property",
             "timezone", "America/Los_Angeles"};
     String result = factory.getCommand("edit").execute(editArgs);
     assertTrue(result.contains("Timezone for calendar"));
@@ -111,15 +123,15 @@ public class CalendarCommandFactoryTest {
   public void testUseCalendarCommand() throws ConflictingEventException,
           InvalidEventException, EventNotFoundException, CalendarNotFoundException {
     // First create a calendar
-    String[] createArgs = {"calendar", "--name", "TestCalendar", "--timezone", "America/New_York"};
+    String[] createArgs = {"calendar", "--name", "thirdNewTestCalendar", "--timezone", "America/New_York"};
     factory.getCommand("create").execute(createArgs);
     mockView.clear();
 
     // Then use it
-    String[] useArgs = {"calendar", "--name", "TestCalendar"};
+    String[] useArgs = {"calendar", "--name", "thirdNewTestCalendar"};
     String result = factory.getCommand("use").execute(useArgs);
-    assertTrue(result.contains("Now using calendar"));
-    assertEquals("TestCalendar", calendarManager.getActiveCalendar().getName());
+    assertTrue(result.contains("Now using calendar: 'thirdNewTestCalendar'"));
+    assertEquals("thirdNewTestCalendar", calendarManager.getActiveCalendar().getName());
 
     // Verify view interactions
     assertTrue(mockView.getDisplayedMessages().contains(result));
