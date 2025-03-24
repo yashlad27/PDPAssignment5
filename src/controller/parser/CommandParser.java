@@ -4,6 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.List;
 
 import controller.ICommandFactory;
 import controller.command.ICommand;
@@ -16,6 +20,10 @@ public class CommandParser {
 
   private final ICommandFactory commandFactory;
   private final Map<String, CommandPattern> commandPatterns;
+  private static final List<String> VALID_COMMANDS = Arrays.asList(
+    "create", "use", "show", "edit", "copy", "exit", "print", "export"
+  );
+  private static final Set<String> VALID_COMMANDS_SET = new HashSet<>(VALID_COMMANDS);
 
   /**
    * Constructs a new CommandParser.
@@ -152,26 +160,45 @@ public class CommandParser {
    */
   public CommandWithArgs parseCommand(String commandString) {
     if (commandString == null || commandString.trim().isEmpty()) {
-      throw new IllegalArgumentException("Command string cannot be null or empty");
+      throw new IllegalArgumentException("Command cannot be empty");
     }
 
-    commandString = commandString.trim();
-
-    // Check for exit command
-    if (commandString.equalsIgnoreCase("exit")) {
-      ICommand exitCommand = commandFactory.getCommand("exit");
-      return new CommandWithArgs(exitCommand, new String[0]);
+    String[] parts = commandString.trim().split("\\s+");
+    if (parts.length == 0) {
+      throw new IllegalArgumentException("Invalid command format");
     }
 
-    // Try all registered patterns
-    for (CommandPattern commandPattern : commandPatterns.values()) {
-      Matcher matcher = commandPattern.getPattern().matcher(commandString);
-      if (matcher.matches()) {
-        return commandPattern.getParser().parse(matcher);
+    String command = parts[0].toLowerCase();
+    
+    // Check if the command is valid
+    if (!VALID_COMMANDS_SET.contains(command)) {
+      throw new IllegalArgumentException("Invalid command: " + command + ". Valid commands are: " + 
+        String.join(", ", VALID_COMMANDS));
+    }
+
+    try {
+      if (command.equals("exit")) {
+        return new CommandWithArgs(commandFactory.getCommand("exit"), new String[0]);
+      } else if (command.equals("create")) {
+        return handleCreateCommand(parts);
+      } else if (command.equals("use")) {
+        return handleUseCommand(parts);
+      } else if (command.equals("show")) {
+        return handleShowCommand(parts);
+      } else if (command.equals("edit")) {
+        return handleEditCommand(parts);
+      } else if (command.equals("copy")) {
+        return handleCopyCommand(parts);
+      } else if (command.equals("print")) {
+        return handlePrintCommand(parts);
+      } else if (command.equals("export")) {
+        return handleExportCommand(parts);
+      } else {
+        throw new IllegalArgumentException("Unsupported command: " + command);
       }
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Error parsing command: " + e.getMessage());
     }
-
-    throw new IllegalArgumentException("Unrecognized or unsupported command: " + commandString);
   }
 
   /**
@@ -513,6 +540,139 @@ public class CommandParser {
             newValue
     };
     return new CommandWithArgs(editCommand, args);
+  }
+
+  private CommandWithArgs handleCreateCommand(String[] parts) {
+    if (parts.length < 2) {
+        throw new IllegalArgumentException("Invalid create command format");
+    }
+
+    String subCommand = parts[1].toLowerCase();
+    String commandString = String.join(" ", parts);
+    
+    // Try to match with registered patterns
+    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
+        Matcher matcher = entry.getValue().getPattern().matcher(commandString);
+        if (matcher.matches()) {
+            return entry.getValue().getParser().parse(matcher);
+        }
+    }
+    
+    throw new IllegalArgumentException("Invalid create command format");
+  }
+
+  private CommandWithArgs handleUseCommand(String[] parts) {
+    if (parts.length < 2) {
+        throw new IllegalArgumentException("Invalid use command format");
+    }
+
+    String subCommand = parts[1].toLowerCase();
+    String commandString = String.join(" ", parts);
+    
+    // Try to match with registered patterns
+    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
+        Matcher matcher = entry.getValue().getPattern().matcher(commandString);
+        if (matcher.matches()) {
+            return entry.getValue().getParser().parse(matcher);
+        }
+    }
+    
+    throw new IllegalArgumentException("Invalid use command format");
+  }
+
+  private CommandWithArgs handleShowCommand(String[] parts) {
+    if (parts.length < 2) {
+        throw new IllegalArgumentException("Invalid show command format");
+    }
+
+    String subCommand = parts[1].toLowerCase();
+    String commandString = String.join(" ", parts);
+    
+    // Try to match with registered patterns
+    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
+        Matcher matcher = entry.getValue().getPattern().matcher(commandString);
+        if (matcher.matches()) {
+            return entry.getValue().getParser().parse(matcher);
+        }
+    }
+    
+    throw new IllegalArgumentException("Invalid show command format");
+  }
+
+  private CommandWithArgs handleEditCommand(String[] parts) {
+    if (parts.length < 2) {
+        throw new IllegalArgumentException("Invalid edit command format");
+    }
+
+    String subCommand = parts[1].toLowerCase();
+    String commandString = String.join(" ", parts);
+    
+    // Try to match with registered patterns
+    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
+        Matcher matcher = entry.getValue().getPattern().matcher(commandString);
+        if (matcher.matches()) {
+            return entry.getValue().getParser().parse(matcher);
+        }
+    }
+    
+    throw new IllegalArgumentException("Invalid edit command format");
+  }
+
+  private CommandWithArgs handleCopyCommand(String[] parts) {
+    if (parts.length < 2) {
+        throw new IllegalArgumentException("Invalid copy command format");
+    }
+
+    String subCommand = parts[1].toLowerCase();
+    String commandString = String.join(" ", parts);
+    
+    // Try to match with registered patterns
+    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
+        Matcher matcher = entry.getValue().getPattern().matcher(commandString);
+        if (matcher.matches()) {
+            return entry.getValue().getParser().parse(matcher);
+        }
+    }
+    
+    throw new IllegalArgumentException("Invalid copy command format");
+  }
+
+  private CommandWithArgs handlePrintCommand(String[] parts) {
+    if (parts.length < 2) {
+        throw new IllegalArgumentException("Invalid print command format");
+    }
+
+    String subCommand = parts[1].toLowerCase();
+    String commandString = String.join(" ", parts);
+    
+    // Try to match with registered patterns
+    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
+        Matcher matcher = entry.getValue().getPattern().matcher(commandString);
+        if (matcher.matches()) {
+            return entry.getValue().getParser().parse(matcher);
+        }
+    }
+    
+    throw new IllegalArgumentException("Invalid print command format");
+  }
+
+  private CommandWithArgs handleExportCommand(String[] parts) {
+    if (parts.length < 2) {
+        throw new IllegalArgumentException("Invalid export command format");
+    }
+
+    String subCommand = parts[1].toLowerCase();
+    String commandString = String.join(" ", parts);
+    
+    // Try to match with registered patterns
+    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
+        Matcher matcher = entry.getValue().getPattern().matcher(commandString);
+        if (matcher.matches()) {
+            return entry.getValue().getParser().parse(matcher);
+        }
+    }
+    
+    throw new IllegalArgumentException("Invalid export command format");
   }
 
   /**

@@ -6,8 +6,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import controller.command.event.CommandFactory;
 import controller.command.ICommand;
+import controller.command.event.CommandFactory;
 import controller.parser.CommandParser;
 import model.calendar.ICalendar;
 import model.event.Event;
@@ -17,6 +17,7 @@ import view.ICalendarView;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -45,21 +46,21 @@ public class CommandParserTest {
 
     @Override
     public boolean createRecurringEventUntil(String name, LocalDateTime start, LocalDateTime end,
-        String weekdays, LocalDate untilDate, boolean autoDecline) {
+                                             String weekdays, LocalDate untilDate, boolean autoDecline) {
       return false;
     }
 
     @Override
     public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-        int occurrences, boolean autoDecline, String description, String location,
-        boolean isPublic) {
+                                              int occurrences, boolean autoDecline, String description, String location,
+                                              boolean isPublic) {
       return false;
     }
 
     @Override
     public boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
-        LocalDate untilDate, boolean autoDecline, String description, String location,
-        boolean isPublic) {
+                                                   LocalDate untilDate, boolean autoDecline, String description, String location,
+                                                   boolean isPublic) {
       return false;
     }
 
@@ -90,13 +91,13 @@ public class CommandParserTest {
 
     @Override
     public boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property,
-        String newValue) {
+                                   String newValue) {
       return false;
     }
 
     @Override
     public int editEventsFromDate(String subject, LocalDateTime startDateTime, String property,
-        String newValue) {
+                                  String newValue) {
       return 0;
     }
 
@@ -281,7 +282,7 @@ public class CommandParserTest {
   @Test
   public void testParseCreateEventCommand() {
     String commandString = "create event \"Team Meeting\" from 2023-04-10T10:00 "
-        + "to 2023-04-10T11:00";
+            + "to 2023-04-10T11:00";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -302,7 +303,7 @@ public class CommandParserTest {
   @Test
   public void testParseCreateEventWithAutoDecline() {
     String commandString = "create event --autoDecline \"Project Review\" from 2023-04-10T11:30 "
-        + "to 2023-04-10T12:30";
+            + "to 2023-04-10T12:30";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -331,7 +332,7 @@ public class CommandParserTest {
   @Test
   public void testParseCreateRecurringEvent() {
     String commandString = "create event \"Weekly Status Meeting\" "
-        + "from 2023-04-12T09:00 to 2023-04-12T10:00 repeats MW for 4 times";
+            + "from 2023-04-12T09:00 to 2023-04-12T10:00 repeats MW for 4 times";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -347,7 +348,7 @@ public class CommandParserTest {
   @Test
   public void testParseCreateRecurringUntilEvent() {
     String commandString = "create event \"Department Sync\" from 2023-04-14T14:00 to"
-        + " 2023-04-14T15:00 repeats F until 2023-05-05";
+            + " 2023-04-14T15:00 repeats F until 2023-05-05";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -363,7 +364,7 @@ public class CommandParserTest {
   @Test
   public void testParseCreateAllDayRecurringEvent() {
     String commandString =
-        "create event \"Morning Standup\" on " + "2023-04-17 repeats MTWRF for 10 times";
+            "create event \"Morning Standup\" on " + "2023-04-17 repeats MTWRF for 10 times";
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
     assertNotNull(result);
@@ -378,7 +379,7 @@ public class CommandParserTest {
   @Test
   public void testParseCreateAllDayRecurringUntilEvent() {
     String commandString =
-        "create event \"Monthly Planning\" " + "on 2023-04-20 repeats F until 2023-07-20";
+            "create event \"Monthly Planning\" " + "on 2023-04-20 repeats F until 2023-07-20";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -446,7 +447,7 @@ public class CommandParserTest {
   @Test
   public void testParseEditSingleEvent() {
     String commandString = "edit event subject \"Team Meeting\" from "
-        + "2023-04-10T10:00 to 2023-04-10T11:00 with \"Team Sync\"";
+            + "2023-04-10T10:00 to 2023-04-10T11:00 with \"Team Sync\"";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -503,7 +504,7 @@ public class CommandParserTest {
   @Test
   public void testEventWithDescription() {
     String commandString = "create event \"Meeting\" from 2023-04-10T10:00 to 2023-04-10T11:00 "
-        + "desc \"Team discussion\"";
+            + "desc \"Team discussion\"";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -514,7 +515,7 @@ public class CommandParserTest {
   @Test
   public void testEventWithLocation() {
     String commandString = "create event \"Meeting\" from 2023-04-10T10:00 to 2023-04-10T11:00 "
-        + "at \"Conference Room\"";
+            + "at \"Conference Room\"";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -525,7 +526,7 @@ public class CommandParserTest {
   @Test
   public void testPrivateEvent() {
     String commandString = "create event \"Confidential Meeting\" from 2023-04-10T10:00 to "
-        + "2023-04-10T11:00 private";
+            + "2023-04-10T11:00 private";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -536,7 +537,7 @@ public class CommandParserTest {
   @Test
   public void testComplexEvent() {
     String commandString = "create event --autoDecline \"Project Meeting\" from 2023-04-10T10:00 "
-        + "to 2023-04-10T11:00 desc \"Quarterly project review\" at \"Room 101\" private";
+            + "to 2023-04-10T11:00 desc \"Quarterly project review\" at \"Room 101\" private";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
     String[] args = result.getArgs();
@@ -550,7 +551,7 @@ public class CommandParserTest {
   @Test
   public void testParseCreateEventWithBoundaryDates() {
     String commandString = "create event \"Boundary Test\" from 2023-12-31T23:59 "
-        + "to 2024-01-01T00:01";
+            + "to 2024-01-01T00:01";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -566,7 +567,7 @@ public class CommandParserTest {
   @Test
   public void testParseCreateEventWithLeapYear() {
     String commandString = "create event \"Leap Year Test\" from 2024-02-29T10:00 "
-        + "to 2024-02-29T11:00";
+            + "to 2024-02-29T11:00";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -582,7 +583,7 @@ public class CommandParserTest {
   @Test
   public void testParseCreateEventWithSpecialCharacters() {
     String commandString = "create event \"Special!@#$%^&*()\" from 2023-04-10T10:00 "
-        + "to 2023-04-10T11:00";
+            + "to 2023-04-10T11:00";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -596,7 +597,7 @@ public class CommandParserTest {
   @Test
   public void testParseCreateEventWithEmptyQuotes() {
     String commandString = "create event \"\" from 2023-04-10T10:00 "
-        + "to 2023-04-10T11:00";
+            + "to 2023-04-10T11:00";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -611,9 +612,9 @@ public class CommandParserTest {
     String longName = "a".repeat(1000);
     String longDesc = "b".repeat(1000);
     String longLoc = "c".repeat(1000);
-    
+
     String commandString = String.format("create event \"%s\" from 2023-04-10T10:00 "
-        + "to 2023-04-10T11:00 desc \"%s\" at \"%s\"", longName, longDesc, longLoc);
+            + "to 2023-04-10T11:00 desc \"%s\" at \"%s\"", longName, longDesc, longLoc);
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -628,7 +629,7 @@ public class CommandParserTest {
   @Test
   public void testParseCreateEventWithAllOptionalFields() {
     String commandString = "create event \"Meeting\" from 2023-04-10T10:00 "
-        + "to 2023-04-10T11:00 desc \"Description\" at \"Location\" private";
+            + "to 2023-04-10T11:00 desc \"Description\" at \"Location\" private";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -644,7 +645,7 @@ public class CommandParserTest {
   @Test
   public void testParseCreateEventWithNoOptionalFields() {
     String commandString = "create event \"Meeting\" from 2023-04-10T10:00 "
-        + "to 2023-04-10T11:00";
+            + "to 2023-04-10T11:00";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
 
@@ -655,5 +656,74 @@ public class CommandParserTest {
     assertNull(args[4]);
     assertNull(args[5]);
     assertEquals("true", args[6]);
+  }
+
+  @Test
+  public void testParseCommandWithInvalidCommand() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> parser.parseCommand("unknown calendar"));
+    assertEquals("Invalid command: unknown. Valid commands are: create, use, show, edit, copy, exit, print, export",
+            exception.getMessage());
+  }
+
+  @Test
+  public void testParseCommandWithInvalidCommandWithSpaces() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> parser.parseCommand("   unknown   calendar   "));
+    assertEquals("Invalid command: unknown. Valid commands are: create, use, show, edit, copy, exit, print, export",
+            exception.getMessage());
+  }
+
+  @Test
+  public void testParseCommandWithInvalidCommandUpperCase() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> parser.parseCommand("UNKNOWN CALENDAR"));
+    assertEquals("Invalid command: unknown. Valid commands are: create, use, show, edit, copy, exit, print, export",
+            exception.getMessage());
+  }
+
+  @Test
+  public void testParseCommandWithInvalidCommandMixedCase() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> parser.parseCommand("UnKnOwN calendar"));
+    assertEquals("Invalid command: unknown. Valid commands are: create, use, show, edit, copy, exit, print, export",
+            exception.getMessage());
+  }
+
+  @Test
+  public void testParseCommandWithInvalidCommandWithSpecialChars() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> parser.parseCommand("unknown@calendar"));
+    assertEquals("Invalid command: unknown@calendar. Valid commands are: create, use, show, edit, copy, exit, print, export",
+            exception.getMessage());
+  }
+
+  @Test
+  public void testParseCommandWithInvalidCommandWithNumbers() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> parser.parseCommand("unknown123 calendar"));
+    assertEquals("Invalid command: unknown123. Valid commands are: create, use, show, edit, copy, exit, print, export",
+            exception.getMessage());
+  }
+
+  @Test
+  public void testParseCommandWithEmptyCommand() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> parser.parseCommand(""));
+    assertEquals("Command cannot be empty", exception.getMessage());
+  }
+
+  @Test
+  public void testParseCommandWithNullCommand() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> parser.parseCommand(null));
+    assertEquals("Command cannot be empty", exception.getMessage());
+  }
+
+  @Test
+  public void testParseCommandWithOnlySpaces() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> parser.parseCommand("   "));
+    assertEquals("Command cannot be empty", exception.getMessage());
   }
 }

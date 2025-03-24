@@ -4,9 +4,12 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Set;
 
 import controller.command.event.CommandFactory;
 import controller.parser.CommandParser;
@@ -28,6 +31,9 @@ public class CalendarController {
   private final CalendarManager calendarManager;
   private ICommandFactory commandFactory;
   private static final String EXIT_COMMAND = "exit";
+  private static final Set<String> VALID_COMMANDS = new HashSet<>(Arrays.asList(
+      "create", "use", "show", "edit", "copy", "exit"
+  ));
 
   /**
    * Constructs a new CalendarController.
@@ -72,22 +78,28 @@ public class CalendarController {
       return "Error: Command cannot be empty";
     }
 
-    String trimmedCommand = commandStr.trim();
+    String[] parts = commandStr.trim().split("\\s+");
+    if (parts.length == 0) {
+      return "Error: Invalid command format";
+    }
 
-    // Check for exit command
-    if (trimmedCommand.equalsIgnoreCase(EXIT_COMMAND)) {
-      return "Exiting application.";
+    String command = parts[0].toLowerCase();
+    
+    // Check if the command is valid
+    if (!VALID_COMMANDS.contains(command)) {
+      return "Error: Invalid command: " + command + ". Valid commands are: " + 
+          String.join(", ", VALID_COMMANDS);
     }
 
     try {
       // First, check if it's a calendar management command
-      if (isCalendarCommand(trimmedCommand)) {
+      if (isCalendarCommand(commandStr)) {
         // Handle calendar-specific commands
-        String result = processCalendarCommand(trimmedCommand);
+        String result = processCalendarCommand(commandStr);
 
         // If we changed the active calendar, we need to update the parser with a new CommandFactory
-        if (trimmedCommand.startsWith("use calendar")) {
-          String calendarName = extractCalendarName(trimmedCommand);
+        if (commandStr.startsWith("use calendar")) {
+          String calendarName = extractCalendarName(commandStr);
           if (calendarName != null) {
             // Update the command factory with the new active calendar
             updateCommandFactory();
@@ -98,12 +110,12 @@ public class CalendarController {
       }
 
       // Otherwise, treat it as a regular event command
-      CommandParser.CommandWithArgs commandWithArgs = parser.parseCommand(trimmedCommand);
+      CommandParser.CommandWithArgs commandWithArgs = parser.parseCommand(commandStr);
       return commandWithArgs.execute();
     } catch (IllegalArgumentException e) {
       return "Error: " + e.getMessage();
     } catch (Exception e) {
-      return "Unexpected error: " + e.getMessage();
+      return "Error: " + e.getMessage();
     }
   }
 
