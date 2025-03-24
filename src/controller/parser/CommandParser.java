@@ -133,7 +133,7 @@ public class CommandParser {
 
     registerPattern("show_status",
             Pattern.compile("show status on (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"),
-            this::parseShowStatusCommand);
+            this::parseShowStatusCommand
 
     registerPattern("export_calendar",
             Pattern.compile("export cal (.+)"),
@@ -169,10 +169,10 @@ public class CommandParser {
     }
 
     String command = parts[0].toLowerCase();
-    
+
     // Check if the command is valid
     if (!VALID_COMMANDS_SET.contains(command)) {
-      throw new IllegalArgumentException("Invalid command: " + command + ". Valid commands are: " + 
+      throw new IllegalArgumentException("Invalid command: " + command + ". Valid commands are: " +
         String.join(", ", VALID_COMMANDS));
     }
 
@@ -649,13 +649,13 @@ public class CommandParser {
         if (parts.length < 4) {
             throw new IllegalArgumentException("Date cannot be empty");
         }
-        return new CommandWithArgs(commandFactory.getCommand("print_events_date"), 
+        return new CommandWithArgs(commandFactory.getCommand("print_events_date"),
             new String[]{parts[3]});
     } else if (dateArg.equals("from")) {
         if (parts.length < 6 || !parts[4].equals("to")) {
             throw new IllegalArgumentException("Invalid date range format");
         }
-        return new CommandWithArgs(commandFactory.getCommand("print_events_range"), 
+        return new CommandWithArgs(commandFactory.getCommand("print_events_range"),
             new String[]{parts[3], parts[5]});
     } else {
         throw new IllegalArgumentException("Invalid print command format");
