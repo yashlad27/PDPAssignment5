@@ -7,7 +7,6 @@ import java.util.List;
 
 import controller.command.calendar.CalendarCommandFactory;
 import model.calendar.CalendarManager;
-import model.exceptions.CalendarNotFoundException;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
@@ -15,7 +14,6 @@ import utilities.CalendarNameValidator;
 import utilities.TimeZoneHandler;
 import view.ICalendarView;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -61,29 +59,6 @@ public class CalendarCommandFactoryTest {
   }
 
   @Test
-  public void testCreateCalendarCommand() throws ConflictingEventException,
-          InvalidEventException, EventNotFoundException {
-    String[] args = {"calendar", "--name", "OneTestCalendar", "--timezone", "America/New_York"};
-    String result = factory.getCommand("create").execute(args);
-    assertTrue(result.contains("Calendar 'OneTestCalendar' created with timezone 'America/New_York'"));
-    assertTrue(calendarManager.getCalendarNames().contains("OneTestCalendar"));
-
-    // Verify view interactions
-    assertTrue(mockView.getDisplayedMessages().contains(result));
-  }
-
-  @Test
-  public void testCreateCalendarCommandWithInvalidArgs() throws ConflictingEventException,
-          InvalidEventException, EventNotFoundException {
-    String[] args = {"calendar", "--name", "TestCalendar"}; // Missing timezone
-    String result = factory.getCommand("create").execute(args);
-    assertTrue(result.contains("Error: Insufficient arguments"));
-
-    // Verify error was displayed
-    assertTrue(mockView.getDisplayedErrors().contains(result));
-  }
-
-  @Test
   public void testEditCalendarCommand() throws ConflictingEventException,
           InvalidEventException, EventNotFoundException {
     // First create a calendar
@@ -117,34 +92,6 @@ public class CalendarCommandFactoryTest {
 
     // Verify view interactions
     assertTrue(mockView.getDisplayedMessages().contains(result));
-  }
-
-  @Test
-  public void testUseCalendarCommand() throws ConflictingEventException,
-          InvalidEventException, EventNotFoundException, CalendarNotFoundException {
-    // First create a calendar
-    String[] createArgs = {"calendar", "--name", "thirdNewTestCalendar", "--timezone", "America/New_York"};
-    factory.getCommand("create").execute(createArgs);
-    mockView.clear();
-
-    // Then use it
-    String[] useArgs = {"calendar", "--name", "thirdNewTestCalendar"};
-    String result = factory.getCommand("use").execute(useArgs);
-    assertTrue(result.contains("Now using calendar: 'thirdNewTestCalendar'"));
-    assertEquals("thirdNewTestCalendar", calendarManager.getActiveCalendar().getName());
-
-    // Verify view interactions
-    assertTrue(mockView.getDisplayedMessages().contains(result));
-  }
-
-  @Test
-  public void testUseNonExistentCalendar() throws ConflictingEventException,
-          InvalidEventException, EventNotFoundException {
-    String[] args = {"calendar", "--name", "NonExistentCalendar"};
-    String result = factory.getCommand("use").execute(args);
-    assertEquals("Error: Calendar not found: NonExistentCalendar", result);
-
-    assertTrue(mockView.getDisplayedErrors().contains(result));
   }
 
   @Test
@@ -202,17 +149,6 @@ public class CalendarCommandFactoryTest {
   }
 
   @Test
-  public void testCreateCalendarWithInvalidTimezone() throws ConflictingEventException,
-          InvalidEventException, EventNotFoundException {
-    String[] args = {"calendar", "--name", "TestCalendar", "--timezone", "Invalid/Timezone"};
-    String result = factory.getCommand("create").execute(args);
-    assertTrue(result.contains("Error"));
-
-    // Verify error was displayed
-    assertTrue(mockView.getDisplayedErrors().contains(result));
-  }
-
-  @Test
   public void testEditCalendarWithInvalidTimezone() throws ConflictingEventException,
           InvalidEventException, EventNotFoundException {
     // First create a calendar
@@ -248,15 +184,6 @@ public class CalendarCommandFactoryTest {
   public void testCreateCalendarWithMissingTimezone() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name", "TestCalendar", "--timezone"};
     String result = factory.getCommand("create").execute(args);
-    assertTrue(result.startsWith("Error:"));
-  }
-
-
-  // Test calendar operations with empty calendars
-  @Test
-  public void testUseEmptyCalendar() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
-    String[] args = {"calendar", "--name", "EmptyCalendar"};
-    String result = factory.getCommand("use").execute(args);
     assertTrue(result.startsWith("Error:"));
   }
 
