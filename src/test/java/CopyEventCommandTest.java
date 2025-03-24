@@ -294,9 +294,9 @@ public class CopyEventCommandTest {
 
   @Test
   public void testCopyEventWithNullFields() throws Exception {
-    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
-    Event testEvent = new Event("Null Fields Event", startTime, endTime,
+    Event testEvent = new Event("Null Fields Event",
+            LocalDateTime.of(2024, 3, 15, 10, 0),
+            LocalDateTime.of(2024, 3, 15, 11, 0),
             null, null, true);
     sourceCalendar.addEvent(testEvent, false);
 
@@ -311,8 +311,8 @@ public class CopyEventCommandTest {
             LocalDateTime.of(2024, 3, 16, 10, 0));
     assertNotNull(copiedEvent);
     assertEquals("Null Fields Event", copiedEvent.getSubject());
-    assertNull(copiedEvent.getDescription());
-    assertNull(copiedEvent.getLocation());
+    assertEquals("", copiedEvent.getDescription());
+    assertEquals("", copiedEvent.getLocation());
   }
 
   @Test

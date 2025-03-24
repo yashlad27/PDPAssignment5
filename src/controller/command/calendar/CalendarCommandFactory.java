@@ -55,6 +55,11 @@ public class CalendarCommandFactory implements ICommandFactory {
     String calendarName = args[2];
     String timezone = args[4];
 
+    // Validate calendar name length
+    if (calendarName.length() > 100) {
+      return "Error: Calendar name cannot exceed 100 characters";
+    }
+
     try {
       calendarManager.createCalendar(calendarName, timezone);
       return "Calendar '" + calendarName + "' created successfully with timezone " + timezone;

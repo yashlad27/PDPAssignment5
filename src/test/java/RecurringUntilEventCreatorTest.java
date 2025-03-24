@@ -151,8 +151,8 @@ public class RecurringUntilEventCreatorTest {
     assertEquals("Quick Meeting", event.getSubject());
     assertEquals(LocalDateTime.of(2023, 5, 15, 14, 0), event.getStartDateTime());
     assertEquals(LocalDateTime.of(2023, 5, 15, 15, 0), event.getEndDateTime());
-    assertNull(event.getDescription());
-    assertNull(event.getLocation());
+    assertEquals("", event.getDescription());
+    assertEquals("", event.getLocation());
     assertTrue(event.isPublic()); // Default value
     assertFalse(event.isAllDay());
     assertTrue(event instanceof RecurringEvent);
@@ -334,8 +334,7 @@ public class RecurringUntilEventCreatorTest {
             "Mock Meeting",
             LocalDateTime.of(2023, 5, 15, 10, 0),
             LocalDateTime.of(2023, 5, 15, 11, 0),
-            null,
-            null,
+            "", "",
             true
     );
 

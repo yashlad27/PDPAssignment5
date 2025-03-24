@@ -193,7 +193,7 @@ public class EventFilterTest {
     events.add(nullLocationEvent);
 
     EventFilter nullLocationFilter = event -> 
-      event != null && event.getLocation() == null;
+      event != null && event.getLocation().isEmpty();
 
     List<Event> filteredEvents = nullLocationFilter.filterEvents(events);
     assertTrue("Should include null location event", filteredEvents.contains(nullLocationEvent));
