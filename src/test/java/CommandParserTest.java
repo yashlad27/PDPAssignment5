@@ -427,8 +427,10 @@ public class CommandParserTest {
     assertNotNull(result);
     assertTrue(result.getCommand() instanceof MockShowCommand);
     String[] args = result.getArgs();
-    assertEquals(1, args.length);
-    assertEquals("2023-04-10T10:30", args[0]);
+    assertEquals(3, args.length);
+    assertEquals("status", args[0]);
+    assertEquals("on", args[1]);
+    assertEquals("2023-04-10T10:30", args[2]);
   }
 
   @Test

@@ -1,5 +1,6 @@
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.After;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,8 @@ import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
 import view.ICalendarView;
+import utilities.CalendarNameValidator;
+import utilities.TimeZoneHandler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -24,9 +27,18 @@ public class CalendarCommandFactoryTest {
 
   @Before
   public void setUp() {
-    calendarManager = new CalendarManager.Builder().build();
+    TimeZoneHandler timezoneHandler = new TimeZoneHandler();
+    calendarManager = new CalendarManager.Builder()
+            .timezoneHandler(timezoneHandler)
+            .build();
     mockView = new MockCalendarView();
     factory = new CalendarCommandFactory(calendarManager, mockView);
+    CalendarNameValidator.clear(); // Clear the validator before each test
+  }
+
+  @After
+  public void tearDown() {
+    CalendarNameValidator.clear();
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -53,7 +65,7 @@ public class CalendarCommandFactoryTest {
           InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name", "OneTestCalendar", "--timezone", "America/New_York"};
     String result = factory.getCommand("create").execute(args);
-    assertTrue(result.contains("Calendar 'OneTestCalendar' created"));
+    assertTrue(result.contains("Calendar 'OneTestCalendar' created with timezone 'America/New_York'"));
     assertTrue(calendarManager.getCalendarNames().contains("OneTestCalendar"));
 
     // Verify view interactions
@@ -118,7 +130,7 @@ public class CalendarCommandFactoryTest {
     // Then use it
     String[] useArgs = {"calendar", "--name", "thirdNewTestCalendar"};
     String result = factory.getCommand("use").execute(useArgs);
-    assertTrue(result.contains("Now using calendar"));
+    assertTrue(result.contains("Now using calendar: 'thirdNewTestCalendar'"));
     assertEquals("thirdNewTestCalendar", calendarManager.getActiveCalendar().getName());
 
     // Verify view interactions

@@ -15,26 +15,31 @@ public class CalendarNameValidator {
      * @param name the calendar name to validate
      * @throws IllegalArgumentException if the name is invalid
      */
-    public static String validateCalendarName(String name) {
+    public static void validateCalendarName(String name) {
         if (name == null) {
             throw new IllegalArgumentException("Calendar name cannot be null");
         }
         
-        if (name.trim().isEmpty()) {
+        String trimmedName = name.trim();
+        if (trimmedName.startsWith("\"") && trimmedName.endsWith("\"")) {
+            trimmedName = trimmedName.substring(1, trimmedName.length() - 1);
+        } else if (trimmedName.startsWith("'") && trimmedName.endsWith("'")) {
+            trimmedName = trimmedName.substring(1, trimmedName.length() - 1);
+        }
+        
+        if (trimmedName.isEmpty()) {
             throw new IllegalArgumentException("Calendar name cannot be empty");
         }
         
-        if (name.matches(".*[0-9@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*")) {
+        if (trimmedName.matches(".*[0-9@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?\\s].*")) {
             throw new IllegalArgumentException("Invalid calendar name");
         }
         
-        String normalizedName = name.trim();
-        if (existingNames.contains(normalizedName)) {
+        if (existingNames.contains(trimmedName)) {
             throw new IllegalArgumentException("Calendar name must be unique");
         }
         
-        existingNames.add(normalizedName);
-        return normalizedName;
+        existingNames.add(trimmedName);
     }
     
     /**
@@ -56,5 +61,17 @@ public class CalendarNameValidator {
      */
     public static boolean hasCalendarName(String name) {
         return name != null && existingNames.contains(name.trim());
+    }
+
+    /**
+     * Clears all existing calendar names.
+     * This method should be called before running tests to ensure a clean state.
+     */
+    public static void clear() {
+        existingNames.clear();
+    }
+
+    public static void removeAllCalendarNames() {
+        existingNames.clear();
     }
 }

@@ -1,5 +1,6 @@
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.After;
 
 import java.time.LocalDateTime;
 
@@ -10,6 +11,7 @@ import model.event.Event;
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
 import model.exceptions.InvalidTimezoneException;
+import utilities.CalendarNameValidator;
 import utilities.TimeZoneHandler;
 
 import static org.junit.Assert.assertEquals;
@@ -27,6 +29,7 @@ public class CopyEventCommandTest {
   @Before
   public void setUp() throws CalendarNotFoundException, InvalidTimezoneException,
           DuplicateCalendarException {
+    CalendarNameValidator.clear();
     timezoneHandler = new TimeZoneHandler();
 
     calendarManager = new CalendarManager.Builder()
@@ -39,6 +42,11 @@ public class CopyEventCommandTest {
 
     calendarManager.createCalendar("target", "UTC");
     targetCalendar = calendarManager.getCalendar("target");
+  }
+
+  @After
+  public void tearDown() {
+    CalendarNameValidator.clear();
   }
 
   @Test

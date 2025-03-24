@@ -154,7 +154,7 @@ public class CalendarCommandFactory implements ICommandFactory {
     }
 
     if (!args[0].equals("calendar")) {
-      String error = "Error: Expected 'calendar' argument";
+      String error = "Error: Expected 'calendar' after 'use'";
       view.displayError(error);
       return error;
     }

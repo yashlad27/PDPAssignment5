@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.List;
+import java.util.ArrayList;
 
 import controller.ICommandFactory;
 import controller.command.ICommand;
@@ -21,7 +22,7 @@ public class CommandParser {
   private final ICommandFactory commandFactory;
   private final Map<String, CommandPattern> commandPatterns;
   private static final List<String> VALID_COMMANDS = Arrays.asList(
-    "create", "use", "show", "edit", "copy", "exit", "print", "export"
+          "create", "use", "show", "edit", "copy", "exit", "print", "export"
   );
   private static final Set<String> VALID_COMMANDS_SET = new HashSet<>(VALID_COMMANDS);
 
@@ -33,14 +34,19 @@ public class CommandParser {
   public CommandParser(ICommandFactory commandFactory) {
     this.commandFactory = commandFactory;
     this.commandPatterns = new HashMap<>();
-    registerDefaultCommandPatterns();
+    initializePatterns();
   }
 
   /**
    * Registers default command patterns.
    */
-  private void registerDefaultCommandPatterns() {
-    // Create event patterns
+  private void initializePatterns() {
+    // Create calendar pattern
+    registerPattern("create_calendar",
+            Pattern.compile("create calendar --name ([\"']?[^\"']+[\"']?|[^\\s]+) --timezone ([\\w/]+)"),
+            this::parseCreateCalendarCommand);
+
+    // Create event pattern
     registerPattern("create_event",
             Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
                     + "from (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
@@ -48,19 +54,22 @@ public class CommandParser {
                     + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
             this::parseCreateEventCommand);
 
+    // Create recurring event pattern
+    registerPattern("create_recurring_event",
+            Pattern.compile("create event ([\"']?[^\"']+[\"']?|[^\\s]+) "
+                    + "from (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+                    + "to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+                    + "repeats ([MTWRFSU]+) for (\\d+) times"
+                    + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?"),
+            this::parseCreateRecurringEventCommand);
+
+    // Create all-day event pattern
     registerPattern("create_all_day_event",
-            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
-                    + "on (\\d{4}-\\d{2}-\\d{2})"
+            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) on (\\d{4}-\\d{2}-\\d{2})"
                     + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
             this::parseCreateAllDayEventCommand);
 
-    registerPattern("create_recurring_event",
-            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) from "
-                    + "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
-                    + "repeats ([MTWRFSU]+) for (\\d+) times(?:\\s+desc\\s+\"([^\"]+)\")?"
-                    + "(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
-            this::parseCreateRecurringEventCommand);
-
+    // Create event patterns
     registerPattern("create_recurring_until_event",
             Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) from "
                     + "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
@@ -97,10 +106,6 @@ public class CommandParser {
                     + "to (\\d{4}-\\d{2}-\\d{2})"),
             this::parsePrintEventsRangeCommand);
 
-    registerPattern("create_calendar",
-            Pattern.compile("create calendar --name ([\\w-]+) --timezone ([\\w/]+)"),
-            this::parseCreateCalendarCommand);
-
     // Edit calendar pattern
     registerPattern("edit_calendar",
             Pattern.compile("edit calendar --name ([\\w-]+) --property (\\w+) ([\\w/]+)"),
@@ -108,7 +113,7 @@ public class CommandParser {
 
     // Use calendar pattern
     registerPattern("use_calendar",
-            Pattern.compile("use calendar --name ([\\w-]+)"),
+            Pattern.compile("use calendar --name ([\"']?[^\"']+[\"']?|[^\\s]+)"),
             this::parseUseCalendarCommand);
 
     // Copy single event pattern
@@ -133,11 +138,15 @@ public class CommandParser {
 
     registerPattern("show_status",
             Pattern.compile("show status on (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"),
-            this::parseShowStatusCommand
+            this::parseShowStatusCommand);
 
     registerPattern("export_calendar",
             Pattern.compile("export cal (.+)"),
             this::parseExportCommand);
+
+    registerPattern("exit",
+            Pattern.compile("exit"),
+            this::parseExitCommand);
   }
 
   /**
@@ -173,111 +182,111 @@ public class CommandParser {
     // Check if the command is valid
     if (!VALID_COMMANDS_SET.contains(command)) {
       throw new IllegalArgumentException("Invalid command: " + command + ". Valid commands are: " +
-        String.join(", ", VALID_COMMANDS));
+              String.join(", ", VALID_COMMANDS));
     }
 
-    try {
-      if (command.equals("exit")) {
-        return new CommandWithArgs(commandFactory.getCommand("exit"), new String[0]);
-      } else if (command.equals("create")) {
-        return handleCreateCommand(parts);
-      } else if (command.equals("use")) {
-        return handleUseCommand(parts);
-      } else if (command.equals("show")) {
-        return handleShowCommand(parts);
-      } else if (command.equals("edit")) {
-        return handleEditCommand(parts);
-      } else if (command.equals("copy")) {
-        return handleCopyCommand(parts);
-      } else if (command.equals("print")) {
-        return handlePrintCommand(parts);
-      } else if (command.equals("export")) {
-        return handleExportCommand(parts);
-      } else {
-        throw new IllegalArgumentException("Unsupported command: " + command);
+    // Try to match with registered patterns
+    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
+      Matcher matcher = entry.getValue().getPattern().matcher(commandString);
+      if (matcher.matches()) {
+        return entry.getValue().getParser().parse(matcher);
       }
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Error parsing command: " + e.getMessage());
     }
+
+    throw new IllegalArgumentException("Invalid command format");
   }
 
   /**
    * Parse create event command.
    */
   private CommandWithArgs parseCreateEventCommand(Matcher matcher) {
-    ICommand createCommand = commandFactory.getCommand("create");
-
     boolean autoDecline = matcher.group(1) != null;
-
     String eventName = matcher.group(2);
     if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
       eventName = eventName.substring(1, eventName.length() - 1);
     }
+    String startTime = matcher.group(3);
+    String endTime = matcher.group(4);
+    String description = matcher.group(5);
+    String location = matcher.group(6);
+    boolean isPrivate = matcher.group(7) != null;
 
     String[] args = {
             "single",
             eventName,
-            matcher.group(3),
-            matcher.group(4),
-            matcher.group(5),
-            matcher.group(6),
-            matcher.group(7) != null ? "false" : "true",
-            String.valueOf(autoDecline)
+            startTime,
+            endTime,
+            description,
+            location,
+            String.valueOf(!isPrivate),  // isPublic is opposite of isPrivate
+            String.valueOf(autoDecline)   // autoDecline flag
     };
-    return new CommandWithArgs(createCommand, args);
+    return new CommandWithArgs(
+            commandFactory.getCommand("create"),
+            args
+    );
   }
 
   /**
    * Parse create all day event command.
    */
   private CommandWithArgs parseCreateAllDayEventCommand(Matcher matcher) {
-    ICommand createCommand = commandFactory.getCommand("create");
-
     boolean autoDecline = matcher.group(1) != null;
-
     String eventName = matcher.group(2);
     if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
       eventName = eventName.substring(1, eventName.length() - 1);
     }
+    String date = matcher.group(3);
+    String description = matcher.group(4);
+    String location = matcher.group(5);
+    boolean isPrivate = matcher.group(6) != null;
 
     String[] args = {
             "allday",
             eventName,
-            matcher.group(3),
-            String.valueOf(autoDecline),
-            matcher.group(4),
-            matcher.group(5),
-            matcher.group(6) != null ? "false" : "true"
+            date,
+            description,
+            location,
+            String.valueOf(!isPrivate),  // isPublic is opposite of isPrivate
+            String.valueOf(autoDecline)   // autoDecline flag
     };
-    return new CommandWithArgs(createCommand, args);
+    return new CommandWithArgs(
+            commandFactory.getCommand("create"),
+            args
+    );
   }
 
   /**
    * Parse create recurring event command.
    */
   private CommandWithArgs parseCreateRecurringEventCommand(Matcher matcher) {
-    ICommand createCommand = commandFactory.getCommand("create");
-
-    boolean autoDecline = matcher.group(1) != null;
-
-    String eventName = matcher.group(2);
+    String eventName = matcher.group(1);
     if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
       eventName = eventName.substring(1, eventName.length() - 1);
     }
+    String startTime = matcher.group(2);
+    String endTime = matcher.group(3);
+    String weekdays = matcher.group(4);
+    String occurrences = matcher.group(5);
+    String description = matcher.group(6);
+    String location = matcher.group(7);
 
     String[] args = {
             "recurring",
             eventName,
-            matcher.group(3),
-            matcher.group(4),
-            matcher.group(5),
-            matcher.group(6),
-            String.valueOf(autoDecline),
-            matcher.group(7),
-            matcher.group(8),
-            matcher.group(9) != null ? "false" : "true"
+            startTime,
+            endTime,
+            weekdays,
+            occurrences,
+            description != null ? description : "",
+            location != null ? location : "",
+            "true",  // isPublic
+            "false"  // autoDecline
     };
-    return new CommandWithArgs(createCommand, args);
+    return new CommandWithArgs(
+            commandFactory.getCommand("create"),
+            args
+    );
   }
 
   /**
@@ -411,16 +420,15 @@ public class CommandParser {
   }
 
   private CommandWithArgs parseCreateCalendarCommand(Matcher matcher) {
-    ICommand calendarCommand = commandFactory.getCommand("create");
-
-    String[] args = {
-            "calendar",
-            "--name",
-            matcher.group(1),
-            "--timezone",
-            matcher.group(2)
-    };
-    return new CommandWithArgs(calendarCommand, args);
+    String calendarName = matcher.group(1);
+    if (calendarName.startsWith("\"") && calendarName.endsWith("\"")) {
+      calendarName = calendarName.substring(1, calendarName.length() - 1);
+    }
+    String timezone = matcher.group(2);
+    return new CommandWithArgs(
+            commandFactory.getCommand("create"),
+            new String[]{"calendar", "--name", calendarName, "--timezone", timezone}
+    );
   }
 
   private CommandWithArgs parseEditCalendarCommand(Matcher matcher) {
@@ -440,10 +448,15 @@ public class CommandParser {
   private CommandWithArgs parseUseCalendarCommand(Matcher matcher) {
     ICommand calendarCommand = commandFactory.getCommand("use");
 
+    String calendarName = matcher.group(1);
+    if (calendarName == null || calendarName.equals("null")) {
+      throw new IllegalArgumentException("Calendar name cannot be null");
+    }
+
     String[] args = {
             "calendar",
             "--name",
-            matcher.group(1)
+            calendarName
     };
     return new CommandWithArgs(calendarCommand, args);
   }
@@ -451,10 +464,15 @@ public class CommandParser {
   private CommandWithArgs parseCopyEventCommand(Matcher matcher) {
     ICommand copyCommand = commandFactory.getCommand("copy");
 
+    String eventName = matcher.group(1);
+    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
+      eventName = eventName.substring(1, eventName.length() - 1);
+    }
+
     String[] args = {
             "copy",
             "event",
-            matcher.group(1),
+            eventName,
             "on",
             matcher.group(2),
             "--target",
@@ -506,6 +524,8 @@ public class CommandParser {
     ICommand statusCommand = commandFactory.getCommand("show");
 
     String[] args = {
+            "status",
+            "on",
             matcher.group(1)
     };
     return new CommandWithArgs(statusCommand, args);
@@ -517,10 +537,23 @@ public class CommandParser {
   private CommandWithArgs parseExportCommand(Matcher matcher) {
     ICommand exportCommand = commandFactory.getCommand("export");
 
+    String filePath = matcher.group(1);
+    if (filePath == null || filePath.trim().isEmpty()) {
+      throw new IllegalArgumentException("Export file path cannot be empty");
+    }
+
     String[] args = {
-            matcher.group(1)
+            filePath.trim()
     };
     return new CommandWithArgs(exportCommand, args);
+  }
+
+  /**
+   * Parse exit command.
+   */
+  private CommandWithArgs parseExitCommand(Matcher matcher) {
+    ICommand exitCommand = commandFactory.getCommand("exit");
+    return new CommandWithArgs(exitCommand, new String[0]);
   }
 
   private CommandWithArgs parseEditEventTimeCommand(Matcher matcher) {
@@ -540,144 +573,6 @@ public class CommandParser {
             newValue
     };
     return new CommandWithArgs(editCommand, args);
-  }
-
-  private CommandWithArgs handleCreateCommand(String[] parts) {
-    if (parts.length < 2) {
-        throw new IllegalArgumentException("Invalid create command format");
-    }
-
-    String subCommand = parts[1].toLowerCase();
-    if (!subCommand.equals("calendar")) {
-        throw new IllegalArgumentException("Invalid create command format");
-    }
-
-    if (parts.length < 3) {
-        throw new IllegalArgumentException("Calendar name cannot be empty");
-    }
-
-    String calendarName = parts[2];
-    return new CommandWithArgs(commandFactory.getCommand("create"), new String[]{calendarName});
-  }
-
-  private CommandWithArgs handleUseCommand(String[] parts) {
-    if (parts.length < 3) {
-        throw new IllegalArgumentException("Invalid use command format");
-    }
-
-    if (!parts[1].equals("calendar")) {
-        throw new IllegalArgumentException("Invalid use command format");
-    }
-
-    if (!parts[2].equals("--name")) {
-        throw new IllegalArgumentException("Invalid use command format");
-    }
-
-    if (parts.length < 4) {
-        throw new IllegalArgumentException("Calendar name cannot be empty");
-    }
-
-    String calendarName = parts[3];
-    return new CommandWithArgs(commandFactory.getCommand("use"), new String[]{calendarName});
-  }
-
-  private CommandWithArgs handleShowCommand(String[] parts) {
-    if (parts.length < 2) {
-        throw new IllegalArgumentException("Invalid show command format");
-    }
-
-    String subCommand = parts[1].toLowerCase();
-    if (!subCommand.equals("status")) {
-        throw new IllegalArgumentException("Invalid show command format");
-    }
-
-    return new CommandWithArgs(commandFactory.getCommand("show"), new String[0]);
-  }
-
-  private CommandWithArgs handleEditCommand(String[] parts) {
-    if (parts.length < 2) {
-        throw new IllegalArgumentException("Invalid edit command format");
-    }
-
-    String subCommand = parts[1].toLowerCase();
-    if (!subCommand.equals("event")) {
-        throw new IllegalArgumentException("Invalid edit command format");
-    }
-
-    if (parts.length < 3) {
-        throw new IllegalArgumentException("Event name cannot be empty");
-    }
-
-    String eventName = parts[2];
-    return new CommandWithArgs(commandFactory.getCommand("edit"), new String[]{eventName});
-  }
-
-  private CommandWithArgs handleCopyCommand(String[] parts) {
-    if (parts.length < 2) {
-        throw new IllegalArgumentException("Invalid copy command format");
-    }
-
-    String subCommand = parts[1].toLowerCase();
-    if (!subCommand.equals("event")) {
-        throw new IllegalArgumentException("Invalid copy command format");
-    }
-
-    if (parts.length < 3) {
-        throw new IllegalArgumentException("Event name cannot be empty");
-    }
-
-    String eventName = parts[2];
-    return new CommandWithArgs(commandFactory.getCommand("copy"), new String[]{eventName});
-  }
-
-  private CommandWithArgs handlePrintCommand(String[] parts) {
-    if (parts.length < 2) {
-        throw new IllegalArgumentException("Invalid print command format");
-    }
-
-    String subCommand = parts[1].toLowerCase();
-    if (!subCommand.equals("events")) {
-        throw new IllegalArgumentException("Invalid print command format");
-    }
-
-    if (parts.length < 3) {
-        throw new IllegalArgumentException("Invalid print command format");
-    }
-
-    String dateArg = parts[2].toLowerCase();
-    if (dateArg.equals("on")) {
-        if (parts.length < 4) {
-            throw new IllegalArgumentException("Date cannot be empty");
-        }
-        return new CommandWithArgs(commandFactory.getCommand("print_events_date"),
-            new String[]{parts[3]});
-    } else if (dateArg.equals("from")) {
-        if (parts.length < 6 || !parts[4].equals("to")) {
-            throw new IllegalArgumentException("Invalid date range format");
-        }
-        return new CommandWithArgs(commandFactory.getCommand("print_events_range"),
-            new String[]{parts[3], parts[5]});
-    } else {
-        throw new IllegalArgumentException("Invalid print command format");
-    }
-  }
-
-  private CommandWithArgs handleExportCommand(String[] parts) {
-    if (parts.length < 2) {
-        throw new IllegalArgumentException("Invalid export command format");
-    }
-
-    String subCommand = parts[1].toLowerCase();
-    if (!subCommand.equals("cal")) {
-        throw new IllegalArgumentException("Invalid export command format");
-    }
-
-    if (parts.length < 3) {
-        throw new IllegalArgumentException("File name cannot be empty");
-    }
-
-    String fileName = parts[2];
-    return new CommandWithArgs(commandFactory.getCommand("export"), new String[]{fileName});
   }
 
   /**

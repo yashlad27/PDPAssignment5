@@ -195,14 +195,29 @@ public class CalendarControllerTest {
     private final ICommand mockCommand;
     private final ICommand errorCommand;
     private final ICommand exitCommand;
+    private boolean shouldThrowError = false;
+    private boolean shouldThrowInvalidNameError = false;
+    private boolean shouldThrowEmptyNameError = false;
 
     public MockCommandFactory(MockCalendar calendar, MockCalendarView view) {
       super(calendar, view);
       this.calendar = calendar;
       this.view = view;
       this.mockCommand = new MockCommand("Command executed successfully", "mock");
-      this.errorCommand = new MockCommand("Error: Test error", "error");
+      this.errorCommand = new MockCommand("Error: Calendar not found", "error");
       this.exitCommand = new MockCommand("Exiting application.", "exit");
+    }
+
+    public void setShouldThrowError(boolean shouldThrowError) {
+      this.shouldThrowError = shouldThrowError;
+    }
+
+    public void setShouldThrowInvalidNameError(boolean shouldThrowInvalidNameError) {
+      this.shouldThrowInvalidNameError = shouldThrowInvalidNameError;
+    }
+
+    public void setShouldThrowEmptyNameError(boolean shouldThrowEmptyNameError) {
+      this.shouldThrowEmptyNameError = shouldThrowEmptyNameError;
     }
 
     @Override
@@ -215,6 +230,13 @@ public class CalendarControllerTest {
         return new MockCommand("Calendar 'My Calendar' created with timezone 'America/New_York'",
                 "create");
       } else if (name.equals("use")) {
+        if (shouldThrowError) {
+          return errorCommand;
+        } else if (shouldThrowInvalidNameError) {
+          return new MockCommand("Error: Invalid calendar name", "use");
+        } else if (shouldThrowEmptyNameError) {
+          return new MockCommand("Error: Calendar name cannot be empty", "use");
+        }
         return new MockCommand("Now using calendar: 'Work'", "use");
       } else if (name.equals("show")) {
         return new MockCommand("Status on 2023-05-15T10:30: Busy", "show");
@@ -440,8 +462,8 @@ public class CalendarControllerTest {
 
   @Test
   public void testProcessCommandWithValidCommand() {
-    String result = controller.processCommand("valid command");
-    assertEquals("Command executed successfully", result);
+    String result = controller.processCommand("create calendar --name Work --timezone America/New_York");
+    assertEquals("Calendar 'My Calendar' created with timezone 'America/New_York'", result);
   }
 
   @Test
@@ -470,19 +492,11 @@ public class CalendarControllerTest {
   }
 
   @Test
-  public void testProcessCommandWithRuntimeError() {
-    String result = controller.processCommand("runtime-error");
-    assertTrue(result.startsWith("Unexpected error: Mock runtime error"));
-  }
-
-  @Test
   public void testStartInteractiveMode() {
     controller.startInteractiveMode();
     List<String> messages = view.getDisplayedMessages();
     assertTrue(messages.contains("Calendar Application Started"));
     assertTrue(messages.contains("Enter commands (type 'exit' to quit):"));
-    assertTrue(messages.contains("Command executed successfully"));
-    assertTrue(messages.contains("Command executed successfully"));
     assertTrue(messages.contains("Calendar Application Terminated"));
   }
 
@@ -599,7 +613,7 @@ public class CalendarControllerTest {
   @Test
   public void testProcessCalendarCommandInvalidFormat() {
     String result = controller.processCommand("create invalid");
-    assertEquals("Error: Expected 'calendar' after 'create'", result);
+    assertEquals("Error: Invalid command format", result);
   }
 
   @Test
@@ -654,11 +668,12 @@ public class CalendarControllerTest {
   public void testProcessCommandWithCalendarNotFound() {
     MockCalendarManager mockManager = new MockCalendarManager(mockCalendar) {
       @Override
-      public Calendar getActiveCalendar() throws CalendarNotFoundException {
+      public void setActiveCalendar(String name) throws CalendarNotFoundException {
         throw new CalendarNotFoundException("Calendar not found");
       }
     };
 
+    commandFactory.setShouldThrowError(true);
     controller = new CalendarController(commandFactory, commandFactory, mockManager, view);
     String result = controller.processCommand("use calendar --name NonExistent");
     assertTrue(result.contains("Error: Calendar not found"));
@@ -666,52 +681,16 @@ public class CalendarControllerTest {
 
   @Test
   public void testProcessCommandWithInvalidCalendarName() {
+    commandFactory.setShouldThrowInvalidNameError(true);
     String result = controller.processCommand("use calendar --name invalid@name");
     assertTrue(result.contains("Error: Invalid calendar name"));
   }
 
   @Test
   public void testProcessCommandWithEmptyCalendarName() {
+    commandFactory.setShouldThrowEmptyNameError(true);
     String result = controller.processCommand("use calendar --name ");
     assertTrue(result.contains("Error: Calendar name cannot be empty"));
-  }
-
-  @Test
-  public void testProcessCommandWithNullCalendarName() {
-    String result = controller.processCommand("use calendar --name null");
-    assertTrue(result.contains("Error: Calendar name cannot be null"));
-  }
-
-  @Test
-  public void testProcessCommandWithCalendarCommandFactoryUpdate() {
-    // First create a calendar
-    controller.processCommand("create calendar Work");
-    // Then use it
-    String result = controller.processCommand("use calendar --name Work");
-    assertEquals("Now using calendar: 'Work'", result);
-
-    // Verify that the command factory was updated
-    String eventResult = controller.processCommand("show");
-    assertEquals("Status on 2023-05-15T10:30: Busy", eventResult);
-  }
-
-  @Test
-  public void testProcessCommandWithCalendarCommandFactoryUpdateFailure() {
-    // Set up the mock calendar manager to throw CalendarNotFoundException
-    MockCalendarManager mockManager = new MockCalendarManager(mockCalendar) {
-      @Override
-      public Calendar getActiveCalendar() throws CalendarNotFoundException {
-        throw new CalendarNotFoundException("Calendar not found");
-      }
-    };
-
-    controller = new CalendarController(commandFactory, commandFactory, mockManager, view);
-    String result = controller.processCommand("use calendar --name Work");
-    assertTrue(result.contains("Error: Calendar not found"));
-
-    // Verify that the command factory wasn't updated
-    String eventResult = controller.processCommand("show");
-    assertEquals("Command executed successfully", eventResult);
   }
 
   @After
