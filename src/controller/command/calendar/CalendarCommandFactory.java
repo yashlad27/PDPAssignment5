@@ -68,14 +68,28 @@ public class CalendarCommandFactory implements ICommandFactory {
     }
 
     String calendarName = args[2];
-
-    if (!args[3].equals("--timezone")) {
-      String error = "Error: Expected '--timezone' flag";
+    
+    // Check for calendar name length
+    if (calendarName.length() > 128) {
+      String error = "Error: Name of calendar is too long, expected name less than 128 characters.";
       view.displayError(error);
       return error;
     }
 
-    String timezone = args.length > 4 ? args[4] : "America/New_York";
+    if (!args[3].equals("--timezone")) {
+      String error = "Error: timezone is required when creating a calendar";
+      view.displayError(error);
+      return error;
+    }
+
+    // Check if timezone value is missing
+    if (args.length <= 4) {
+      String error = "Error: timezone is required when creating a calendar";
+      view.displayError(error);
+      return error;
+    }
+
+    String timezone = args[4];
 
     try {
       calendarManager.createCalendar(calendarName, timezone);
