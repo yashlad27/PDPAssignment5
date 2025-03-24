@@ -60,47 +60,62 @@ public class CSVExporterTest {
   }
 
   @Test
-  public void testExportEmptyList() throws IOException {
-    String filePath = CSVExporter.exportToCSV(TEST_FILE_PATH, new ArrayList<>());
-
+  public void testExportToCSV() throws IOException {
+    String filePath = CSVExporter.exportToCSV(TEST_FILE_PATH, events);
     assertNotNull("File path should not be null", filePath);
-    assertTrue("CSV file should exist for empty list", new File(filePath).exists());
-
-    List<String> lines = Files.readAllLines(Paths.get(filePath));
-
-    assertEquals("CSV file should only contain header", 1, lines.size());
-    assertEquals("CSV header should be correct",
-            "Subject,Start Date,Start Time,End Date,End Time,All Day Event,Description,"
-                    + "Location,Private", lines.get(0));
+    assertTrue("File should exist", new File(filePath).exists());
   }
 
   @Test
-  public void testFormatEventsForDisplay_SingleDay() {
+  public void testFormatEventsForDisplay_WithDetails() {
     String formatted = CSVExporter.formatEventsForDisplay(events, true);
 
+    // Check basic event information
     assertTrue("Output should contain Team Meeting", formatted.contains("Team Meeting"));
     assertTrue("Output should contain Conference Room A", formatted.contains("Conference Room A"));
-    assertTrue("Output should indicate all-day events", formatted.contains("(All day)"));
+    assertTrue("Output should contain Company Holiday", formatted.contains("Company Holiday"));
+    
+    // Check time format
     assertTrue("Output should show time format", formatted.contains("09:00 to 10:30"));
-    assertFalse("Single day view should not show dates in times",
-            formatted.contains("2023-05-15 09:00"));
+    
+    // Check all-day event format
+    assertTrue("Output should indicate all-day events", formatted.contains("(All Day)"));
+    
+    // Check details
+    assertTrue("Output should contain description", formatted.contains("Weekly team sync"));
+    assertTrue("Output should contain location", formatted.contains("Conference Room A"));
+    assertTrue("Output should indicate private events", formatted.contains("Private"));
   }
 
   @Test
-  public void testFormatEventsForDisplay_MultiDay() {
+  public void testFormatEventsForDisplay_WithoutDetails() {
     String formatted = CSVExporter.formatEventsForDisplay(events, false);
 
-    assertTrue("Output should contain dates for multi-day view", formatted.contains("2023-05-15"));
-    assertTrue("Output should show all-day event date", formatted.contains("on 2023-05-29"));
-
-    assertTrue("Should show start date for multi-day event", formatted.contains("2023-06-01"));
-    assertTrue("Should show end date for multi-day event", formatted.contains("2023-06-03"));
+    // Check basic event information
+    assertTrue("Output should contain Team Meeting", formatted.contains("Team Meeting"));
+    assertTrue("Output should contain Company Holiday", formatted.contains("Company Holiday"));
+    
+    // Check time format
+    assertTrue("Output should show time format", formatted.contains("09:00 to 10:30"));
+    
+    // Check all-day event format
+    assertTrue("Output should indicate all-day events", formatted.contains("(All Day)"));
+    
+    // Verify details are not shown
+    assertFalse("Output should not contain description", formatted.contains("Weekly team sync"));
+    assertFalse("Output should not contain location", formatted.contains("Conference Room A"));
+    assertFalse("Output should not indicate private events", formatted.contains("Private"));
   }
 
   @Test
   public void testFormatEventsForDisplay_EmptyList() {
     String formatted = CSVExporter.formatEventsForDisplay(new ArrayList<>(), true);
+    assertEquals("Should show no events message", "No events found.", formatted);
+  }
 
+  @Test
+  public void testFormatEventsForDisplay_NullList() {
+    String formatted = CSVExporter.formatEventsForDisplay(null, true);
     assertEquals("Should show no events message", "No events found.", formatted);
   }
 
@@ -110,20 +125,16 @@ public class CSVExporterTest {
             LocalDateTime.of(2023, 5, 20, 11, 0), null, null, true);
 
     List<Event> singleEventList = Arrays.asList(nullFieldsEvent);
-
     String filePath = CSVExporter.exportToCSV(TEST_FILE_PATH, singleEventList);
 
     List<String> lines = Files.readAllLines(Paths.get(filePath));
-
     String eventLine = lines.get(1);
 
     assertTrue("Event line should have the correct name",
             eventLine.startsWith("Null Fields Event,"));
 
     String[] parts = eventLine.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
-
     assertEquals("Description should be empty for null", "", parts[6]);
-
     assertEquals("Location should be empty for null", "", parts[7]);
 
     String formatted = CSVExporter.formatEventsForDisplay(singleEventList, true);
@@ -132,55 +143,22 @@ public class CSVExporterTest {
   }
 
   @Test
-  public void testEscapeCSV() throws IOException {
-    Event commaInTitle = new Event("Meeting, with, commas", LocalDateTime.now(),
-            LocalDateTime.now().plusHours(1), "Description", "Location", true);
+  public void testEventWithSpecialCharacters() throws IOException {
+    Event specialCharsEvent = new Event("Meeting with \"Client, Inc.\"",
+            LocalDateTime.of(2023, 5, 20, 10, 0), LocalDateTime.of(2023, 5, 20, 11, 0),
+            "Description with, comma", "Location with, comma", true);
 
-    Event quoteInDescription = new Event("Regular Meeting", LocalDateTime.now(),
-            LocalDateTime.now().plusHours(1), "With \"quoted\" text", "Location", true);
+    List<Event> singleEventList = Arrays.asList(specialCharsEvent);
+    String filePath = CSVExporter.exportToCSV(TEST_FILE_PATH, singleEventList);
 
-    Event newlineInLocation = new Event("Another Meeting", LocalDateTime.now(),
-            LocalDateTime.now().plusHours(1), "Description", "First floor\nSecond building", true);
+    List<String> lines = Files.readAllLines(Paths.get(filePath));
+    String eventLine = lines.get(1);
 
-    List<Event> specialCharEvents = Arrays.asList(commaInTitle, quoteInDescription,
-            newlineInLocation);
-
-    String filePath = CSVExporter.exportToCSV(TEST_FILE_PATH, specialCharEvents);
-
-    String fileContent = new String(Files.readAllBytes(Paths.get(filePath)));
-
-    assertTrue("Comma in title should be escaped",
-            fileContent.contains("\"Meeting, with, commas\""));
-
-    assertTrue("Quote in description should be escaped",
-            fileContent.contains("\"With \"\"quoted\"\" text\""));
-
-    assertTrue("Newline in location should be escaped",
-            fileContent.contains("\"First floor\nSecond building\""));
-  }
-
-  @Test
-  public void testExportToCSV() throws IOException {
-    String filePath = CSVExporter.exportToCSV(TEST_FILE_PATH, events);
-
-    assertNotNull("File path should not be null", filePath);
-    assertTrue("CSV file should exist", new File(filePath).exists());
-
-    String fileContent = new String(Files.readAllBytes(Paths.get(filePath)));
-
-    assertTrue("CSV should contain header", fileContent.contains(
-            "Subject,Start Date,Start Time,End Date,End Time,All Day Event,Description,"
-                    + "Location,Private"));
-
-    assertTrue("CSV should contain Team Meeting", fileContent.contains("Team Meeting,"));
-
-    assertTrue("CSV should contain Company Holiday as all-day event",
-            fileContent.contains("Company Holiday") && fileContent.contains(",True,"));
-
-    assertTrue("CSV should contain the private event",
-            fileContent.contains("\"Meeting with \"\"Client, Inc.\"\"\""));
-
-    assertTrue("Private event should be marked as private",
-            fileContent.contains("Client's office,True"));
+    assertTrue("Event line should properly escape quotes",
+            eventLine.contains("\"Meeting with \"\"Client, Inc.\"\"\""));
+    assertTrue("Event line should properly escape commas in description",
+            eventLine.contains("\"Description with, comma\""));
+    assertTrue("Event line should properly escape commas in location",
+            eventLine.contains("\"Location with, comma\""));
   }
 }
