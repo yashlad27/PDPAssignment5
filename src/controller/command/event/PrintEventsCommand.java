@@ -107,7 +107,7 @@ public class PrintEventsCommand implements ICommand {
     StringBuilder result = new StringBuilder();
     result.append("Events from ").append(startDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
             .append(" to ").append(endDate.format(DateTimeFormatter.ISO_LOCAL_DATE)).append(":\n");
-    result.append(CSVExporter.formatEventsForDisplay(events, false));
+    result.append(CSVExporter.formatEventsForDisplay(events, true));
 
     return result.toString();
   }

@@ -1,6 +1,6 @@
 Subject,Start Date,Start Time,End Date,End Time,All Day,Description,Location,Public
-Weekly Update,2025-03-25,11:00,2025-03-25,12:00,false,Weekly project update,Conference Room A,true
-Client Presentation,2025-03-26,14:00,2025-03-26,15:30,false,Project demo,Client HQ,true
-Team Training,2025-03-27,10:00,2025-03-27,16:00,false,New technology training,Training Room,true
-Deadline,2025-03-28,17:00,2025-03-28,17:00,false,Project submission,Office,true
-Computer Science Lecture,2025-04-01,10:00,2025-04-01,11:30,false,Data Structures,Room 301,true
+Weekly Update,2022-03-25,11:00,2022-03-25,12:00,false,Weekly project update,Conference Room A,true
+Client Presentation,2022-03-26,14:00,2022-03-26,15:30,false,Project demo,Client HQ,true
+Team Training,2022-03-27,10:00,2022-03-27,16:00,false,New technology training,Training Room,true
+Deadline,2022-03-28,17:00,2022-03-28,17:00,false,Project submission,Office,true
+Computer Science Lecture,2022-04-01,10:00,2022-04-01,11:30,false,Data Structures,Room 301,true

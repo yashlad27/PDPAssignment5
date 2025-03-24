@@ -1,6 +1,5 @@
 Subject,Start Date,Start Time,End Date,End Time,All Day,Description,Location,Public
-Weekly Dinner,2025-03-25,18:00,2025-03-25,20:00,false,Weekly family dinner,Home,true
-Doctor Appointment,2025-03-26,10:00,2025-03-26,11:00,false,Annual checkup,City Medical Center,true
-Parent-Teacher Meeting,2025-03-27,15:00,2025-03-27,16:00,false,School meeting,School,true
-Weekend Trip,2025-03-29,09:00,2025-03-30,17:00,false,Family outing,City Park,true
-Study Group,2025-04-05,16:00,2025-04-05,18:00,false,Library,true,false
+Weekly Dinner,2022-03-25,18:00,2022-03-25,20:00,false,Weekly family dinner,Home,true
+Doctor Appointment,2022-03-26,10:00,2022-03-26,11:00,false,Annual checkup,City Medical Center,true
+Parent-Teacher Meeting,2022-03-27,15:00,2022-03-27,16:00,false,School meeting,School,true
+Weekend Trip,2022-03-29,09:00,2022-03-30,17:00,false,Family outing,City Park,true

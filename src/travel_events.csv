@@ -1,10 +1,9 @@
 Subject,Start Date,Start Time,End Date,End Time,All Day,Description,Location,Public
-International Flight,2025-04-01,08:00,2025-04-01,10:30,false,Flight JL123,Airport,true
-Hotel Check-in,2025-04-01,15:00,2025-04-01,16:00,false,Reservation #45678,Grand Hotel Tokyo,true
-Sightseeing,2025-04-02,09:00,2025-04-02,17:00,false,City tour,Tokyo,true
-Business Meeting,2025-04-03,10:00,2025-04-03,12:00,false,Client meeting,Office Tokyo,true
-Computer Science Lecture,2025-04-10,23:00,2025-04-11,00:30,false,Data Structures,Room 301,true
-Math Tutorial,2025-04-11,04:00,2025-04-11,05:30,false,Calculus II,Room 205,true
-Study Group,2025-04-12,06:00,2025-04-12,08:00,false,Library,true,false
-Study Group,2025-04-14,06:00,2025-04-14,08:00,false,Library,true,false
-Lab Session,2025-04-13,00:00,2025-04-13,02:00,false,Lab 101,true,false
+Flight to Paris,2025-04-15,08:00,2025-04-15,10:30,false,Flight AA123,Airport,true
+Hotel Check-in,2025-04-15,14:00,2025-04-15,15:00,false,Reservation #12345,Hotel Paris,true
+Museum Visit,2025-04-16,10:00,2025-04-16,13:00,false,Louvre Museum,Paris,true
+Team Meeting,2025-04-18,23:00,2025-04-19,00:00,false,Weekly team sync,Conference Room A,true
+Project Deadline,2025-04-21,22:00,2025-04-22,06:00,false,Final deliverable due,Office,true
+Daily Standup,2025-04-19,21:00,2025-04-19,21:30,false,Zoom,true,false
+Daily Standup,2025-04-21,21:00,2025-04-21,21:30,false,Zoom,true,false
+Team Football Match,2025-04-16,22:00,2025-04-17,00:00,false,City Park,true,false

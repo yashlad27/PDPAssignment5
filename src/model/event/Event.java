@@ -43,8 +43,8 @@ public class Event {
     this.id = UUID.randomUUID();
     this.subject = subject;
     this.startDateTime = startDateTime;
-    this.description = description;
-    this.location = location;
+    this.description = description != null ? description : "";
+    this.location = location != null ? location : "";
     this.isPublic = isPublic;
 
     if (endDateTime == null) {

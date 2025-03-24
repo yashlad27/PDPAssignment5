@@ -47,114 +47,50 @@ public class CalendarCommandFactory implements ICommandFactory {
     commands.put("copy", this::executeCopyCommand);
   }
 
-  private String executeCreateCommand(String[] args) throws DuplicateCalendarException,
-          InvalidTimezoneException {
-    if (args.length < 4) {
+  private String executeCreateCommand(String[] args) {
+    if (args.length < 5) {
       return "Error: Insufficient arguments for create calendar command";
     }
 
-    if (!args[0].equals("calendar")) {
-      return "Error: Expected 'calendar' argument";
-    }
-
-    if (!args[1].equals("--name")) {
-      return "Error: Expected '--name' flag";
-    }
-
     String calendarName = args[2];
-    
-    // Check for calendar name length
-    if (calendarName.length() > 128) {
-      return "Error: Name of calendar is too long, expected name less than 128 characters.";
-    }
-
-    if (!args[3].equals("--timezone")) {
-      return "Error: timezone is required when creating a calendar";
-    }
-
-    // Check if timezone value is missing
-    if (args.length <= 4) {
-      return "Error: timezone is required when creating a calendar";
-    }
-
     String timezone = args[4];
 
     try {
       calendarManager.createCalendar(calendarName, timezone);
-      return "Calendar '" + calendarName + "' created with timezone '" + timezone + "'";
-    } catch (DuplicateCalendarException | InvalidTimezoneException e) {
-      return "Error: " + e.getMessage();
+      return "Calendar '" + calendarName + "' created successfully with timezone " + timezone;
+    } catch (DuplicateCalendarException e) {
+      return e.getMessage();
+    } catch (InvalidTimezoneException e) {
+      return e.getMessage();
     }
   }
 
-  private String executeEditCalendarCommand(String[] args) throws CalendarNotFoundException,
-          DuplicateCalendarException, InvalidTimezoneException {
+  private String executeEditCalendarCommand(String[] args) {
     if (args.length < 6) {
-      String error = "Error: Insufficient arguments for edit calendar command";
-      view.displayError(error);
-      return error;
-    }
-
-    if (!args[0].equals("calendar")) {
-      String error = "Error: Expected 'calendar' argument";
-      view.displayError(error);
-      return error;
-    }
-
-    if (!args[1].equals("--name")) {
-      String error = "Error: Expected '--name' flag";
-      view.displayError(error);
-      return error;
+      return "Error: Insufficient arguments for edit calendar command";
     }
 
     String calendarName = args[2];
-
-    if (!args[3].equals("--property")) {
-      String error = "Error: Expected '--property' flag";
-      view.displayError(error);
-      return error;
-    }
-
     String property = args[4];
-    String newValue = args[5];
+    String value = args[5];
 
     try {
-      switch (property.toLowerCase()) {
-        case "name":
-          calendarManager.editCalendarName(calendarName, newValue);
-          String success = "Calendar name changed from '" + calendarName + "' to '" + newValue + "'";
-          view.displayMessage(success);
-          return success;
-        case "timezone":
-          calendarManager.editCalendarTimezone(calendarName, newValue);
-          success = "Timezone for calendar '" + calendarName + "' changed to '" + newValue + "'";
-          view.displayMessage(success);
-          return success;
-        default:
-          String error = "Error: Unsupported property '" + property
-                  + "'. Valid properties are 'name' "
-                  + "and 'timezone'";
-          view.displayError(error);
-          return error;
+      if (property.equals("timezone")) {
+        calendarManager.editCalendarTimezone(calendarName, value);
+        return "Timezone updated to " + value + " for calendar '" + calendarName + "'";
+      } else {
+        return "Error: Invalid property '" + property + "' for calendar edit";
       }
-    } catch (CalendarNotFoundException | DuplicateCalendarException | InvalidTimezoneException e) {
-      String error = "Error: " + e.getMessage();
-      view.displayError(error);
-      return error;
+    } catch (CalendarNotFoundException e) {
+      return e.getMessage();
+    } catch (InvalidTimezoneException e) {
+      return e.getMessage();
     }
   }
 
-  private String executeUseCalendarCommand(String[] args) throws CalendarNotFoundException {
+  private String executeUseCalendarCommand(String[] args) {
     if (args.length < 3) {
       return "Error: Insufficient arguments for use calendar command";
-    }
-
-    if (!args[0].equals("calendar")) {
-      return "Error: Expected 'calendar' after 'use'";
-    }
-
-    if (!args[1].equals("--name")) {
-      return "Error: Expected '--name' flag";
     }
 
     String calendarName = args[2];
@@ -199,9 +135,7 @@ public class CalendarCommandFactory implements ICommandFactory {
         try {
           return handler.execute(args);
         } catch (Exception e) {
-          String error = "Error: " + e.getMessage();
-          view.displayError(error);
-          return error;
+          return "Error: " + e.getMessage();
         }
       });
     }

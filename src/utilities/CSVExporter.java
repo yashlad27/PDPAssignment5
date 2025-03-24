@@ -95,11 +95,13 @@ public class CSVExporter {
 
     // Add optional details if requested
     if (showDetails) {
-      if (event.getDescription() != null && !event.getDescription().isEmpty()) {
-        display.append("\n  Description: ").append(event.getDescription());
+      String description = event.getDescription();
+      if (description != null && !description.trim().isEmpty()) {
+        display.append("\n  Description: ").append(description);
       }
-      if (event.getLocation() != null && !event.getLocation().isEmpty()) {
-        display.append("\n  Location: ").append(event.getLocation());
+      String location = event.getLocation();
+      if (location != null && !location.trim().isEmpty()) {
+        display.append("\n  Location: ").append(location);
       }
       if (!event.isPublic()) {
         display.append("\n  Private");
