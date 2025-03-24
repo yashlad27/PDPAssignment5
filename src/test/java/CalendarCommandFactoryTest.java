@@ -142,9 +142,8 @@ public class CalendarCommandFactoryTest {
           InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name", "NonExistentCalendar"};
     String result = factory.getCommand("use").execute(args);
-    assertTrue(result.contains("Error"));
+    assertEquals("Error: Calendar not found: NonExistentCalendar", result);
 
-    // Verify error was displayed
     assertTrue(mockView.getDisplayedErrors().contains(result));
   }
 

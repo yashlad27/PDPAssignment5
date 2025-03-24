@@ -337,16 +337,19 @@ public class CalendarController {
         return false;
       }
 
-      // Process all commands except the last one (exit)
-      return commands.stream()
-              .limit(commands.size() - 1)
-              .allMatch(command -> {
-                String result = processCommand(command);
-                if (!command.equalsIgnoreCase(EXIT_COMMAND)) {
-                  view.displayMessage(result);
-                }
-                return !result.startsWith("Error");
-              });
+      // Process all commands
+      for (String command : commands) {
+        String result = processCommand(command);
+        if (result.startsWith("Error")) {
+          view.displayError(result);
+          return false;
+        }
+        if (!command.equalsIgnoreCase(EXIT_COMMAND)) {
+          view.displayMessage(result);
+        }
+      }
+
+      return true;
 
     } catch (IOException e) {
       view.displayError("Error reading command file: " + e.getMessage());

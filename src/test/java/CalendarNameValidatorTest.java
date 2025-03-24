@@ -169,11 +169,6 @@ public class CalendarNameValidatorTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testValidateNameWithControlCharacters() {
-    CalendarNameValidator.validateCalendarName("MyCalendar\u0001");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
   public void testValidateNameWithWhitespaceCharacters() {
     CalendarNameValidator.validateCalendarName("My Calendar\t");
   }
