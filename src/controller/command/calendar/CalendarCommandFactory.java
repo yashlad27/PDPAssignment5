@@ -50,42 +50,40 @@ public class CalendarCommandFactory implements ICommandFactory {
   private String executeCreateCommand(String[] args) throws DuplicateCalendarException,
           InvalidTimezoneException {
     if (args.length < 4) {
-      String error = "Error: Insufficient arguments for create calendar command";
-      view.displayError(error);
-      return error;
+      return "Error: Insufficient arguments for create calendar command";
     }
 
     if (!args[0].equals("calendar")) {
-      String error = "Error: Expected 'calendar' argument";
-      view.displayError(error);
-      return error;
+      return "Error: Expected 'calendar' argument";
     }
 
     if (!args[1].equals("--name")) {
-      String error = "Error: Expected '--name' flag";
-      view.displayError(error);
-      return error;
+      return "Error: Expected '--name' flag";
     }
 
     String calendarName = args[2];
-
-    if (!args[3].equals("--timezone")) {
-      String error = "Error: Expected '--timezone' flag";
-      view.displayError(error);
-      return error;
+    
+    // Check for calendar name length
+    if (calendarName.length() > 128) {
+      return "Error: Name of calendar is too long, expected name less than 128 characters.";
     }
 
-    String timezone = args.length > 4 ? args[4] : "America/New_York";
+    if (!args[3].equals("--timezone")) {
+      return "Error: timezone is required when creating a calendar";
+    }
+
+    // Check if timezone value is missing
+    if (args.length <= 4) {
+      return "Error: timezone is required when creating a calendar";
+    }
+
+    String timezone = args[4];
 
     try {
       calendarManager.createCalendar(calendarName, timezone);
-      String success = "Calendar '" + calendarName + "' created with timezone '" + timezone + "'";
-      view.displayMessage(success);
-      return success;
+      return "Calendar '" + calendarName + "' created with timezone '" + timezone + "'";
     } catch (DuplicateCalendarException | InvalidTimezoneException e) {
-      String error = "Error: " + e.getMessage();
-      view.displayError(error);
-      return error;
+      return "Error: " + e.getMessage();
     }
   }
 
@@ -148,56 +146,36 @@ public class CalendarCommandFactory implements ICommandFactory {
 
   private String executeUseCalendarCommand(String[] args) throws CalendarNotFoundException {
     if (args.length < 3) {
-      String error = "Error: Insufficient arguments for use calendar command";
-      view.displayError(error);
-      return error;
+      return "Error: Insufficient arguments for use calendar command";
     }
 
     if (!args[0].equals("calendar")) {
-      String error = "Error: Expected 'calendar' after 'use'";
-      view.displayError(error);
-      return error;
+      return "Error: Expected 'calendar' after 'use'";
     }
 
     if (!args[1].equals("--name")) {
-      String error = "Error: Expected '--name' flag";
-      view.displayError(error);
-      return error;
+      return "Error: Expected '--name' flag";
     }
 
     String calendarName = args[2];
 
     try {
       calendarManager.setActiveCalendar(calendarName);
-      String success = "Now using calendar: '" + calendarName + "'";
-      view.displayMessage(success);
-      return success;
+      return "Now using calendar: '" + calendarName + "'";
     } catch (CalendarNotFoundException e) {
-      String error = "Error: " + e.getMessage();
-      view.displayError(error);
-      return error;
+      return e.getMessage();
     }
   }
 
   private String executeCopyCommand(String[] args) {
     if (args.length < 3) {
-      String error = "Error: Insufficient arguments for copy command";
-      view.displayError(error);
-      return error;
+      return "Error: Insufficient arguments for copy command";
     }
 
     try {
-      String result = copyEventCommand.execute(args);
-      if (result.startsWith("Error:")) {
-        view.displayError(result);
-      } else {
-        view.displayMessage(result);
-      }
-      return result;
+      return copyEventCommand.execute(args);
     } catch (Exception e) {
-      String error = "Error: " + e.getMessage();
-      view.displayError(error);
-      return error;
+      return "Error: " + e.getMessage();
     }
   }
 

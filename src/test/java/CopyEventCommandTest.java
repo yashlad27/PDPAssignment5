@@ -17,6 +17,7 @@ import utilities.TimeZoneHandler;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 public class CopyEventCommandTest {
 
@@ -222,5 +223,200 @@ public class CopyEventCommandTest {
     assertTrue("Error message should contain conflict information",
             result.contains("Cannot add event 'Test Meeting' due to conflict "
                     + "with an existing event"));
+  }
+
+  @Test
+  public void testCopyEventWithQuotedName() throws Exception {
+    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    Event testEvent = new Event("Team Meeting with \"Quotes\"", startTime, endTime,
+            "Test Description", "Test Location", true);
+    sourceCalendar.addEvent(testEvent, false);
+
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "Team Meeting with \"Quotes\"", "on", "2024-03-15T10:00",
+            "--target", "target", "to", "2024-03-16T10:00"
+    });
+
+    assertTrue(result.contains("copied successfully"));
+
+    Event copiedEvent = targetCalendar.findEvent("Team Meeting with \"Quotes\"",
+            LocalDateTime.of(2024, 3, 16, 10, 0));
+    assertNotNull(copiedEvent);
+    assertEquals("Team Meeting with \"Quotes\"", copiedEvent.getSubject());
+  }
+
+  @Test
+  public void testCopyEventWithSpecialCharacters() throws Exception {
+    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    Event testEvent = new Event("Meeting with, commas", startTime, endTime,
+            "Description with, commas", "Location with, commas", true);
+    sourceCalendar.addEvent(testEvent, false);
+
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "Meeting with, commas", "on", "2024-03-15T10:00",
+            "--target", "target", "to", "2024-03-16T10:00"
+    });
+
+    assertTrue(result.contains("copied successfully"));
+
+    Event copiedEvent = targetCalendar.findEvent("Meeting with, commas",
+            LocalDateTime.of(2024, 3, 16, 10, 0));
+    assertNotNull(copiedEvent);
+    assertEquals("Meeting with, commas", copiedEvent.getSubject());
+    assertEquals("Description with, commas", copiedEvent.getDescription());
+    assertEquals("Location with, commas", copiedEvent.getLocation());
+  }
+
+  @Test
+  public void testCopyEventWithEmptyFields() throws Exception {
+    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    Event testEvent = new Event("Empty Fields Event", startTime, endTime,
+            "", "", true);
+    sourceCalendar.addEvent(testEvent, false);
+
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "Empty Fields Event", "on", "2024-03-15T10:00",
+            "--target", "target", "to", "2024-03-16T10:00"
+    });
+
+    assertTrue(result.contains("copied successfully"));
+
+    Event copiedEvent = targetCalendar.findEvent("Empty Fields Event",
+            LocalDateTime.of(2024, 3, 16, 10, 0));
+    assertNotNull(copiedEvent);
+    assertEquals("Empty Fields Event", copiedEvent.getSubject());
+    assertEquals("", copiedEvent.getDescription());
+    assertEquals("", copiedEvent.getLocation());
+  }
+
+  @Test
+  public void testCopyEventWithNullFields() throws Exception {
+    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    Event testEvent = new Event("Null Fields Event", startTime, endTime,
+            null, null, true);
+    sourceCalendar.addEvent(testEvent, false);
+
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "Null Fields Event", "on", "2024-03-15T10:00",
+            "--target", "target", "to", "2024-03-16T10:00"
+    });
+
+    assertTrue(result.contains("copied successfully"));
+
+    Event copiedEvent = targetCalendar.findEvent("Null Fields Event",
+            LocalDateTime.of(2024, 3, 16, 10, 0));
+    assertNotNull(copiedEvent);
+    assertEquals("Null Fields Event", copiedEvent.getSubject());
+    assertNull(copiedEvent.getDescription());
+    assertNull(copiedEvent.getLocation());
+  }
+
+  @Test
+  public void testCopyEventWithInvalidDateTimeFormat() throws Exception {
+    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    Event testEvent = new Event("Test Event", startTime, endTime,
+            "Description", "Location", true);
+    sourceCalendar.addEvent(testEvent, false);
+
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "Test Event", "on", "invalid-date",
+            "--target", "target", "to", "2024-03-16T10:00"
+    });
+
+    assertTrue("Error message should contain 'Invalid date time format'",
+            result.contains("Invalid date time format"));
+  }
+
+  @Test
+  public void testCopyEventWithInvalidTargetDateTimeFormat() throws Exception {
+    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    Event testEvent = new Event("Test Event", startTime, endTime,
+            "Description", "Location", true);
+    sourceCalendar.addEvent(testEvent, false);
+
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "Test Event", "on", "2024-03-15T10:00",
+            "--target", "target", "to", "invalid-date"
+    });
+
+    assertTrue("Error message should contain 'Invalid date time format'",
+            result.contains("Invalid date time format"));
+  }
+
+  @Test
+  public void testCopyEventWithInvalidCommandFormat() throws Exception {
+    String result = copyCommand.execute(new String[]{
+            "copy", "invalid", "format"
+    });
+
+    assertTrue("Error message should contain 'Unknown copy command format'",
+            result.contains("Unknown copy command format"));
+  }
+
+  @Test
+  public void testCopyEventWithMissingArguments() throws Exception {
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "Test Event"
+    });
+
+    assertTrue("Error message should contain 'Insufficient arguments'",
+            result.contains("Insufficient arguments"));
+  }
+
+  @Test
+  public void testCopyEventWithInvalidTargetFlag() throws Exception {
+    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    Event testEvent = new Event("Test Event", startTime, endTime,
+            "Description", "Location", true);
+    sourceCalendar.addEvent(testEvent, false);
+
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "Test Event", "on", "2024-03-15T10:00",
+            "--invalid", "target", "to", "2024-03-16T10:00"
+    });
+
+    assertTrue("Error message should contain 'Expected '--target' flag'",
+            result.contains("Expected '--target' flag"));
+  }
+
+  @Test
+  public void testCopyEventWithInvalidToKeyword() throws Exception {
+    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    Event testEvent = new Event("Test Event", startTime, endTime,
+            "Description", "Location", true);
+    sourceCalendar.addEvent(testEvent, false);
+
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "Test Event", "on", "2024-03-15T10:00",
+            "--target", "target", "invalid", "2024-03-16T10:00"
+    });
+
+    assertTrue("Error message should contain 'Expected 'to' keyword'",
+            result.contains("Expected 'to' keyword"));
+  }
+
+  @Test
+  public void testCopyEventWithInvalidOnKeyword() throws Exception {
+    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    Event testEvent = new Event("Test Event", startTime, endTime,
+            "Description", "Location", true);
+    sourceCalendar.addEvent(testEvent, false);
+
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "Test Event", "invalid", "2024-03-15T10:00",
+            "--target", "target", "to", "2024-03-16T10:00"
+    });
+
+    assertTrue("Error message should contain 'Expected 'on' keyword'",
+            result.contains("Expected 'on' keyword"));
   }
 }

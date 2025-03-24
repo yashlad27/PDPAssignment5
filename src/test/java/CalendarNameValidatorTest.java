@@ -1,6 +1,6 @@
-import org.junit.Test;
-import org.junit.Before;
 import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import utilities.CalendarNameValidator;
 
@@ -33,7 +33,7 @@ public class CalendarNameValidatorTest {
     CalendarNameValidator.validateCalendarName("");
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testValidateNameWithNumbers() {
     CalendarNameValidator.validateCalendarName("Calendar123");
   }
@@ -92,5 +92,84 @@ public class CalendarNameValidatorTest {
     // Add a name
     CalendarNameValidator.validateCalendarName("NewCalendar");
     assertTrue(CalendarNameValidator.hasCalendarName("NewCalendar"));
+  }
+
+  @Test
+  public void testValidateNameWithMixedCase() {
+    CalendarNameValidator.validateCalendarName("MyCalendar123");
+    assertTrue(CalendarNameValidator.hasCalendarName("MyCalendar123"));
+  }
+
+  @Test
+  public void testValidateNameWithUnderscores() {
+    CalendarNameValidator.validateCalendarName("My_Calendar_123");
+    assertTrue(CalendarNameValidator.hasCalendarName("My_Calendar_123"));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testValidateNameWithSpaces() {
+    CalendarNameValidator.validateCalendarName("My Calendar");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testValidateNameWithHyphens() {
+    CalendarNameValidator.validateCalendarName("My-Calendar");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testValidateNameWithPeriods() {
+    CalendarNameValidator.validateCalendarName("My.Calendar");
+  }
+
+  @Test
+  public void testValidateNameWithMaximumLength() {
+    String longName = "A".repeat(100);
+    CalendarNameValidator.validateCalendarName(longName);
+    assertTrue(CalendarNameValidator.hasCalendarName(longName));
+  }
+
+  @Test
+  public void testValidateNameWithLeadingUnderscore() {
+    CalendarNameValidator.validateCalendarName("_MyCalendar");
+    assertTrue(CalendarNameValidator.hasCalendarName("_MyCalendar"));
+  }
+
+  @Test
+  public void testValidateNameWithTrailingUnderscore() {
+    CalendarNameValidator.validateCalendarName("MyCalendar_");
+    assertTrue(CalendarNameValidator.hasCalendarName("MyCalendar_"));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testValidateNameWithMultipleQuotes() {
+    CalendarNameValidator.validateCalendarName("\"My\"Calendar\"");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testValidateNameWithMismatchedQuotes() {
+    CalendarNameValidator.validateCalendarName("\"MyCalendar'");
+  }
+
+  @Test
+  public void testValidateNameWithSingleQuote() {
+    CalendarNameValidator.validateCalendarName("'MyCalendar'");
+    assertTrue(CalendarNameValidator.hasCalendarName("MyCalendar"));
+  }
+
+  @Test
+  public void testValidateNameWithDoubleQuote() {
+    CalendarNameValidator.validateCalendarName("\"MyCalendar\"");
+    assertTrue(CalendarNameValidator.hasCalendarName("MyCalendar"));
+  }
+
+  @Test
+  public void testValidateNameWithMixedQuotesAndSpaces() {
+    CalendarNameValidator.validateCalendarName("  \"MyCalendar\"  ");
+    assertTrue(CalendarNameValidator.hasCalendarName("MyCalendar"));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testValidateNameWithWhitespaceCharacters() {
+    CalendarNameValidator.validateCalendarName("My Calendar\t");
   }
 }

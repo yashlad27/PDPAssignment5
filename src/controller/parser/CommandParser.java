@@ -523,10 +523,18 @@ public class CommandParser {
   private CommandWithArgs parseShowStatusCommand(Matcher matcher) {
     ICommand statusCommand = commandFactory.getCommand("show");
 
+    String dateTime = matcher.group(1);
+    if (dateTime == null || dateTime.trim().isEmpty()) {
+      throw new IllegalArgumentException("Invalid date time format. Expected format: YYYY-MM-DDThh:mm");
+    }
+
+    // Validate the date time format
+    if (!dateTime.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}")) {
+      throw new IllegalArgumentException("Invalid date time format. Expected format: YYYY-MM-DDThh:mm");
+    }
+
     String[] args = {
-            "status",
-            "on",
-            matcher.group(1)
+            dateTime.trim()
     };
     return new CommandWithArgs(statusCommand, args);
   }
