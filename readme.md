@@ -1,4 +1,4 @@
-# Calendar Application
+# Calendar Application Assignment 5 
 
 ## Overview
 This is a virtual calendar application that mimics features found in widely used calendar apps such as Google Calendar or Apple's iCalendar app. The application supports creating, editing, and querying calendar events, as well as exporting the calendar to a CSV file.
@@ -183,15 +183,7 @@ The application follows the Model-View-Controller (MVC) architecture:
     - Better error messages
     - More configuration options
 
-### Documentation
-- All design decisions are documented in code comments
-- Test cases demonstrate usage and behavior
-- README provides high-level overview
-- Architecture diagrams show component relationships
-
 ## Testing
-- All code is thoroughly tested with JUnit tests
-- PIT mutation testing is used to evaluate test quality
 - Targeted 86% Test strength
 - 69% for Mutation Coverage
 
@@ -205,10 +197,6 @@ The application follows the Model-View-Controller (MVC) architecture:
 - **GUI**: Currently only offers a text-based interface
 - **Attachments**: No support for adding file attachments to events
 - **Search**: cannot search by keywords within event descriptions
-- **Timezone Management**: Currently assumes all times are in EST; could add support for multiple timezones
-- **Recurrence Exceptions**: Cannot create exceptions to recurring event patterns
-- **Builder Pattern**: For recurring event file 
-- **Headless Mode**: mocking for recurring event needs to be handled correctly.
 
 ## Team Contributions
 - **Yash Lad**: Core event management and CSV export functionality
