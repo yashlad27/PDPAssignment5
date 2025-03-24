@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import controller.command.event.CommandFactory;
 import controller.parser.CommandParser;
@@ -318,48 +319,35 @@ public class CalendarController {
     }
 
     try (BufferedReader reader = new BufferedReader(new FileReader(commandsFilePath))) {
-      String line;
-      String lastCommand = null;
-      boolean fileHasCommands = false;
-
-      while ((line = reader.readLine()) != null) {
-        if (line.trim().isEmpty()) {
-          continue;
-        }
-
-        fileHasCommands = true;
-        lastCommand = line;
-
-        String result = processCommand(line);
-        if (!line.equalsIgnoreCase(EXIT_COMMAND)) {
-          view.displayMessage(result);
-        }
-
-        if (line.equalsIgnoreCase(EXIT_COMMAND)) {
-          break;
-        }
-
-        if (result.startsWith("Error")) {
-          view.displayError("Command failed, stopping execution: " + result);
-          return false;
-        }
-      }
+      List<String> commands = reader.lines()
+              .map(String::trim)
+              .filter(line -> !line.isEmpty())
+              .collect(Collectors.toList());
 
       // Check if file was empty
-      if (!fileHasCommands) {
-        view.displayError(
-                "Error: Command file is empty. "
-                        + "At least one command (exit) is required.");
+      if (commands.isEmpty()) {
+        view.displayError("Error: Command file is empty. At least one command (exit) is required.");
         return false;
       }
 
       // Check if the last command was an exit command
+      String lastCommand = commands.get(commands.size() - 1);
       if (!lastCommand.equalsIgnoreCase(EXIT_COMMAND)) {
         view.displayError("Headless mode requires the last command to be 'exit'");
         return false;
       }
 
-      return true;
+      // Process all commands except the last one (exit)
+      return commands.stream()
+              .limit(commands.size() - 1)
+              .allMatch(command -> {
+                String result = processCommand(command);
+                if (!command.equalsIgnoreCase(EXIT_COMMAND)) {
+                  view.displayMessage(result);
+                }
+                return !result.startsWith("Error");
+              });
+
     } catch (IOException e) {
       view.displayError("Error reading command file: " + e.getMessage());
       return false;
