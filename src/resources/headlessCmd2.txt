@@ -5,94 +5,94 @@ create calendar --name Work --timezone America/New_York
 create calendar --name Travel --timezone Asia/Tokyo
 
 use calendar --name University
-create event "Computer Science Lecture" from 2025-03-25T09:00 to 2025-03-25T10:30 desc "Data Structures" at "Room 301"
-create event "Math Tutorial" from 2025-03-25T14:00 to 2025-03-25T15:30 desc "Calculus II" at "Room 205"
-create event "Study Group" from 2025-03-26T16:00 to 2025-03-26T18:00 repeats MWF for 8 times desc "Project work" at "Library"
-create event "Lab Session" from 2025-03-27T10:00 to 2025-03-27T12:00 repeats TR for 6 times desc "Programming Lab" at "Lab 101"
+create event "Computer Science Lecture" from 2022-03-25T09:00 to 2022-03-25T10:30 desc "Data Structures" at "Room 301"
+create event "Math Tutorial" from 2022-03-25T14:00 to 2022-03-25T15:30 desc "Calculus II" at "Room 205"
+create event "Study Group" from 2022-03-26T16:00 to 2022-03-26T18:00 repeats MWF for 8 times desc "Project work" at "Library"
+create event "Lab Session" from 2022-03-27T10:00 to 2022-03-27T12:00 repeats TR for 6 times desc "Programming Lab" at "Lab 101"
 
 use calendar --name Sports
-create event "Basketball Practice" from 2025-03-25T15:00 to 2025-03-25T17:00 repeats MWF for 12 times desc "Team practice" at "University Gym"
-create event "Swimming Class" from 2025-03-26T08:00 to 2025-03-26T09:30 repeats TR for 8 times desc "Swimming lessons" at "Pool"
-create event "Tennis Match" from 2025-03-28T14:00 to 2025-03-28T16:00 desc "Tournament match" at "Tennis Court"
-create event "Yoga Session" from 2025-03-29T07:00 to 2025-03-29T08:30 repeats SU for 4 times desc "Morning yoga" at "Fitness Center"
+create event "Basketball Practice" from 2022-03-25T15:00 to 2022-03-25T17:00 repeats MWF for 12 times desc "Team practice" at "University Gym"
+create event "Swimming Class" from 2022-03-26T08:00 to 2022-03-26T09:30 repeats TR for 8 times desc "Swimming lessons" at "Pool"
+create event "Tennis Match" from 2022-03-28T14:00 to 2022-03-28T16:00 desc "Tournament match" at "Tennis Court"
+create event "Yoga Session" from 2022-03-29T07:00 to 2022-03-29T08:30 repeats SU for 4 times desc "Morning yoga" at "Fitness Center"
 
 use calendar --name Family
-create event "Family Dinner" from 2025-03-25T18:00 to 2025-03-25T20:00 desc "Weekly family dinner" at "Home"
-create event "Doctor Appointment" from 2025-03-26T10:00 to 2025-03-26T11:00 desc "Annual checkup" at "Medical Center"
-create event "Parent-Teacher Meeting" from 2025-03-27T15:00 to 2025-03-27T16:00 desc "School meeting" at "School"
-create event "Weekend Trip" from 2025-03-29T09:00 to 2025-03-30T17:00 desc "Family outing" at "City Park"
+create event "Family Dinner" from 2022-03-25T18:00 to 2022-03-25T20:00 desc "Weekly family dinner" at "Home"
+create event "Doctor Appointment" from 2022-03-26T10:00 to 2022-03-26T11:00 desc "Annual checkup" at "Medical Center"
+create event "Parent-Teacher Meeting" from 2022-03-27T15:00 to 2022-03-27T16:00 desc "School meeting" at "School"
+create event "Weekend Trip" from 2022-03-29T09:00 to 2022-03-30T17:00 desc "Family outing" at "City Park"
 
 use calendar --name Work
-create event "Project Meeting" from 2025-03-25T11:00 to 2025-03-25T12:00 desc "Weekly project update" at "Conference Room A"
-create event "Client Presentation" from 2025-03-26T14:00 to 2025-03-26T15:30 desc "Project demo" at "Client Office"
-create event "Team Training" from 2025-03-27T10:00 to 2025-03-27T16:00 desc "New technology training" at "Training Room"
-create event "Deadline" from 2025-03-28T17:00 to 2025-03-28T17:00 desc "Project submission" at "Office"
+create event "Project Meeting" from 2022-03-25T11:00 to 2022-03-25T12:00 desc "Weekly project update" at "Conference Room A"
+create event "Client Presentation" from 2022-03-26T14:00 to 2022-03-26T15:30 desc "Project demo" at "Client Office"
+create event "Team Training" from 2022-03-27T10:00 to 2022-03-27T16:00 desc "New technology training" at "Training Room"
+create event "Deadline" from 2022-03-28T17:00 to 2022-03-28T17:00 desc "Project submission" at "Office"
 
 use calendar --name Travel
-create event "Flight to Tokyo" from 2025-04-01T08:00 to 2025-04-01T10:30 desc "Flight JL123" at "Airport"
-create event "Hotel Check-in" from 2025-04-01T15:00 to 2025-04-01T16:00 desc "Reservation #45678" at "Hotel Tokyo"
-create event "Sightseeing" from 2025-04-02T09:00 to 2025-04-02T17:00 desc "City tour" at "Tokyo"
-create event "Business Meeting" from 2025-04-03T10:00 to 2025-04-03T12:00 desc "Client meeting" at "Office Tokyo"
+create event "Flight to Tokyo" from 2022-04-01T08:00 to 2022-04-01T10:30 desc "Flight JL123" at "Airport"
+create event "Hotel Check-in" from 2022-04-01T15:00 to 2022-04-01T16:00 desc "Reservation #45678" at "Hotel Tokyo"
+create event "Sightseeing" from 2022-04-02T09:00 to 2022-04-02T17:00 desc "City tour" at "Tokyo"
+create event "Business Meeting" from 2022-04-03T10:00 to 2022-04-03T12:00 desc "Client meeting" at "Office Tokyo"
 
 use calendar --name University
-print events on 2025-03-25
-print events from 2025-03-25 to 2025-03-31
+print events on 2022-03-25
+print events from 2022-03-25 to 2022-03-31
 
 use calendar --name Sports
-print events on 2025-03-28
-print events from 2025-03-25 to 2025-03-29
+print events on 2022-03-28
+print events from 2022-03-25 to 2022-03-29
 
 use calendar --name Family
-print events on 2025-03-26
-print events from 2025-03-25 to 2025-03-30
+print events on 2022-03-26
+print events from 2022-03-25 to 2022-03-30
 
 use calendar --name Work
-print events on 2025-03-27
-print events from 2025-03-25 to 2025-03-28
+print events on 2022-03-27
+print events from 2022-03-25 to 2022-03-28
 
 use calendar --name Travel
-print events from 2025-04-01 to 2025-04-03
+print events from 2022-04-01 to 2022-04-03
 
 use calendar --name University
-copy event "Computer Science Lecture" on 2025-03-25T09:00 --target Work to 2025-04-01T09:00
-copy events on 2025-03-26 --target Family to 2025-04-05
-copy events between 2025-03-25 and 2025-03-28 --target Travel to 2025-04-10
+copy event "Computer Science Lecture" on 2022-03-25T09:00 --target Work to 2022-04-01T09:00
+copy events on 2022-03-26 --target Family to 2022-04-05
+copy events between 2022-03-25 and 2022-03-28 --target Travel to 2022-04-10
 
 use calendar --name Sports
-edit event subject "Basketball Practice" from 2025-03-25T15:00 with "Team Practice"
-edit event location "Swimming Class" from 2025-03-26T08:00 with "Olympic Pool"
+edit event subject "Basketball Practice" from 2022-03-25T15:00 with "Team Practice"
+edit event location "Swimming Class" from 2022-03-26T08:00 with "Olympic Pool"
 
 use calendar --name Family
-edit event subject "Family Dinner" from 2025-03-25T18:00 with "Weekly Dinner"
-edit event location "Doctor Appointment" from 2025-03-26T10:00 with "City Medical Center"
+edit event subject "Family Dinner" from 2022-03-25T18:00 with "Weekly Dinner"
+edit event location "Doctor Appointment" from 2022-03-26T10:00 with "City Medical Center"
 
 use calendar --name Work
-edit event subject "Project Meeting" from 2025-03-25T11:00 with "Weekly Update"
-edit event location "Client Presentation" from 2025-03-26T14:00 with "Client HQ"
+edit event subject "Project Meeting" from 2022-03-25T11:00 with "Weekly Update"
+edit event location "Client Presentation" from 2022-03-26T14:00 with "Client HQ"
 
 use calendar --name Travel
-edit event subject "Flight to Tokyo" from 2025-04-01T08:00 with "International Flight"
-edit event location "Hotel Check-in" from 2025-04-01T15:00 with "Grand Hotel Tokyo"
+edit event subject "Flight to Tokyo" from 2022-04-01T08:00 with "International Flight"
+edit event location "Hotel Check-in" from 2022-04-01T15:00 with "Grand Hotel Tokyo"
 
 use calendar --name University
-show status on 2025-03-25T10:00
-show status on 2025-03-26T15:00
+show status on 2022-03-25T10:00
+show status on 2022-03-26T15:00
 
 use calendar --name Sports
-show status on 2025-03-28T14:00
-show status on 2025-03-29T07:00
+show status on 2022-03-28T14:00
+show status on 2022-03-29T07:00
 
 use calendar --name Family
-show status on 2025-03-26T10:00
-show status on 2025-03-27T15:00
+show status on 2022-03-26T10:00
+show status on 2022-03-27T15:00
 
 use calendar --name Work
-show status on 2025-03-27T10:00
-show status on 2025-03-28T17:00
+show status on 2022-03-27T10:00
+show status on 2022-03-28T17:00
 
 use calendar --name Travel
-show status on 2025-04-01T08:00
-show status on 2025-04-02T09:00
+show status on 2022-04-01T08:00
+show status on 2022-04-02T09:00
 
 edit calendar --name University --property timezone America/Chicago
 edit calendar --name Sports --property timezone America/Chicago
