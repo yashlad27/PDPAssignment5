@@ -70,36 +70,26 @@ public class CalendarController {
   /**
    * Processes a command and returns the result.
    *
-   * @param commandStr the command string to process
+   * @param commandString the command string to process
    * @return the result of command execution
    */
-  public String processCommand(String commandStr) {
-    if (commandStr == null || commandStr.trim().isEmpty()) {
+  public String processCommand(String commandString) {
+    if (commandString == null || commandString.trim().isEmpty()) {
       return "Error: Command cannot be empty";
     }
 
-    String[] parts = commandStr.trim().split("\\s+");
-    if (parts.length == 0) {
-      return "Error: Invalid command format";
-    }
-
-    String command = parts[0].toLowerCase();
+    // Normalize whitespace in the command
+    String normalizedCommand = normalizeCommand(commandString);
     
-    // Check if the command is valid
-    if (!VALID_COMMANDS.contains(command)) {
-      return "Error: Invalid command: " + command + ". Valid commands are: " + 
-          String.join(", ", VALID_COMMANDS);
-    }
-
     try {
       // First, check if it's a calendar management command
-      if (isCalendarCommand(commandStr)) {
+      if (isCalendarCommand(normalizedCommand)) {
         // Handle calendar-specific commands
-        String result = processCalendarCommand(commandStr);
+        String result = processCalendarCommand(normalizedCommand);
 
         // If we changed the active calendar, we need to update the parser with a new CommandFactory
-        if (commandStr.startsWith("use calendar")) {
-          String calendarName = extractCalendarName(commandStr);
+        if (normalizedCommand.startsWith("use calendar")) {
+          String calendarName = extractCalendarName(normalizedCommand);
           if (calendarName != null) {
             // Update the command factory with the new active calendar
             updateCommandFactory();
@@ -110,7 +100,7 @@ public class CalendarController {
       }
 
       // Otherwise, treat it as a regular event command
-      CommandParser.CommandWithArgs commandWithArgs = parser.parseCommand(commandStr);
+      CommandParser.CommandWithArgs commandWithArgs = parser.parseCommand(normalizedCommand);
       return commandWithArgs.execute();
     } catch (IllegalArgumentException e) {
       return "Error: " + e.getMessage();
@@ -296,5 +286,13 @@ public class CalendarController {
       view.displayError("Error reading command file: " + e.getMessage());
       return false;
     }
+  }
+
+  private String normalizeCommand(String commandString) {
+    // Split by whitespace and filter out empty strings
+    String[] parts = commandString.trim().split("\\s+");
+    
+    // Join parts with single space
+    return String.join(" ", parts);
   }
 }

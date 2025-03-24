@@ -15,39 +15,26 @@ public class CalendarNameValidator {
      * @param name the calendar name to validate
      * @throws IllegalArgumentException if the name is invalid
      */
-    public static void validateCalendarName(String name) {
+    public static String validateCalendarName(String name) {
         if (name == null) {
             throw new IllegalArgumentException("Calendar name cannot be null");
         }
         
-        // Trim any quotes, whitespace, and normalize spaces
-        name = name.trim()
-                  .replaceAll("^['\"]|['\"]$", "")  // Remove leading/trailing quotes
-                  .replaceAll("\\s+", " ")          // Replace multiple spaces with single space
-                  .trim();                          // Trim again after space normalization
-        
-        // Check if name is empty after trimming
-        if (name.isEmpty()) {
+        if (name.trim().isEmpty()) {
             throw new IllegalArgumentException("Calendar name cannot be empty");
         }
         
-        // Check if name already exists (after normalization)
-        if (existingNames.contains(name)) {
+        if (name.matches(".*[0-9@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*")) {
+            throw new IllegalArgumentException("Invalid calendar name");
+        }
+        
+        String normalizedName = name.trim();
+        if (existingNames.contains(normalizedName)) {
             throw new IllegalArgumentException("Calendar name must be unique");
         }
         
-        // Check if name contains numbers
-        if (name.matches(".*\\d.*")) {
-            throw new IllegalArgumentException("Calendar name cannot contain numbers");
-        }
-        
-        // Check if name contains special characters (except spaces)
-        if (name.matches(".*[^a-zA-Z\\s].*")) {
-            throw new IllegalArgumentException("Calendar name cannot contain special characters");
-        }
-        
-        // If all validations pass, add to existing names
-        existingNames.add(name);
+        existingNames.add(normalizedName);
+        return normalizedName;
     }
     
     /**
@@ -68,9 +55,6 @@ public class CalendarNameValidator {
      * @return true if the name exists, false otherwise
      */
     public static boolean hasCalendarName(String name) {
-        if (name == null) {
-            return false;
-        }
-        return existingNames.contains(name.trim());
+        return name != null && existingNames.contains(name.trim());
     }
 }

@@ -548,36 +548,37 @@ public class CommandParser {
     }
 
     String subCommand = parts[1].toLowerCase();
-    String commandString = String.join(" ", parts);
-    
-    // Try to match with registered patterns
-    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
-        Matcher matcher = entry.getValue().getPattern().matcher(commandString);
-        if (matcher.matches()) {
-            return entry.getValue().getParser().parse(matcher);
-        }
+    if (!subCommand.equals("calendar")) {
+        throw new IllegalArgumentException("Invalid create command format");
     }
-    
-    throw new IllegalArgumentException("Invalid create command format");
+
+    if (parts.length < 3) {
+        throw new IllegalArgumentException("Calendar name cannot be empty");
+    }
+
+    String calendarName = parts[2];
+    return new CommandWithArgs(commandFactory.getCommand("create"), new String[]{calendarName});
   }
 
   private CommandWithArgs handleUseCommand(String[] parts) {
-    if (parts.length < 2) {
+    if (parts.length < 3) {
         throw new IllegalArgumentException("Invalid use command format");
     }
 
-    String subCommand = parts[1].toLowerCase();
-    String commandString = String.join(" ", parts);
-    
-    // Try to match with registered patterns
-    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
-        Matcher matcher = entry.getValue().getPattern().matcher(commandString);
-        if (matcher.matches()) {
-            return entry.getValue().getParser().parse(matcher);
-        }
+    if (!parts[1].equals("calendar")) {
+        throw new IllegalArgumentException("Invalid use command format");
     }
-    
-    throw new IllegalArgumentException("Invalid use command format");
+
+    if (!parts[2].equals("--name")) {
+        throw new IllegalArgumentException("Invalid use command format");
+    }
+
+    if (parts.length < 4) {
+        throw new IllegalArgumentException("Calendar name cannot be empty");
+    }
+
+    String calendarName = parts[3];
+    return new CommandWithArgs(commandFactory.getCommand("use"), new String[]{calendarName});
   }
 
   private CommandWithArgs handleShowCommand(String[] parts) {
@@ -586,17 +587,11 @@ public class CommandParser {
     }
 
     String subCommand = parts[1].toLowerCase();
-    String commandString = String.join(" ", parts);
-    
-    // Try to match with registered patterns
-    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
-        Matcher matcher = entry.getValue().getPattern().matcher(commandString);
-        if (matcher.matches()) {
-            return entry.getValue().getParser().parse(matcher);
-        }
+    if (!subCommand.equals("status")) {
+        throw new IllegalArgumentException("Invalid show command format");
     }
-    
-    throw new IllegalArgumentException("Invalid show command format");
+
+    return new CommandWithArgs(commandFactory.getCommand("show"), new String[0]);
   }
 
   private CommandWithArgs handleEditCommand(String[] parts) {
@@ -605,17 +600,16 @@ public class CommandParser {
     }
 
     String subCommand = parts[1].toLowerCase();
-    String commandString = String.join(" ", parts);
-    
-    // Try to match with registered patterns
-    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
-        Matcher matcher = entry.getValue().getPattern().matcher(commandString);
-        if (matcher.matches()) {
-            return entry.getValue().getParser().parse(matcher);
-        }
+    if (!subCommand.equals("event")) {
+        throw new IllegalArgumentException("Invalid edit command format");
     }
-    
-    throw new IllegalArgumentException("Invalid edit command format");
+
+    if (parts.length < 3) {
+        throw new IllegalArgumentException("Event name cannot be empty");
+    }
+
+    String eventName = parts[2];
+    return new CommandWithArgs(commandFactory.getCommand("edit"), new String[]{eventName});
   }
 
   private CommandWithArgs handleCopyCommand(String[] parts) {
@@ -624,17 +618,16 @@ public class CommandParser {
     }
 
     String subCommand = parts[1].toLowerCase();
-    String commandString = String.join(" ", parts);
-    
-    // Try to match with registered patterns
-    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
-        Matcher matcher = entry.getValue().getPattern().matcher(commandString);
-        if (matcher.matches()) {
-            return entry.getValue().getParser().parse(matcher);
-        }
+    if (!subCommand.equals("event")) {
+        throw new IllegalArgumentException("Invalid copy command format");
     }
-    
-    throw new IllegalArgumentException("Invalid copy command format");
+
+    if (parts.length < 3) {
+        throw new IllegalArgumentException("Event name cannot be empty");
+    }
+
+    String eventName = parts[2];
+    return new CommandWithArgs(commandFactory.getCommand("copy"), new String[]{eventName});
   }
 
   private CommandWithArgs handlePrintCommand(String[] parts) {
@@ -643,17 +636,30 @@ public class CommandParser {
     }
 
     String subCommand = parts[1].toLowerCase();
-    String commandString = String.join(" ", parts);
-    
-    // Try to match with registered patterns
-    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
-        Matcher matcher = entry.getValue().getPattern().matcher(commandString);
-        if (matcher.matches()) {
-            return entry.getValue().getParser().parse(matcher);
-        }
+    if (!subCommand.equals("events")) {
+        throw new IllegalArgumentException("Invalid print command format");
     }
-    
-    throw new IllegalArgumentException("Invalid print command format");
+
+    if (parts.length < 3) {
+        throw new IllegalArgumentException("Invalid print command format");
+    }
+
+    String dateArg = parts[2].toLowerCase();
+    if (dateArg.equals("on")) {
+        if (parts.length < 4) {
+            throw new IllegalArgumentException("Date cannot be empty");
+        }
+        return new CommandWithArgs(commandFactory.getCommand("print_events_date"), 
+            new String[]{parts[3]});
+    } else if (dateArg.equals("from")) {
+        if (parts.length < 6 || !parts[4].equals("to")) {
+            throw new IllegalArgumentException("Invalid date range format");
+        }
+        return new CommandWithArgs(commandFactory.getCommand("print_events_range"), 
+            new String[]{parts[3], parts[5]});
+    } else {
+        throw new IllegalArgumentException("Invalid print command format");
+    }
   }
 
   private CommandWithArgs handleExportCommand(String[] parts) {
@@ -662,17 +668,16 @@ public class CommandParser {
     }
 
     String subCommand = parts[1].toLowerCase();
-    String commandString = String.join(" ", parts);
-    
-    // Try to match with registered patterns
-    for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
-        Matcher matcher = entry.getValue().getPattern().matcher(commandString);
-        if (matcher.matches()) {
-            return entry.getValue().getParser().parse(matcher);
-        }
+    if (!subCommand.equals("cal")) {
+        throw new IllegalArgumentException("Invalid export command format");
     }
-    
-    throw new IllegalArgumentException("Invalid export command format");
+
+    if (parts.length < 3) {
+        throw new IllegalArgumentException("File name cannot be empty");
+    }
+
+    String fileName = parts[2];
+    return new CommandWithArgs(commandFactory.getCommand("export"), new String[]{fileName});
   }
 
   /**

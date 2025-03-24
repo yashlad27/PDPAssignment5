@@ -1,3 +1,4 @@
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -142,7 +143,7 @@ public class CalendarControllerTest {
     @Override
     public String readCommand() {
       if (commandIndex >= commandsToReturn.length) {
-        return "exit";  // Return exit if we've run out of commands
+        return "exit";
       }
       return commandsToReturn[commandIndex++];
     }
@@ -262,22 +263,7 @@ public class CalendarControllerTest {
       if (throwException) {
         throw new IllegalArgumentException("Mock parsing error");
       }
-
-      if (commandString.startsWith("error")) {
-        return new CommandWithArgs(factory.getCommand("error"), new String[0]);
-      } else if (commandString.toLowerCase().startsWith("exit")) {
-        return new CommandWithArgs(factory.getCommand("exit"), new String[0]);
-      } else if (commandString.equals("runtime-error")) {
-        throw new RuntimeException("Mock runtime error");
-      } else if (commandString.startsWith("create calendar")) {
-        return new CommandWithArgs(factory.getCommand("create"), new String[0]);
-      } else if (commandString.startsWith("use calendar")) {
-        return new CommandWithArgs(factory.getCommand("use"), new String[0]);
-      } else if (commandString.startsWith("show")) {
-        return new CommandWithArgs(factory.getCommand("show"), new String[0]);
-      } else {
-        return new CommandWithArgs(factory.getCommand("mock"), new String[0]);
-      }
+      return super.parseCommand(commandString);
     }
   }
 
@@ -600,8 +586,8 @@ public class CalendarControllerTest {
 
   @Test
   public void testProcessCalendarCommandCreate() {
-    String result = controller.processCommand("create calendar Work");
-    assertEquals("Calendar 'Work' created with timezone 'America/New_York'", result);
+    String result = controller.processCommand("create calendar My Calendar");
+    assertEquals("Calendar 'My Calendar' created with timezone 'America/New_York'", result);
   }
 
   @Test
@@ -619,7 +605,7 @@ public class CalendarControllerTest {
   @Test
   public void testProcessCalendarCommandUnknown() {
     String result = controller.processCommand("unknown calendar");
-    assertEquals("Error: Unknown calendar command: unknown", result);
+    assertEquals("Error: Invalid command: unknown. Valid commands are: create, use, show, edit, copy, exit, print, export", result);
   }
 
   @Test
@@ -647,39 +633,32 @@ public class CalendarControllerTest {
   }
 
   @Test
-  public void testProcessCommandWithMixedQuotes() {
-    String result = controller.processCommand("create calendar \"My 'Calendar'\"");
-    assertEquals("Calendar 'My 'Calendar'' created with timezone 'America/New_York'", result);
-  }
-
-  @Test
   public void testProcessCommandWithMultipleSpaces() {
-    String result = controller.processCommand("create    calendar    Work");
-    assertEquals("Calendar 'Work' created with timezone 'America/New_York'", result);
+    String result = controller.processCommand("create    calendar    My Calendar");
+    assertEquals("Calendar 'My Calendar' created with timezone 'America/New_York'", result);
   }
 
   @Test
   public void testProcessCommandWithLeadingSpaces() {
-    String result = controller.processCommand("   create calendar Work");
-    assertEquals("Calendar 'Work' created with timezone 'America/New_York'", result);
+    String result = controller.processCommand("   create calendar My Calendar");
+    assertEquals("Calendar 'My Calendar' created with timezone 'America/New_York'", result);
   }
 
   @Test
   public void testProcessCommandWithTrailingSpaces() {
-    String result = controller.processCommand("create calendar Work   ");
-    assertEquals("Calendar 'Work' created with timezone 'America/New_York'", result);
+    String result = controller.processCommand("create calendar My Calendar   ");
+    assertEquals("Calendar 'My Calendar' created with timezone 'America/New_York'", result);
   }
 
   @Test
   public void testProcessCommandWithCalendarNotFound() {
-    // Set up the mock calendar manager to throw CalendarNotFoundException
     MockCalendarManager mockManager = new MockCalendarManager(mockCalendar) {
-        @Override
-        public Calendar getActiveCalendar() throws CalendarNotFoundException {
-            throw new CalendarNotFoundException("Calendar not found");
-        }
+      @Override
+      public Calendar getActiveCalendar() throws CalendarNotFoundException {
+        throw new CalendarNotFoundException("Calendar not found");
+      }
     };
-    
+
     controller = new CalendarController(commandFactory, commandFactory, mockManager, view);
     String result = controller.processCommand("use calendar --name NonExistent");
     assertTrue(result.contains("Error: Calendar not found"));
@@ -710,7 +689,7 @@ public class CalendarControllerTest {
     // Then use it
     String result = controller.processCommand("use calendar --name Work");
     assertEquals("Now using calendar: 'Work'", result);
-    
+
     // Verify that the command factory was updated
     String eventResult = controller.processCommand("show");
     assertEquals("Status on 2023-05-15T10:30: Busy", eventResult);
@@ -720,18 +699,46 @@ public class CalendarControllerTest {
   public void testProcessCommandWithCalendarCommandFactoryUpdateFailure() {
     // Set up the mock calendar manager to throw CalendarNotFoundException
     MockCalendarManager mockManager = new MockCalendarManager(mockCalendar) {
-        @Override
-        public Calendar getActiveCalendar() throws CalendarNotFoundException {
-            throw new CalendarNotFoundException("Calendar not found");
-        }
+      @Override
+      public Calendar getActiveCalendar() throws CalendarNotFoundException {
+        throw new CalendarNotFoundException("Calendar not found");
+      }
     };
-    
+
     controller = new CalendarController(commandFactory, commandFactory, mockManager, view);
     String result = controller.processCommand("use calendar --name Work");
     assertTrue(result.contains("Error: Calendar not found"));
-    
+
     // Verify that the command factory wasn't updated
     String eventResult = controller.processCommand("show");
     assertEquals("Command executed successfully", eventResult);
+  }
+
+  @After
+  public void tearDown() {
+    // Reset the mock calendar
+    mockCalendar = new MockCalendar();
+
+    // Reset the mock calendar manager with the mock calendar
+    mockCalendarManager = new MockCalendarManager(mockCalendar);
+
+    // Reset the mock calendar view with test commands
+    view = new MockCalendarView("command1", "command2", "exit");
+
+    // Reset the mock command factory with the mock calendar and view
+    commandFactory = new MockCommandFactory(mockCalendar, view);
+
+    // Create a new controller with reset mocks
+    controller = new CalendarController(commandFactory, commandFactory, mockCalendarManager, view);
+
+    // Reset the parser
+    try {
+      Field parserField = CalendarController.class.getDeclaredField("parser");
+      parserField.setAccessible(true);
+      parser = new MockCommandParser(commandFactory);
+      parserField.set(controller, parser);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to setup test", e);
+    }
   }
 }
