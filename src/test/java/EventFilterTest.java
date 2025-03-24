@@ -133,14 +133,105 @@ public class EventFilterTest {
   }
 
   @Test
-  public void testFilterComposition() {
-    EventFilter allDayFilter = event -> event != null && event.isAllDay();
-    EventFilter dateFilter = event -> event != null && event.getDate().equals(LocalDate.of(2023, 5, 29));
+  public void testTimeRangeFilter() {
+    LocalDateTime startTime = LocalDateTime.of(2023, 5, 15, 8, 0);
+    LocalDateTime endTime = LocalDateTime.of(2023, 5, 15, 17, 0);
     
-    // Test AND composition
-    EventFilter composedFilter = allDayFilter.and(dateFilter);
-    List<Event> filteredEvents = composedFilter.filterEvents(events);
-    assertEquals("Should find 1 matching event", 1, filteredEvents.size());
+    EventFilter timeRangeFilter = event -> {
+      if (event == null || event.getStartDateTime() == null || event.getEndDateTime() == null) {
+        return false;
+      }
+      return !event.getStartDateTime().isBefore(startTime) && !event.getEndDateTime().isAfter(endTime);
+    };
+
+    List<Event> filteredEvents = timeRangeFilter.filterEvents(events);
+    assertTrue("Should include regular event", filteredEvents.contains(regularEvent));
+    assertFalse("Should not include midnight event", filteredEvents.contains(midnightEvent));
+    assertFalse("Should not include end of day event", filteredEvents.contains(endOfDayEvent));
+  }
+
+  @Test
+  public void testLocationFilter() {
+    String targetLocation = "Conference Room A";
+    
+    EventFilter locationFilter = event -> 
+      event != null && targetLocation.equals(event.getLocation());
+
+    List<Event> filteredEvents = locationFilter.filterEvents(events);
+    assertTrue("Should include regular event", filteredEvents.contains(regularEvent));
+    assertFalse("Should not include all-day event", filteredEvents.contains(allDayEvent));
+  }
+
+  @Test
+  public void testPublicEventFilter() {
+    EventFilter publicFilter = event -> event != null && event.isPublic();
+
+    List<Event> filteredEvents = publicFilter.filterEvents(events);
+    assertTrue("Should include regular event", filteredEvents.contains(regularEvent));
     assertTrue("Should include all-day event", filteredEvents.contains(allDayEvent));
+  }
+
+  @Test
+  public void testDescriptionFilter() {
+    String targetDescription = "Weekly team sync";
+    
+    EventFilter descriptionFilter = event -> 
+      event != null && targetDescription.equals(event.getDescription());
+
+    List<Event> filteredEvents = descriptionFilter.filterEvents(events);
+    assertTrue("Should include regular event", filteredEvents.contains(regularEvent));
+    assertFalse("Should not include all-day event", filteredEvents.contains(allDayEvent));
+  }
+
+  @Test
+  public void testFilterWithNullValues() {
+    Event nullLocationEvent = new Event("Null Location Event",
+            LocalDateTime.of(2023, 5, 15, 9, 0),
+            LocalDateTime.of(2023, 5, 15, 10, 0),
+            "Description", null, true);
+
+    events.add(nullLocationEvent);
+
+    EventFilter nullLocationFilter = event -> 
+      event != null && event.getLocation() == null;
+
+    List<Event> filteredEvents = nullLocationFilter.filterEvents(events);
+    assertTrue("Should include null location event", filteredEvents.contains(nullLocationEvent));
+    assertFalse("Should not include regular event", filteredEvents.contains(regularEvent));
+  }
+
+  @Test
+  public void testFilterWithEmptyValues() {
+    Event emptyDescriptionEvent = new Event("Empty Description Event",
+            LocalDateTime.of(2023, 5, 15, 9, 0),
+            LocalDateTime.of(2023, 5, 15, 10, 0),
+            "", "Location", true);
+
+    events.add(emptyDescriptionEvent);
+
+    EventFilter emptyDescriptionFilter = event -> 
+      event != null && event.getDescription() != null && event.getDescription().isEmpty();
+
+    List<Event> filteredEvents = emptyDescriptionFilter.filterEvents(events);
+    assertTrue("Should include empty description event", filteredEvents.contains(emptyDescriptionEvent));
+    assertFalse("Should not include regular event", filteredEvents.contains(regularEvent));
+  }
+
+  @Test
+  public void testFilterWithSpecialCharacters() {
+    String specialDescription = "Meeting with \"quotes\" and, commas";
+    Event specialEvent = new Event("Special Event",
+            LocalDateTime.of(2023, 5, 15, 9, 0),
+            LocalDateTime.of(2023, 5, 15, 10, 0),
+            specialDescription, "Location", true);
+
+    events.add(specialEvent);
+
+    EventFilter specialDescriptionFilter = event -> 
+      event != null && specialDescription.equals(event.getDescription());
+
+    List<Event> filteredEvents = specialDescriptionFilter.filterEvents(events);
+    assertTrue("Should include special event", filteredEvents.contains(specialEvent));
+    assertFalse("Should not include regular event", filteredEvents.contains(regularEvent));
   }
 }
