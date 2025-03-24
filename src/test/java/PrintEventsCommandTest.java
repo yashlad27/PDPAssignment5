@@ -1,5 +1,3 @@
-package test;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import controller.command.PrintEventsCommand;
+import controller.command.event.PrintEventsCommand;
 import model.calendar.ICalendar;
 import model.event.Event;
 

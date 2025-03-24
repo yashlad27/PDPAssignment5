@@ -29,8 +29,16 @@ public class AllDayRecurringEventCreator extends AbstractEventCreator {
    * @param args the arguments for event creation
    */
   public AllDayRecurringEventCreator(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 6) {
       throw new IllegalArgumentException("Insufficient arguments for all-day recurring event");
+    }
+
+    // Check for null values before parsing
+    if (args[4] == null) {
+      throw new IllegalArgumentException("Until date cannot be null");
     }
 
     try {
@@ -62,13 +70,12 @@ public class AllDayRecurringEventCreator extends AbstractEventCreator {
       throw new InvalidEventException("Occurrences must be positive");
     }
 
-    // For all-day recurring events, we need to delegate to the calendar
-    // because the model doesn't provide a direct way to create them
     return null;
   }
 
   @Override
-  public String executeCreation(ICalendar calendar) throws ConflictingEventException, InvalidEventException {
+  public String executeCreation(ICalendar calendar) throws ConflictingEventException,
+          InvalidEventException {
     validateEventParameters(eventName);
 
     if (date == null) {

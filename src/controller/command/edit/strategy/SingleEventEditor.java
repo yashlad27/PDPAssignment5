@@ -24,6 +24,9 @@ public class SingleEventEditor extends AbstractEventEditor {
    * @param args the edit arguments
    */
   public SingleEventEditor(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 5) {
       throw new IllegalArgumentException("Insufficient arguments for editing a single event");
     }
@@ -41,7 +44,8 @@ public class SingleEventEditor extends AbstractEventEditor {
   }
 
   @Override
-  public String executeEdit(ICalendar calendar) throws EventNotFoundException, InvalidEventException, ConflictingEventException {
+  public String executeEdit(ICalendar calendar) throws EventNotFoundException,
+          InvalidEventException, ConflictingEventException {
     validateParameters(subject, property);
 
     boolean success = calendar.editSingleEvent(subject, startDateTime, property, newValue);

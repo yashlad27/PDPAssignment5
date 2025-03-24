@@ -1,14 +1,14 @@
 package controller.command.event;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 import controller.command.ICommand;
 import model.calendar.ICalendar;
 import model.event.Event;
 import utilities.CSVExporter;
 import utilities.DateTimeUtil;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 /**
  * Command for printing events on a specific date or within a date range.
@@ -37,6 +37,9 @@ public class PrintEventsCommand implements ICommand {
    */
   @Override
   public String execute(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 2) {
       return "Error: Insufficient arguments for print command";
     }
@@ -98,12 +101,12 @@ public class PrintEventsCommand implements ICommand {
 
     if (events.isEmpty()) {
       return "No events from " + startDate.format(DateTimeFormatter.ISO_LOCAL_DATE) + " to "
-          + endDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
+              + endDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
     }
 
     StringBuilder result = new StringBuilder();
     result.append("Events from ").append(startDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
-        .append(" to ").append(endDate.format(DateTimeFormatter.ISO_LOCAL_DATE)).append(":\n");
+            .append(" to ").append(endDate.format(DateTimeFormatter.ISO_LOCAL_DATE)).append(":\n");
     result.append(CSVExporter.formatEventsForDisplay(events, false));
 
     return result.toString();

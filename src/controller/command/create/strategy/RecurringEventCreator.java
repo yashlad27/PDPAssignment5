@@ -31,16 +31,25 @@ public class RecurringEventCreator extends AbstractEventCreator {
    *
    * @param args the arguments for event creation
    */
-  public RecurringEventCreator(String[] args) {
+  public RecurringEventCreator(String[] args) throws InvalidEventException {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 7) {
       throw new IllegalArgumentException("Insufficient arguments for creating a recurring event");
     }
-
+    
     try {
       this.eventName = args[1];
       this.startDateTime = DateTimeUtil.parseDateTime(args[2]);
       this.endDateTime = DateTimeUtil.parseDateTime(args[3]);
       this.weekdays = args[4];
+      
+      // Check for empty weekdays before parsing
+      if (this.weekdays == null || this.weekdays.trim().isEmpty()) {
+        throw new InvalidEventException("Repeat days cannot be empty");
+      }
+      
       this.repeatDays = DateTimeUtil.parseWeekdays(args[4]);
       this.occurrences = Integer.parseInt(args[5]);
       this.autoDecline = Boolean.parseBoolean(args[6]);
@@ -48,6 +57,8 @@ public class RecurringEventCreator extends AbstractEventCreator {
       this.description = args.length > 7 ? removeQuotes(args[7]) : null;
       this.location = args.length > 8 ? removeQuotes(args[8]) : null;
       this.isPublic = args.length > 9 ? Boolean.parseBoolean(args[9]) : true;
+    } catch (InvalidEventException e) {
+      throw e;  // Re-throw InvalidEventException as is
     } catch (Exception e) {
       throw new IllegalArgumentException("Error parsing arguments: " + e.getMessage(), e);
     }
@@ -60,6 +71,9 @@ public class RecurringEventCreator extends AbstractEventCreator {
     if (startDateTime == null) {
       throw new InvalidEventException("Start date/time cannot be null");
     }
+    if (weekdays == null || weekdays.trim().isEmpty()) {
+      throw new InvalidEventException("Repeat days cannot be empty");
+    }
     if (repeatDays == null || repeatDays.isEmpty()) {
       throw new InvalidEventException("Repeat days cannot be empty");
     }
@@ -68,7 +82,6 @@ public class RecurringEventCreator extends AbstractEventCreator {
     }
 
     try {
-      // Use the Builder to create the recurring event
       return new RecurringEvent.Builder(
               eventName, startDateTime, endDateTime, repeatDays)
               .description(description)

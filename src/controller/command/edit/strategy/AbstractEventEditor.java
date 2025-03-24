@@ -27,7 +27,7 @@ public abstract class AbstractEventEditor implements EventEditor {
   /**
    * Validates common event edit parameters.
    *
-   * @param subject the subject of the event to edit
+   * @param subject  the subject of the event to edit
    * @param property the property to edit
    * @throws InvalidEventException if required parameters are invalid
    */

@@ -23,8 +23,12 @@ public class AllDayEventCreator extends AbstractEventCreator {
    * Constructs a strategy for creating an all-day event.
    *
    * @param args the arguments for event creation
+   * @throws IllegalArgumentException if args is null or has insufficient arguments
    */
   public AllDayEventCreator(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 4) {
       throw new IllegalArgumentException("Insufficient arguments for creating an all-day event");
     }

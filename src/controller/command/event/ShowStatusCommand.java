@@ -28,6 +28,9 @@ public class ShowStatusCommand implements ICommand {
 
   @Override
   public String execute(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 1) {
       return "Error: Missing date/time for status command";
     }
@@ -42,7 +45,7 @@ public class ShowStatusCommand implements ICommand {
     boolean isBusy = calendar.isBusy(dateTime);
 
     return "Status on " + dateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + ": " + (isBusy
-        ? "Busy" : "Available");
+            ? "Busy" : "Available");
   }
 
   @Override

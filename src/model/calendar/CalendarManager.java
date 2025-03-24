@@ -7,6 +7,7 @@ import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
 import model.exceptions.InvalidTimezoneException;
 import utilities.TimeZoneHandler;
+import utilities.CalendarNameValidator;
 
 /**
  * Manages calendar operations and coordinates between the CalendarRegistry and TimeZoneHandler.
@@ -21,7 +22,7 @@ public class CalendarManager {
   /**
    * Private constructor used by the builder to create a CalendarManager instance.
    */
-  private CalendarManager(Builder builder) {
+  protected CalendarManager(Builder builder) {
     this.calendarRegistry = new CalendarRegistry();
     this.timezoneHandler = builder.timezoneHandler;
   }
@@ -75,6 +76,9 @@ public class CalendarManager {
     if (!timezoneHandler.isValidTimezone(timezone)) {
       throw new InvalidTimezoneException("Invalid timezone: " + timezone);
     }
+
+    // Validate the calendar name
+    CalendarNameValidator.validateCalendarName(name);
 
     // Create the calendar with the specified timezone
     Calendar calendar = new Calendar();
@@ -258,7 +262,8 @@ public class CalendarManager {
     }
 
     // Update timezone
-    calendarRegistry.applyToCalendar(calendarName, calendar -> calendar.setTimezone(newTimezone));
+    calendarRegistry.applyToCalendar(calendarName,
+            calendar -> calendar.setTimezone(newTimezone));
   }
 
   /**
@@ -269,6 +274,7 @@ public class CalendarManager {
    */
   public void removeCalendar(String name) throws CalendarNotFoundException {
     calendarRegistry.removeCalendar(name);
+    CalendarNameValidator.removeCalendarName(name);
   }
 
   /**

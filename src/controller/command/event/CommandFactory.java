@@ -48,13 +48,8 @@ public class CommandFactory implements ICommandFactory {
    * Registers all command executors.
    */
   private void registerCommands() {
-    // Create event command
     registerCreateCommand();
-
-    // Edit event command
     registerEditCommand();
-
-    // Use calendar command
     registerUseCommand();
 
     commands.put("print", new PrintEventsCommand(calendar)::execute);
@@ -72,35 +67,20 @@ public class CommandFactory implements ICommandFactory {
    * Registers the create command with all its subcommands.
    */
   private void registerCreateCommand() {
-//    CreateEventCommand createCmd = new CreateEventCommand(calendar);
-//
-//    commands.put("create", (args) -> {
-//      // Check if it's a calendar creation command, which should be forwarded
-//      if (args.length > 0 && args[0].equals("calendar")) {
-//        return "Command forwarded to CalendarCommandFactory";
-//      }
-//      // Otherwise handle as a normal create event command
-//      return createCmd.execute(args);
-//    });
-
     CreateEventCommand createCmd = new CreateEventCommand(calendar);
     commands.put("create", createCmd::execute);
-
   }
 
   /**
    * Registers the edit command with all its subcommands.
    */
   private void registerEditCommand() {
-    // Use a single EditEventCommand instance
     EditEventCommand editCmd = new EditEventCommand(calendar);
 
     commands.put("edit", (args) -> {
-      // Check if it's a calendar edit command, which should be forwarded
       if (args.length > 0 && args[0].equals("calendar")) {
         return "Command forwarded to CalendarCommandFactory";
       }
-      // Otherwise handle as a normal edit event command
       return editCmd.execute(args);
     });
   }

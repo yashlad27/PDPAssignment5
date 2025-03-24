@@ -5,8 +5,8 @@ import java.util.Map;
 
 import controller.ICommandFactory;
 import controller.command.CommandAdapter;
-import controller.command.copy.CopyEventCommand;
 import controller.command.ICommand;
+import controller.command.copy.CopyEventCommand;
 import model.calendar.CalendarManager;
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
@@ -20,7 +20,7 @@ public class CalendarCommandFactory implements ICommandFactory {
   private final CalendarManager calendarManager;
   private final ICalendarView view;
   private final TimeZoneHandler timezoneHandler;
-  private final CopyEventCommand copyEventCommand;  // Changed to CopyEventsCommand
+  private final CopyEventCommand copyEventCommand;
 
   public CalendarCommandFactory(CalendarManager calendarManager, ICalendarView view) {
     if (calendarManager == null) {
@@ -35,9 +35,7 @@ public class CalendarCommandFactory implements ICommandFactory {
     this.calendarManager = calendarManager;
     this.view = view;
     this.timezoneHandler = calendarManager.getTimezoneHandler();
-
-    // Create a single instance of the consolidated CopyEventsCommand
-    this.copyEventCommand = new CopyEventCommand(calendarManager, timezoneHandler);  // Changed to CopyEventsCommand
+    this.copyEventCommand = new CopyEventCommand(calendarManager, timezoneHandler);
 
     registerCommands();
   }
@@ -49,132 +47,170 @@ public class CalendarCommandFactory implements ICommandFactory {
     commands.put("copy", this::executeCopyCommand);
   }
 
-  /**
-   * Executes the create calendar command.
-   */
   private String executeCreateCommand(String[] args) throws DuplicateCalendarException,
           InvalidTimezoneException {
-
     if (args.length < 4) {
-      return "Error: Insufficient arguments for create calendar command";
+      String error = "Error: Insufficient arguments for create calendar command";
+      view.displayError(error);
+      return error;
     }
 
     if (!args[0].equals("calendar")) {
-      return "Error: Expected 'calendar' argument";
+      String error = "Error: Expected 'calendar' argument";
+      view.displayError(error);
+      return error;
     }
 
     if (!args[1].equals("--name")) {
-      return "Error: Expected '--name' flag";
+      String error = "Error: Expected '--name' flag";
+      view.displayError(error);
+      return error;
     }
 
     String calendarName = args[2];
 
     if (!args[3].equals("--timezone")) {
-      return "Error: Expected '--timezone' flag";
+      String error = "Error: Expected '--timezone' flag";
+      view.displayError(error);
+      return error;
     }
 
     String timezone = args.length > 4 ? args[4] : "America/New_York";
 
-    calendarManager.createCalendar(calendarName, timezone);
-    return "Calendar '" + calendarName + "' created with timezone '" + timezone + "'";
+    try {
+      calendarManager.createCalendar(calendarName, timezone);
+      String success = "Calendar '" + calendarName + "' created with timezone '" + timezone + "'";
+      view.displayMessage(success);
+      return success;
+    } catch (DuplicateCalendarException | InvalidTimezoneException e) {
+      String error = "Error: " + e.getMessage();
+      view.displayError(error);
+      return error;
+    }
   }
 
-  /**
-   * Executes the edit calendar command.
-   */
   private String executeEditCalendarCommand(String[] args) throws CalendarNotFoundException,
           DuplicateCalendarException, InvalidTimezoneException {
     if (args.length < 6) {
-      return "Error: Insufficient arguments for edit calendar command";
+      String error = "Error: Insufficient arguments for edit calendar command";
+      view.displayError(error);
+      return error;
     }
 
     if (!args[0].equals("calendar")) {
-      return "Error: Expected 'calendar' argument";
+      String error = "Error: Expected 'calendar' argument";
+      view.displayError(error);
+      return error;
     }
 
     if (!args[1].equals("--name")) {
-      return "Error: Expected '--name' flag";
+      String error = "Error: Expected '--name' flag";
+      view.displayError(error);
+      return error;
     }
 
     String calendarName = args[2];
 
     if (!args[3].equals("--property")) {
-      return "Error: Expected '--property' flag";
+      String error = "Error: Expected '--property' flag";
+      view.displayError(error);
+      return error;
     }
 
     String property = args[4];
     String newValue = args[5];
 
-    switch (property.toLowerCase()) {
-      case "name":
-        calendarManager.editCalendarName(calendarName, newValue);
-        return "Calendar name changed from '" + calendarName + "' to '" + newValue + "'";
-      case "timezone":
-        calendarManager.editCalendarTimezone(calendarName, newValue);
-        return "Timezone for calendar '" + calendarName + "' changed to '" + newValue + "'";
-      default:
-        return "Error: Unsupported property '" + property + "'. Valid properties are 'name' "
-                + "and 'timezone'";
+    try {
+      switch (property.toLowerCase()) {
+        case "name":
+          calendarManager.editCalendarName(calendarName, newValue);
+          String success = "Calendar name changed from '" + calendarName + "' to '" + newValue + "'";
+          view.displayMessage(success);
+          return success;
+        case "timezone":
+          calendarManager.editCalendarTimezone(calendarName, newValue);
+          success = "Timezone for calendar '" + calendarName + "' changed to '" + newValue + "'";
+          view.displayMessage(success);
+          return success;
+        default:
+          String error = "Error: Unsupported property '" + property
+                  + "'. Valid properties are 'name' "
+                  + "and 'timezone'";
+          view.displayError(error);
+          return error;
+      }
+    } catch (CalendarNotFoundException | DuplicateCalendarException | InvalidTimezoneException e) {
+      String error = "Error: " + e.getMessage();
+      view.displayError(error);
+      return error;
     }
   }
 
-  /**
-   * Executes the use calendar command.
-   */
   private String executeUseCalendarCommand(String[] args) throws CalendarNotFoundException {
     if (args.length < 3) {
-      return "Error: Insufficient arguments for use calendar command";
+      String error = "Error: Insufficient arguments for use calendar command";
+      view.displayError(error);
+      return error;
     }
 
     if (!args[0].equals("calendar")) {
-      return "Error: Expected 'calendar' argument";
+      String error = "Error: Expected 'calendar' argument";
+      view.displayError(error);
+      return error;
     }
 
     if (!args[1].equals("--name")) {
-      return "Error: Expected '--name' flag";
+      String error = "Error: Expected '--name' flag";
+      view.displayError(error);
+      return error;
     }
 
     String calendarName = args[2];
 
-    calendarManager.setActiveCalendar(calendarName);
-    return "Now using calendar: '" + calendarName + "'";
+    try {
+      calendarManager.setActiveCalendar(calendarName);
+      String success = "Now using calendar: '" + calendarName + "'";
+      view.displayMessage(success);
+      return success;
+    } catch (CalendarNotFoundException e) {
+      String error = "Error: " + e.getMessage();
+      view.displayError(error);
+      return error;
+    }
   }
 
-  /**
-   * Executes the copy event/events command using the consolidated CopyEventsCommand.
-   */
   private String executeCopyCommand(String[] args) {
     if (args.length < 3) {
-      return "Error: Insufficient arguments for copy command";
+      String error = "Error: Insufficient arguments for copy command";
+      view.displayError(error);
+      return error;
     }
 
     try {
-      // Pass the entire args array to the consolidated CopyEventsCommand
-      // The command knows how to handle all types of copy operations
-      return copyEventCommand.execute(args);
+      String result = copyEventCommand.execute(args);
+      if (result.startsWith("Error:")) {
+        view.displayError(result);
+      } else {
+        view.displayMessage(result);
+      }
+      return result;
     } catch (Exception e) {
-      return "Error: " + e.getMessage();
+      String error = "Error: " + e.getMessage();
+      view.displayError(error);
+      return error;
     }
   }
 
-  /**
-   * Checks if a command is registered.
-   *
-   * @param commandName the name of the command
-   * @return true if the command is registered, false otherwise
-   */
   public boolean hasCommand(String commandName) {
     return commands.containsKey(commandName);
   }
 
-  /**
-   * Gets a command handler by name.
-   *
-   * @param commandName the name of the command
-   * @return the command handler with exception handling, or null if not found
-   */
   @Override
   public ICommand getCommand(String commandName) {
+    if (commandName == null) {
+      return null;
+    }
+
     if (commandName.equals("copy")) {
       return copyEventCommand;
     }
@@ -185,7 +221,9 @@ public class CalendarCommandFactory implements ICommandFactory {
         try {
           return handler.execute(args);
         } catch (Exception e) {
-          return "Error: " + e.getMessage();
+          String error = "Error: " + e.getMessage();
+          view.displayError(error);
+          return error;
         }
       });
     }

@@ -16,11 +16,12 @@ public interface EventEditor {
    *
    * @param calendar the calendar containing the events to edit
    * @return a result message indicating success or failure
-   * @throws EventNotFoundException if the event to edit cannot be found
-   * @throws InvalidEventException if the edit parameters are invalid
+   * @throws EventNotFoundException    if the event to edit cannot be found
+   * @throws InvalidEventException     if the edit parameters are invalid
    * @throws ConflictingEventException if the edit would create a conflict
    */
-  String executeEdit(ICalendar calendar) throws EventNotFoundException, InvalidEventException, ConflictingEventException;
+  String executeEdit(ICalendar calendar) throws EventNotFoundException,
+          InvalidEventException, ConflictingEventException;
 
   /**
    * Factory method to create the appropriate editor based on edit type.

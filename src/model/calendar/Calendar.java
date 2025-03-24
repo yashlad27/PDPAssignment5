@@ -118,7 +118,8 @@ public class Calendar implements ICalendar {
 
   @Override
   public boolean createRecurringEventUntil(String name, LocalDateTime start, LocalDateTime end,
-                                           String weekdays, LocalDate untilDate, boolean autoDecline)
+                                           String weekdays, LocalDate untilDate,
+                                           boolean autoDecline)
           throws ConflictingEventException {
     try {
       Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
@@ -136,7 +137,8 @@ public class Calendar implements ICalendar {
 
   @Override
   public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-                                            int occurrences, boolean autoDecline, String description,
+                                            int occurrences, boolean autoDecline,
+                                            String description,
                                             String location, boolean isPublic)
           throws ConflictingEventException {
     try {
@@ -145,7 +147,8 @@ public class Calendar implements ICalendar {
       LocalDateTime startOfDay = date.atStartOfDay();
       LocalDateTime endOfDay = date.atTime(23, 59, 59);
 
-      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, startOfDay, endOfDay, repeatDays)
+      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, startOfDay, endOfDay,
+              repeatDays)
               .description(description)
               .location(location)
               .isPublic(isPublic)
@@ -171,7 +174,8 @@ public class Calendar implements ICalendar {
       LocalDateTime startOfDay = date.atStartOfDay();
       LocalDateTime endOfDay = date.atTime(23, 59, 59);
 
-      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, startOfDay, endOfDay, repeatDays)
+      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, startOfDay, endOfDay,
+              repeatDays)
               .description(description)
               .location(location)
               .isPublic(isPublic)
@@ -199,7 +203,8 @@ public class Calendar implements ICalendar {
     }
 
     return events.stream()
-            .filter(e -> e.getSubject().equals(subject) && e.getStartDateTime().equals(startDateTime))
+            .filter(e -> e.getSubject().equals(subject)
+                    && e.getStartDateTime().equals(startDateTime))
             .findFirst().orElse(null);
   }
 
@@ -249,7 +254,8 @@ public class Calendar implements ICalendar {
     int count = 0;
 
     List<Event> matchingEvents = events.stream()
-            .filter(e -> e.getSubject().equals(subject) && !e.getStartDateTime().isBefore(startDateTime))
+            .filter(e -> e.getSubject().equals(subject)
+                    && !e.getStartDateTime().isBefore(startDateTime))
             .collect(Collectors.toList());
 
     for (Event event : matchingEvents) {
@@ -482,7 +488,8 @@ public class Calendar implements ICalendar {
 
     // Visibility/privacy updaters
     EventPropertyUpdater visibilityUpdater = (event, value) -> {
-      boolean isPublic = value.equalsIgnoreCase("public") || value.equalsIgnoreCase("true");
+      boolean isPublic = value.equalsIgnoreCase("public")
+              || value.equalsIgnoreCase("true");
       event.setPublic(isPublic);
       return true;
     };
@@ -492,7 +499,8 @@ public class Calendar implements ICalendar {
 
     // Special case for "private" - inverts the logic
     propertyUpdaters.put("private", (event, value) -> {
-      boolean isPrivate = value.equalsIgnoreCase("true") || value.equalsIgnoreCase("private");
+      boolean isPrivate = value.equalsIgnoreCase("true")
+              || value.equalsIgnoreCase("private");
       event.setPublic(!isPrivate);
       return true;
     });

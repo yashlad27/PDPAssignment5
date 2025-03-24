@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import model.calendar.Calendar;
 import model.calendar.CalendarManager;
 import model.calendar.ICalendar;
 import model.event.Event;
@@ -76,14 +77,16 @@ public class DayEventsCopyStrategy implements CopyStrategy {
   /**
    * Copies all events on a specific date from the active calendar to a target calendar.
    */
-  private String copyEventsOnDate(String dateStr, String targetCalendarName, String targetDateStr) throws Exception {
+  private String copyEventsOnDate(String dateStr, String targetCalendarName, String targetDateStr)
+          throws Exception {
     // Parse the dates
     LocalDate sourceDate = DateTimeUtil.parseDate(dateStr);
     LocalDate targetDate = DateTimeUtil.parseDate(targetDateStr);
 
     // Validate target calendar exists
     if (!calendarManager.hasCalendar(targetCalendarName)) {
-      throw new CalendarNotFoundException("Target calendar '" + targetCalendarName + "' does not exist");
+      throw new CalendarNotFoundException("Target calendar '" + targetCalendarName
+              + "' does not exist");
     }
 
     // Get source calendar (active calendar)
@@ -97,7 +100,7 @@ public class DayEventsCopyStrategy implements CopyStrategy {
     }
 
     // Get the source and target timezones
-    String sourceTimezone = ((model.calendar.Calendar) sourceCalendar).getTimezone();
+    String sourceTimezone = ((Calendar) sourceCalendar).getTimezone();
     String targetTimezone = calendarManager.executeOnCalendar(targetCalendarName,
             calendar -> ((model.calendar.Calendar) calendar).getTimezone());
 

@@ -1,11 +1,9 @@
-package test;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
 
-import controller.command.CreateEventCommand;
+import controller.command.create.CreateEventCommand;
 import model.calendar.Calendar;
 import model.calendar.ICalendar;
 import model.event.Event;
@@ -48,14 +46,13 @@ public class CreateEventCommandTest {
 
     String result = createCommand.execute(args);
 
-    assertTrue(result.contains("created successfully"));
-
-    assertEquals(1, calendar.getAllEvents().size());
+    assertTrue("Should return success message with event name", result.contains("Event 'Meeting' created successfully"));
+    assertEquals("Should have exactly one event in calendar", 1, calendar.getAllEvents().size());
 
     Event addedEvent = calendar.getAllEvents().get(0);
-    assertEquals("Meeting", addedEvent.getSubject());
-    assertEquals(LocalDateTime.of(2023, 5, 15, 10, 0), addedEvent.getStartDateTime());
-    assertEquals(LocalDateTime.of(2023, 5, 15, 11, 0), addedEvent.getEndDateTime());
+    assertEquals("Event subject should match input", "Meeting", addedEvent.getSubject());
+    assertEquals("Event start time should match input", LocalDateTime.of(2023, 5, 15, 10, 0), addedEvent.getStartDateTime());
+    assertEquals("Event end time should match input", LocalDateTime.of(2023, 5, 15, 11, 0), addedEvent.getEndDateTime());
   }
 
   @Test
@@ -65,14 +62,14 @@ public class CreateEventCommandTest {
 
     String result = createCommand.execute(args);
 
-    assertTrue(result.contains("created successfully"));
-    assertEquals(1, calendar.getAllEvents().size());
+    assertTrue("Should return success message with event name", result.contains("Event 'Birthday Party' created successfully"));
+    assertEquals("Should have exactly one event in calendar", 1, calendar.getAllEvents().size());
 
     Event addedEvent = calendar.getAllEvents().get(0);
-    assertEquals("Birthday Party", addedEvent.getSubject());
-    assertEquals("Celebrating Dad's 50th birthday", addedEvent.getDescription());
-    assertEquals("Copacabana Restaurant", addedEvent.getLocation());
-    assertTrue(addedEvent.isPublic());
+    assertEquals("Event subject should match input", "Birthday Party", addedEvent.getSubject());
+    assertEquals("Event description should match input", "Celebrating Dad's 50th birthday", addedEvent.getDescription());
+    assertEquals("Event location should match input", "Copacabana Restaurant", addedEvent.getLocation());
+    assertTrue("Event should be public", addedEvent.isPublic());
   }
 
   @Test
@@ -82,12 +79,12 @@ public class CreateEventCommandTest {
 
     String result = createCommand.execute(args);
 
-    assertTrue(result.contains("created successfully"));
-    assertEquals(1, calendar.getAllEvents().size());
+    assertTrue("Should return success message with event name", result.contains("Event 'Therapy Session' created successfully"));
+    assertEquals("Should have exactly one event in calendar", 1, calendar.getAllEvents().size());
 
     Event addedEvent = calendar.getAllEvents().get(0);
-    assertEquals("Therapy Session", addedEvent.getSubject());
-    assertFalse(addedEvent.isPublic());
+    assertEquals("Event subject should match input", "Therapy Session", addedEvent.getSubject());
+    assertFalse("Event should be private", addedEvent.isPublic());
   }
 
   @Test
@@ -97,22 +94,25 @@ public class CreateEventCommandTest {
 
     String result = createCommand.execute(args);
 
-    assertTrue(result.contains("created successfully"));
-    assertEquals(1, calendar.getAllEvents().size());
+    assertTrue("Should return success message with event name", result.contains("Event 'Meeting' created successfully"));
+    assertEquals("Should have exactly one event in calendar", 1, calendar.getAllEvents().size());
   }
 
   @Test
   public void testCreateSingleEventWithConflict() {
+    // Create first event
     String[] firstArgs = {"single", "Meeting 1", "2023-05-15T10:00", "2023-05-15T11:00", null, null,
         "true", "false"};
     createCommand.execute(firstArgs);
-    String[] secondArgs = {"single", "Meeting 2", "2023-05-15T10:30", "2023-05-15T11:30", null,
+
+    // Try to create a conflicting event
+    String[] conflictingArgs = {"single", "Meeting 2", "2023-05-15T10:30", "2023-05-15T11:30", null,
         null, "true", "true"};
 
-    String result = createCommand.execute(secondArgs);
+    String result = createCommand.execute(conflictingArgs);
 
-    assertTrue(result.contains("Failed to create event due to conflicts"));
-    assertEquals(1, calendar.getAllEvents().size());
+    assertTrue("Should return error message for conflicting events", result.contains("Error: Event conflicts with an existing event"));
+    assertEquals("Should only have one event after conflict", 1, calendar.getAllEvents().size());
   }
 
   @Test
@@ -122,8 +122,8 @@ public class CreateEventCommandTest {
 
     String result = createCommand.execute(args);
 
-    assertTrue(result.contains("Error") || result.contains("name cannot be empty"));
-    assertEquals(0, calendar.getAllEvents().size());
+    assertTrue("Should return error message for empty event name", result.contains("Error: Event name cannot be empty"));
+    assertEquals("Should have no events in calendar", 0, calendar.getAllEvents().size());
   }
 
   @Test
@@ -133,8 +133,8 @@ public class CreateEventCommandTest {
 
     String result = createCommand.execute(args);
 
-    assertTrue(result.contains("Error parsing arguments"));
-    assertEquals(0, calendar.getAllEvents().size());
+    assertTrue("Should return error message for invalid date format", result.contains("Error in command arguments"));
+    assertEquals("Should have no events in calendar", 0, calendar.getAllEvents().size());
   }
 
   // ALL DAY EVENT TESTS
@@ -341,39 +341,32 @@ public class CreateEventCommandTest {
     assertEquals(0, calendar.getAllEvents().size());
   }
 
-  @Test
-  public void testExecuteWithUnknownEventType() {
-    String[] args = {"unknown", "Meeting"};
-    String result = createCommand.execute(args);
+   @Test
+   public void testExecuteWithUnknownEventType() {
+     String[] args = {"unknown", "Meeting", "2023-05-15T10:00", "2023-05-15T11:00"};
+     String result = createCommand.execute(args);
+     assertTrue(result.contains("Unknown event type"));
+   }
 
-    assertTrue(result.contains("Error: Unknown create event type"));
-    assertEquals(0, calendar.getAllEvents().size());
-  }
+   @Test
+   public void testExecuteWithInsufficientArgsForSingleEvent() {
+     String[] args = {"single", "Meeting", "2023-05-15T10:00"};
+     String result = createCommand.execute(args);
+     assertTrue(result.contains("Insufficient arguments"));
+   }
 
-  @Test
-  public void testExecuteWithInsufficientArgsForSingleEvent() {
-    String[] args = {"single", "Meeting"};
-    String result = createCommand.execute(args);
+   @Test
+   public void testExecuteWithInsufficientArgsForRecurringEvent() {
+     String[] args = {"recurring", "Meeting", "2023-05-15T10:00", "2023-05-15T11:00", "MWF"};
+     String result = createCommand.execute(args);
+     assertTrue(result.contains("Insufficient arguments"));
+   }
 
-    assertTrue(result.contains("Error: Insufficient arguments"));
-    assertEquals(0, calendar.getAllEvents().size());
-  }
-
-  @Test
-  public void testExecuteWithInsufficientArgsForRecurringEvent() {
-    String[] args = {"recurring", "Weekly Meeting"};
-    String result = createCommand.execute(args);
-
-    assertTrue(result.contains("Error: Insufficient arguments"));
-    assertEquals(0, calendar.getAllEvents().size());
-  }
-
-  @Test
-  public void testExecuteWithInsufficientArgsForRecurringUntilEvent() {
-    String[] args = {"recurring-until", "Daily Standup"};
-    String result = createCommand.execute(args);
-
-    assertTrue(result.contains("Error: Insufficient arguments"));
-    assertEquals(0, calendar.getAllEvents().size());
-  }
+   @Test
+   public void testExecuteWithInsufficientArgsForRecurringUntilEvent() {
+     String[] args = {"recurring-until", "Meeting", "2023-05-15T10:00", "2023-05-15T11:00", "MWF",
+         "2023-06-15"};
+     String result = createCommand.execute(args);
+     assertTrue(result.contains("Insufficient arguments"));
+   }
 }

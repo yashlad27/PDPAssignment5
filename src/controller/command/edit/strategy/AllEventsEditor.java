@@ -19,6 +19,9 @@ public class AllEventsEditor extends AbstractEventEditor {
    * @param args the edit arguments
    */
   public AllEventsEditor(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 4) {
       throw new IllegalArgumentException("Insufficient arguments for editing all events");
     }
@@ -29,7 +32,8 @@ public class AllEventsEditor extends AbstractEventEditor {
   }
 
   @Override
-  public String executeEdit(ICalendar calendar) throws InvalidEventException, ConflictingEventException {
+  public String executeEdit(ICalendar calendar) throws InvalidEventException,
+          ConflictingEventException {
     validateParameters(subject, property);
 
     int count = calendar.editAllEvents(subject, property, newValue);

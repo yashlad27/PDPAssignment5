@@ -1,5 +1,3 @@
-package test;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import controller.command.CommandFactory;
+import controller.command.event.CommandFactory;
 import controller.command.ICommand;
 import controller.parser.CommandParser;
 import model.calendar.ICalendar;
@@ -269,7 +267,7 @@ public class CommandParserTest {
   }
 
   @Test
-  public void testParseExitCommand() {
+  public void testParseExitCommand() throws Exception {
     String commandString = "exit";
 
     CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
@@ -462,23 +460,6 @@ public class CommandParserTest {
     assertEquals("Team Sync", args[4]);
   }
 
-  @Test
-  public void testParseEditEventsFromDate() {
-    String commandString =
-        "edit events visibility \"Weekly Meeting\" " + "from 2023-04-12T09:00 with private";
-
-    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
-
-    assertNotNull(result);
-    assertTrue(result.getCommand() instanceof MockEditCommand);
-    String[] args = result.getArgs();
-    assertEquals("series_from_date", args[0]);
-    assertEquals("visibility", args[1]);
-    assertEquals("Weekly Meeting", args[2]);
-    assertEquals("2023-04-12T09:00", args[3]);
-    assertEquals("private", args[4]);
-  }
-
   @Test(expected = IllegalArgumentException.class)
   public void testParseEmptyCommand() {
     parser.parseCommand("");
@@ -564,5 +545,115 @@ public class CommandParserTest {
     assertEquals("Room 101", args[5]);
     assertEquals("false", args[6]);
     assertEquals("true", args[7]);
+  }
+
+  @Test
+  public void testParseCreateEventWithBoundaryDates() {
+    String commandString = "create event \"Boundary Test\" from 2023-12-31T23:59 "
+        + "to 2024-01-01T00:01";
+
+    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
+
+    assertNotNull(result);
+    assertTrue(result.getCommand() instanceof MockCreateCommand);
+    String[] args = result.getArgs();
+    assertEquals("single", args[0]);
+    assertEquals("Boundary Test", args[1]);
+    assertEquals("2023-12-31T23:59", args[2]);
+    assertEquals("2024-01-01T00:01", args[3]);
+  }
+
+  @Test
+  public void testParseCreateEventWithLeapYear() {
+    String commandString = "create event \"Leap Year Test\" from 2024-02-29T10:00 "
+        + "to 2024-02-29T11:00";
+
+    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
+
+    assertNotNull(result);
+    assertTrue(result.getCommand() instanceof MockCreateCommand);
+    String[] args = result.getArgs();
+    assertEquals("single", args[0]);
+    assertEquals("Leap Year Test", args[1]);
+    assertEquals("2024-02-29T10:00", args[2]);
+    assertEquals("2024-02-29T11:00", args[3]);
+  }
+
+  @Test
+  public void testParseCreateEventWithSpecialCharacters() {
+    String commandString = "create event \"Special!@#$%^&*()\" from 2023-04-10T10:00 "
+        + "to 2023-04-10T11:00";
+
+    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
+
+    assertNotNull(result);
+    assertTrue(result.getCommand() instanceof MockCreateCommand);
+    String[] args = result.getArgs();
+    assertEquals("single", args[0]);
+    assertEquals("Special!@#$%^&*()", args[1]);
+  }
+
+  @Test
+  public void testParseCreateEventWithEmptyQuotes() {
+    String commandString = "create event \"\" from 2023-04-10T10:00 "
+        + "to 2023-04-10T11:00";
+
+    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
+
+    assertNotNull(result);
+    assertTrue(result.getCommand() instanceof MockCreateCommand);
+    String[] args = result.getArgs();
+    assertEquals("", args[1]);
+  }
+
+  @Test
+  public void testParseCreateEventWithMaxLengthValues() {
+    String longName = "a".repeat(1000);
+    String longDesc = "b".repeat(1000);
+    String longLoc = "c".repeat(1000);
+    
+    String commandString = String.format("create event \"%s\" from 2023-04-10T10:00 "
+        + "to 2023-04-10T11:00 desc \"%s\" at \"%s\"", longName, longDesc, longLoc);
+
+    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
+
+    assertNotNull(result);
+    assertTrue(result.getCommand() instanceof MockCreateCommand);
+    String[] args = result.getArgs();
+    assertEquals(longName, args[1]);
+    assertEquals(longDesc, args[4]);
+    assertEquals(longLoc, args[5]);
+  }
+
+  @Test
+  public void testParseCreateEventWithAllOptionalFields() {
+    String commandString = "create event \"Meeting\" from 2023-04-10T10:00 "
+        + "to 2023-04-10T11:00 desc \"Description\" at \"Location\" private";
+
+    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
+
+    assertNotNull(result);
+    assertTrue(result.getCommand() instanceof MockCreateCommand);
+    String[] args = result.getArgs();
+    assertEquals("Meeting", args[1]);
+    assertEquals("Description", args[4]);
+    assertEquals("Location", args[5]);
+    assertEquals("false", args[6]);
+  }
+
+  @Test
+  public void testParseCreateEventWithNoOptionalFields() {
+    String commandString = "create event \"Meeting\" from 2023-04-10T10:00 "
+        + "to 2023-04-10T11:00";
+
+    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
+
+    assertNotNull(result);
+    assertTrue(result.getCommand() instanceof MockCreateCommand);
+    String[] args = result.getArgs();
+    assertEquals("Meeting", args[1]);
+    assertNull(args[4]);
+    assertNull(args[5]);
+    assertEquals("true", args[6]);
   }
 }

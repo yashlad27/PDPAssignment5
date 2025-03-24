@@ -24,13 +24,13 @@ This is a virtual calendar application that mimics features found in widely used
 
 ### Interactive Mode
 ```
-java -jar CalendarApp.jar --mode interactive
+java -jar model.calendar.CalendarApp.jar --mode interactive
 ```
 In this mode, you can enter commands directly and see immediate results.
 
 OR you would need to change your directory to src/ and run 
 ```
-java CalendarApp.java --mode interactive
+java model.calendar.CalendarApp.java --mode interactive
 ```
 ### Headless Mode
 ```
@@ -40,7 +40,7 @@ In this mode, the program reads commands from a text file and executes them sequ
 
 OR you would need to change your directory to src/ and run
 ```
-java CalendarApp.java --mode headless resources/commands.txt 
+java model.calendar.CalendarApp.java --mode headless resources/commands.txt 
 ```
 
 ## Command Reference
@@ -76,6 +76,118 @@ The application follows the Model-View-Controller (MVC) architecture:
 - **Model**: Represents the core calendar data structures and business logic
 - **View**: Handles user interface and display formatting
 - **Controller**: Processes user commands and updates the model accordingly
+
+# Design Considerations and Architecture
+
+## 7.1 Design Changes and Justifications
+
+### Strategy Pattern Implementation
+- **Change**: Introduced the Strategy Pattern for event creation
+- **Why**:
+    - Separates different event creation algorithms into distinct classes
+    - Makes it easy to add new event types without modifying existing code
+    - Follows the Open/Closed Principle
+- **Example**: `AllDayEventCreator`, `RecurringEventCreator`, `RecurringUntilEventCreator`
+
+### Command Pattern Enhancement
+- **Change**: Extended command pattern to handle different event types
+- **Why**:
+    - Provides a unified interface for all event operations
+    - Makes it easy to add new commands without changing existing code
+    - Supports undo/redo operations consistently
+- **Example**: `CreateCommand` now delegates to specific event creators
+
+### MVC Architecture Adherence
+- **Model**:
+    - `Event`, `RecurringEvent` classes handle data and business logic
+    - `ICalendar` interface defines calendar operations
+- **View**:
+    - `CalendarView` handles user interface
+    - Supports both interactive and headless modes
+- **Controller**:
+    - `CalendarController` coordinates between model and view
+    - `CommandParser` handles command interpretation
+
+### Feature Support Strategy
+- **Approach**: Implemented all features in a single version
+- **Why**:
+    - Simpler deployment and maintenance
+    - Consistent user experience
+    - No need for feature flags or version checks
+- **Limitations**:
+    - All users get all features
+    - No premium/advanced feature separation
+
+### Design Extensions
+- **Beyond Requirements**:
+    - Added comprehensive error handling
+    - Implemented validation at multiple levels
+    - Added support for future event types
+- **Future Extensibility**:
+    - New event types can be added by creating new strategy classes
+    - New commands can be added without modifying existing code
+    - Calendar operations can be extended through the `ICalendar` interface
+
+### Advantages and Limitations
+
+#### Advantages
+1. **Modularity**
+    - Each component has a single responsibility
+    - Easy to test individual components
+    - Simple to maintain and modify
+
+2. **Extensibility**
+    - New event types can be added without changing existing code
+    - New commands can be added easily
+    - Calendar operations can be extended
+
+3. **Testability**
+    - Clear separation of concerns makes testing easier
+    - Mock objects can be used effectively
+    - Each component can be tested in isolation
+
+4. **Maintainability**
+    - Code is well-organized and follows patterns
+    - Changes are localized to specific components
+    - Dependencies are clearly defined
+
+#### Limitations
+1. **Complexity**
+    - Multiple patterns increase initial complexity
+    - More classes to maintain
+    - Higher learning curve for new developers
+
+2. **Performance**
+    - Strategy pattern adds slight overhead
+    - Command pattern requires more memory
+    - Multiple layers of abstraction
+
+3. **Flexibility**
+    - Some patterns might be overkill for simple features
+    - Could be simplified for basic use cases
+    - Might be too rigid for some future changes
+
+### Future Improvements
+1. **Feature Flags**
+    - Could add feature flags for gradual rollout
+    - Support for different editions (Basic/Pro)
+    - A/B testing capability
+
+2. **Performance Optimization**
+    - Caching for frequently accessed data
+    - Batch processing for multiple events
+    - Optimized data structures
+
+3. **User Experience**
+    - More interactive UI features
+    - Better error messages
+    - More configuration options
+
+### Documentation
+- All design decisions are documented in code comments
+- Test cases demonstrate usage and behavior
+- README provides high-level overview
+- Architecture diagrams show component relationships
 
 ## Testing
 - All code is thoroughly tested with JUnit tests

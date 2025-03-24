@@ -26,6 +26,9 @@ public class SingleEventCreator extends AbstractEventCreator {
    * @param args the arguments for event creation
    */
   public SingleEventCreator(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 4) {
       throw new IllegalArgumentException("Insufficient arguments for creating a single event");
     }

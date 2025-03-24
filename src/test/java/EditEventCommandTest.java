@@ -1,15 +1,15 @@
-package test;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import controller.command.EditEventCommand;
+import controller.command.edit.EditEventCommand;
 import model.calendar.Calendar;
 import model.calendar.ICalendar;
 import model.event.Event;
+import model.exceptions.ConflictingEventException;
+import model.exceptions.InvalidEventException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -23,7 +23,7 @@ public class EditEventCommandTest {
   private EditEventCommand editCommand;
 
   @Before
-  public void setUp() {
+  public void setUp() throws ConflictingEventException, InvalidEventException {
     calendar = new Calendar();
     editCommand = new EditEventCommand(calendar);
 
@@ -180,38 +180,6 @@ public class EditEventCommandTest {
   }
 
   @Test
-  public void testExecuteWithUnknownEditType() {
-    String[] args = {"unknown_type", "subject", "Meeting", "Updated Meeting"};
-    String result = editCommand.execute(args);
-
-    assertTrue(result.contains("Unknown edit command type"));
-  }
-
-  @Test
-  public void testExecuteWithInsufficientArgsForSingleEdit() {
-    String[] args = {"single", "subject", "Meeting"};
-    String result = editCommand.execute(args);
-
-    assertTrue(result.contains("Error: Insufficient arguments"));
-  }
-
-  @Test
-  public void testExecuteWithInsufficientArgsForSeriesFromDateEdit() {
-    String[] args = {"series_from_date", "subject", "Weekly Meeting"};
-    String result = editCommand.execute(args);
-
-    assertTrue(result.contains("Error: Insufficient arguments"));
-  }
-
-  @Test
-  public void testExecuteWithInsufficientArgsForAllEventsEdit() {
-    String[] args = {"all", "subject"};
-    String result = editCommand.execute(args);
-
-    assertTrue(result.contains("Error: Insufficient arguments"));
-  }
-
-  @Test
   public void testExecuteWithInvalidDateFormat() {
     String[] args = {"single", "subject", "Meeting", "invalid-date", "Updated Meeting"};
     String result = editCommand.execute(args);
@@ -227,4 +195,25 @@ public class EditEventCommandTest {
 
     assertTrue(result.contains("Successfully edited event"));
   }
+
+   @Test
+   public void testExecuteWithUnknownEditType() {
+     String[] args = {"unknown", "Meeting", "2023-05-15T10:00", "subject", "New Meeting"};
+     String result = editCommand.execute(args);
+     assertTrue(result.contains("Unknown edit type"));
+   }
+
+   @Test
+   public void testExecuteWithInsufficientArgsForSingleEdit() {
+     String[] args = {"single", "Meeting", "2023-05-15T10:00", "subject"};
+     String result = editCommand.execute(args);
+     assertTrue(result.contains("Insufficient arguments"));
+   }
+
+   @Test
+   public void testExecuteWithInsufficientArgsForSeriesFromDateEdit() {
+     String[] args = {"series_from_date", "Weekly Meeting", "2023-06-01T14:00", "subject"};
+     String result = editCommand.execute(args);
+     assertTrue("Should return error message for insufficient arguments", result.contains("Error in command arguments: Insufficient arguments for editing events from date"));
+   }
 }

@@ -23,6 +23,9 @@ public class SeriesFromDateEditor extends AbstractEventEditor {
    * @param args the edit arguments
    */
   public SeriesFromDateEditor(String[] args) {
+    if (args == null) {
+      throw new IllegalArgumentException("Arguments array cannot be null");
+    }
     if (args.length < 5) {
       throw new IllegalArgumentException("Insufficient arguments for editing events from date");
     }
@@ -40,7 +43,8 @@ public class SeriesFromDateEditor extends AbstractEventEditor {
   }
 
   @Override
-  public String executeEdit(ICalendar calendar) throws InvalidEventException, ConflictingEventException {
+  public String executeEdit(ICalendar calendar) throws InvalidEventException,
+          ConflictingEventException {
     validateParameters(subject, property);
 
     int count = calendar.editEventsFromDate(subject, startDateTime, property, newValue);
