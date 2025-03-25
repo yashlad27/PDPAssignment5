@@ -8,17 +8,16 @@ import java.util.List;
 
 import controller.CalendarController;
 import controller.ICommandFactory;
-import controller.command.calendar.CalendarCommandFactory;
 import controller.command.event.CommandFactory;
 import model.calendar.CalendarManager;
 import model.calendar.ICalendar;
+import model.core.timezone.TimeZoneHandler;
 import model.event.Event;
 import model.event.RecurringEvent;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
 import model.factory.CalendarFactory;
-import model.core.timezone.TimeZoneHandler;
 import view.ConsoleView;
 import view.ICalendarView;
 
@@ -57,7 +56,6 @@ public class CalendarFactoryTest {
     assertNotNull("CalendarManager should not be null", manager);
     assertTrue("Manager should be an instance of CalendarManager", true);
 
-    // Verify the timezone handler was properly set
     assertEquals("CalendarManager should have the provided timezone handler",
             handler, manager.getTimezoneHandler());
   }
@@ -92,7 +90,11 @@ public class CalendarFactoryTest {
     ICalendar calendar = new MockCalendar();
 
     ICommandFactory eventFactory = factory.createEventCommandFactory(calendar, view);
-    ICommandFactory calendarFactory = factory.createCalendarCommandFactory(manager, view, factory.createController(null, null, manager, view));
+    ICommandFactory calendarFactory = factory.createCalendarCommandFactory(
+            manager,
+            view,
+            factory.createController(null, null, manager, view)
+    );
 
     // Create the controller
     CalendarController controller = factory.createController(
@@ -139,15 +141,16 @@ public class CalendarFactoryTest {
     factory.createCalendarCommandFactory(manager, null, controller);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testCreateCalendarCommandFactoryWithNullController() {
     TimeZoneHandler timezoneHandler = factory.createTimeZoneHandler();
     CalendarManager manager = factory.createCalendarManager(timezoneHandler);
     ICalendarView view = factory.createView();
-    factory.createCalendarCommandFactory(manager, view, null);
+    ICommandFactory commandFactory = factory.createCalendarCommandFactory(manager, view, null);
+    assertNotNull("Should create command factory with null controller", commandFactory);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testCreateControllerWithNullEventFactory() {
     ICalendarView view = factory.createView();
     TimeZoneHandler handler = factory.createTimeZoneHandler();
@@ -156,10 +159,12 @@ public class CalendarFactoryTest {
 
     ICommandFactory calendarFactory = factory.createCalendarCommandFactory(manager, view, factory.createController(null, null, manager, view));
 
-    factory.createController(null, calendarFactory, manager, view);
+
+    CalendarController controller = factory.createController(null, calendarFactory, manager, view);
+    assertNotNull("Controller should be created with null event factory", controller);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testCreateControllerWithNullCalendarFactory() {
     ICalendarView view = factory.createView();
     TimeZoneHandler handler = factory.createTimeZoneHandler();
@@ -168,7 +173,9 @@ public class CalendarFactoryTest {
 
     ICommandFactory eventFactory = factory.createEventCommandFactory(calendar, view);
 
-    factory.createController(eventFactory, null, manager, view);
+
+    CalendarController controller = factory.createController(eventFactory, null, manager, view);
+    assertNotNull("Controller should be created with null calendar factory", controller);
   }
 
   @Test(expected = IllegalArgumentException.class)

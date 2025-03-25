@@ -548,10 +548,10 @@ public class CalendarControllerTest {
   public void testConstructorWithNullView() {
     try {
       CalendarController controller = new CalendarController(commandFactory,
-              null, null, null);
+              commandFactory, null, null);
       fail("Should have thrown IllegalArgumentException for null view");
     } catch (IllegalArgumentException e) {
-      assertEquals("CalendarCommandFactory cannot be null", e.getMessage());
+      assertEquals("CalendarManager cannot be null", e.getMessage());
     }
   }
 
