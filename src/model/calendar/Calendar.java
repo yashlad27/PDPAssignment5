@@ -18,7 +18,7 @@ import model.event.RecurringEvent;
 import model.exceptions.ConflictingEventException;
 import utilities.CSVExporter;
 import utilities.DateTimeUtil;
-import utilities.EventPropertyUpdater;
+import model.core.updater.EventPropertyUpdater;
 
 /**
  * Implementation of the ICalendar interface that manages a calendar's events and operations.

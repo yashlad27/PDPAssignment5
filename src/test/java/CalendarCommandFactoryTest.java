@@ -13,8 +13,8 @@ import model.exceptions.CalendarNotFoundException;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
-import utilities.CalendarNameValidator;
-import utilities.TimeZoneHandler;
+import model.core.validation.CalendarNameValidator;
+import model.core.timezone.TimeZoneHandler;
 import view.ICalendarView;
 
 import static org.junit.Assert.assertFalse;

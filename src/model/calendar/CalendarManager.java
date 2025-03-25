@@ -6,8 +6,8 @@ import java.util.function.Consumer;
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
 import model.exceptions.InvalidTimezoneException;
-import utilities.TimeZoneHandler;
-import utilities.CalendarNameValidator;
+import model.core.timezone.TimeZoneHandler;
+import model.core.validation.CalendarNameValidator;
 
 /**
  * Manages calendar operations and coordinates between the CalendarRegistry and TimeZoneHandler.

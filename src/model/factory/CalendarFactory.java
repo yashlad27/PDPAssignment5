@@ -6,7 +6,7 @@ import controller.command.calendar.CalendarCommandFactory;
 import controller.command.event.CommandFactory;
 import model.calendar.CalendarManager;
 import model.calendar.ICalendar;
-import utilities.TimeZoneHandler;
+import model.core.timezone.TimeZoneHandler;
 import view.ConsoleView;
 import view.ICalendarView;
 

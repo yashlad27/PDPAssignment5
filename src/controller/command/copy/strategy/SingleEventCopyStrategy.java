@@ -9,9 +9,9 @@ import model.exceptions.CalendarNotFoundException;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
+import model.core.timezone.TimeZoneHandler;
+import model.core.timezone.TimezoneConverter;
 import utilities.DateTimeUtil;
-import utilities.TimeZoneHandler;
-import utilities.TimezoneConverter;
 
 /**
  * Strategy for copying a single event from one calendar to another.

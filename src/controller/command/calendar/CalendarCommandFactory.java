@@ -14,7 +14,7 @@ import model.exceptions.DuplicateCalendarException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
 import model.exceptions.InvalidTimezoneException;
-import utilities.TimeZoneHandler;
+import model.core.timezone.TimeZoneHandler;
 import view.ICalendarView;
 
 /**

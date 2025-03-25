@@ -1,11 +1,10 @@
-package utilities;
+package model.core.updater;
 
 import model.event.Event;
 
 /**
  * Functional interface for updating event properties.
- * This interface represents an operation that updates a specific property
- * of an Event with a new value.
+ * This interface provides a way to encapsulate property update logic.
  */
 @FunctionalInterface
 public interface EventPropertyUpdater {

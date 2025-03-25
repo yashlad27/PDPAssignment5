@@ -4,7 +4,7 @@ import model.calendar.Calendar;
 import model.calendar.CalendarManager;
 import model.calendar.ICalendar;
 import model.factory.CalendarFactory;
-import utilities.TimeZoneHandler;
+import model.core.timezone.TimeZoneHandler;
 import view.ConsoleView;
 import view.ICalendarView;
 

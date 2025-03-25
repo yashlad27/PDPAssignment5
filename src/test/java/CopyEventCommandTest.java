@@ -11,8 +11,8 @@ import model.event.Event;
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
 import model.exceptions.InvalidTimezoneException;
-import utilities.CalendarNameValidator;
-import utilities.TimeZoneHandler;
+import model.core.validation.CalendarNameValidator;
+import model.core.timezone.TimeZoneHandler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

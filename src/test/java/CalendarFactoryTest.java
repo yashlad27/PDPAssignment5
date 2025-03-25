@@ -18,7 +18,7 @@ import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
 import model.factory.CalendarFactory;
-import utilities.TimeZoneHandler;
+import model.core.timezone.TimeZoneHandler;
 import view.ConsoleView;
 import view.ICalendarView;
 
