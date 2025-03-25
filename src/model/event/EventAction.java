@@ -1,16 +1,54 @@
 package model.event;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+/**
+ * A functional interface representing an action to be performed on an Event object.
+ * This interface provides a flexible way to define and compose event modifications
+ * through a chain of operations.
+ *
+ * <p> The interface includes:
+ * <ul>
+ *   <li>A single abstract method {@code apply(Event event)} for executing the action</li>
+ *   <li>A default method {@code andThen(EventAction after)} for composing multiple actions</li>
+ *   <li>Static factory methods for common event modifications</li>
+ * </ul>
+ * <p>
+ */
 @FunctionalInterface
 public interface EventAction {
 
-  void apply(Event event);
+  /**
+   * Executes an action on the provided event.
+   *
+   * @param event the event to perform the action on
+   */
+  void execute(Event event);
 
-  default EventAction andThen(EventAction after) {
+  /**
+   * Executes the action on a list of events.
+   * This is a default method that applies the action to each event in the list.
+   *
+   * @param events the list of events to perform the action on
+   */
+  default void executeOnList(List<Event> events) {
+    for (Event event : events) {
+      execute(event);
+    }
+  }
+
+  /**
+   * Returns a composed action that executes this action followed by another.
+   * This is a default method allowing actions to be chained together.
+   *
+   * @param other another EventAction
+   * @return a composed action that executes this action followed by the other
+   */
+  default EventAction andThen(EventAction other) {
     return event -> {
-      apply(event);
-      after.apply(event);
+      execute(event);
+      other.execute(event);
     };
   }
 
@@ -24,14 +62,6 @@ public interface EventAction {
 
   static EventAction setLocation(String location) {
     return event -> event.setLocation(location);
-  }
-
-  static EventAction setVisibility(boolean isPublic) {
-    return event -> event.setPublic(isPublic);
-  }
-
-  static EventAction setAllDay(boolean isAllDay) {
-    return event -> event.setAllDay(isAllDay);
   }
 
   /**
@@ -54,13 +84,4 @@ public interface EventAction {
     return event -> event.setEndDateTime(endDateTime);
   }
 
-  /**
-   * Returns an EventAction that performs no action.
-   *
-   * @return an EventAction that performs no action
-   */
-  static EventAction doNothing() {
-    return event -> {
-    };
-  }
 }

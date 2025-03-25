@@ -21,7 +21,19 @@ import utilities.DateTimeUtil;
 import utilities.EventPropertyUpdater;
 
 /**
- * Implementation of the ICalendar interface that manages calendar events.
+ * Implementation of the ICalendar interface that manages a calendar's events and operations.
+ * This class provides comprehensive functionality for managing both single and recurring events,
+ * including creation, modification, querying, and conflict detection.
+ *
+ * <p>Key Features:
+ * - Manages both single and recurring events
+ * - Supports event conflict detection
+ * - Provides flexible event querying (by date, range, or custom filters)
+ * - Handles event property updates
+ * - Supports calendar data export to CSV
+ *
+ * <p>The calendar maintains separate collections for single and recurring events,
+ * with UUID-based indexing for efficient event lookup.
  */
 public class Calendar implements ICalendar {
 
@@ -34,7 +46,13 @@ public class Calendar implements ICalendar {
   private final Map<String, EventPropertyUpdater> propertyUpdaters;
 
   /**
-   * Constructs a new Calendar with no events.
+   * Constructs a new Calendar instance with default settings.
+   * Initializes empty event collections and sets default values:
+   * - Name: "Default"
+   * - Timezone: "America/New_York"
+   * - Empty events and recurring events lists
+   * - Empty event ID mappings
+   * - Initialized property updaters for event modification
    */
   public Calendar() {
     this.events = new ArrayList<>();
@@ -49,12 +67,20 @@ public class Calendar implements ICalendar {
   }
 
   /**
-   * method to add event to the calendar.
+   * Adds a single event to the calendar with conflict checking.
    *
-   * @param event       the event to add
-   * @param autoDecline if true, the addition will be declined if it conflicts with existing events
-   * @return true if the event was added successfully, false otherwise
-   * @throws ConflictingEventException if the event conflicts with an existing event
+   * <p>The method performs the following steps:
+   * 1. Validates the event is not null
+   * 2. Checks for conflicts with existing events
+   * 3. If autoDecline is true, throws exception on conflict
+   * 4. If autoDecline is false, returns false on conflict
+   * 5. Adds the event to both the events list and ID mapping
+   *
+   * @param event       The event to add, must not be null
+   * @param autoDecline If true, throws exception on conflict; if false, returns false
+   * @return true if event was added successfully, false if there was a conflict and autoDecline is false
+   * @throws ConflictingEventException if autoDecline is true and event conflicts with existing events
+   * @throws IllegalArgumentException  if event is null
    */
   @Override
   public boolean addEvent(Event event, boolean autoDecline) throws ConflictingEventException {
@@ -62,11 +88,11 @@ public class Calendar implements ICalendar {
       throw new IllegalArgumentException("Event cannot be null");
     }
 
-    // Check for conflicts - always check, but only throw exception if autoDecline is true
     if (hasConflict(event)) {
       if (autoDecline) {
-        throw new ConflictingEventException("Cannot add event '" + event.getSubject()
-                + "' due to conflict with an existing event");
+        throw new ConflictingEventException(
+                "Cannot add event '" + event.getSubject() + "' due to conflict with an existing event"
+        );
       }
       return false;
     }
@@ -77,12 +103,21 @@ public class Calendar implements ICalendar {
   }
 
   /**
-   * Method to add recurring event to the calendar.
+   * Adds a recurring event to the calendar with conflict checking for all occurrences.
    *
-   * @param recurringEvent the recurring event to add
-   * @param autoDecline    if true, the addition will be declined if any occurrence conflicts
-   * @return true if the recurring event was added successfully, false otherwise
-   * @throws ConflictingEventException if any occurrence conflicts with an existing event
+   * <p>The method performs the following steps:
+   * 1. Validates the recurring event is not null
+   * 2. Generates all event occurrences
+   * 3. Checks each occurrence for conflicts
+   * 4. If autoDecline is true, throws exception on any conflict
+   * 5. If autoDecline is false, returns false on any conflict
+   * 6. Adds the recurring event and all its occurrences to respective collections
+   *
+   * @param recurringEvent The recurring event to add, must not be null
+   * @param autoDecline    If true, throws exception on conflict; if false, returns false
+   * @return true if event was added successfully, false if there was a conflict and autoDecline is false
+   * @throws ConflictingEventException if autoDecline is true and any occurrence conflicts
+   * @throws IllegalArgumentException  if recurringEvent is null
    */
   @Override
   public boolean addRecurringEvent(RecurringEvent recurringEvent, boolean autoDecline)
@@ -93,13 +128,13 @@ public class Calendar implements ICalendar {
 
     List<Event> occurrences = recurringEvent.getAllOccurrences();
 
-    // Check for conflicts
     for (Event occurrence : occurrences) {
       if (hasConflict(occurrence)) {
         if (autoDecline) {
-          throw new ConflictingEventException("Cannot add recurring event '"
-                  + recurringEvent.getSubject()
-                  + "' due to conflict with an existing event");
+          throw new ConflictingEventException(
+                  "Cannot add recurring event '" + recurringEvent.getSubject() +
+                          "' due to conflict with an existing event"
+          );
         }
         return false;
       }
@@ -116,9 +151,25 @@ public class Calendar implements ICalendar {
     return true;
   }
 
+  /**
+   * Creates a recurring event that repeats on specified weekdays until a given end date.
+   * <p> Example weekdays format: "MWF" for Monday, Wednesday, Friday
+   * Valid weekday codes: M (Monday), T (Tuesday), W (Wednesday), R (Thursday),
+   * F (Friday), S (Saturday), U (Sunday)
+   *
+   * @param name        Event name/subject
+   * @param start       Start date and time of the first occurrence
+   * @param end         End date and time of the first occurrence
+   * @param weekdays    String specifying which days of the week the event repeats on
+   * @param untilDate   The last date on which the event can occur
+   * @param autoDecline If true, throws exception on conflict; if false, returns false
+   * @return true if event was created successfully
+   * @throws ConflictingEventException if autoDecline is true and any occurrence conflicts
+   */
   @Override
   public boolean createRecurringEventUntil(String name, LocalDateTime start, LocalDateTime end,
-                                           String weekdays, LocalDate untilDate, boolean autoDecline)
+                                           String weekdays, LocalDate untilDate,
+                                           boolean autoDecline)
           throws ConflictingEventException {
     try {
       Set<DayOfWeek> repeatDays = DateTimeUtil.parseWeekdays(weekdays);
@@ -136,7 +187,8 @@ public class Calendar implements ICalendar {
 
   @Override
   public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-                                            int occurrences, boolean autoDecline, String description,
+                                            int occurrences, boolean autoDecline,
+                                            String description,
                                             String location, boolean isPublic)
           throws ConflictingEventException {
     try {
@@ -145,7 +197,8 @@ public class Calendar implements ICalendar {
       LocalDateTime startOfDay = date.atStartOfDay();
       LocalDateTime endOfDay = date.atTime(23, 59, 59);
 
-      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, startOfDay, endOfDay, repeatDays)
+      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, startOfDay, endOfDay,
+              repeatDays)
               .description(description)
               .location(location)
               .isPublic(isPublic)
@@ -171,7 +224,8 @@ public class Calendar implements ICalendar {
       LocalDateTime startOfDay = date.atStartOfDay();
       LocalDateTime endOfDay = date.atTime(23, 59, 59);
 
-      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, startOfDay, endOfDay, repeatDays)
+      RecurringEvent recurringEvent = new RecurringEvent.Builder(name, startOfDay, endOfDay,
+              repeatDays)
               .description(description)
               .location(location)
               .isPublic(isPublic)
@@ -186,11 +240,14 @@ public class Calendar implements ICalendar {
   }
 
   /**
-   * Method to find event on a certain date.
+   * Finds an event by its subject and start date/time.
+   * <p> This method searches through all events (both single and recurring occurrences)
+   * to find an exact match of both subject and start date/time.
    *
-   * @param subject       the subject of the event
-   * @param startDateTime the start date and time of the event
-   * @return Event type object or null if not found
+   * @param subject       The event subject to search for
+   * @param startDateTime The exact start date and time to match
+   * @return The matching Event object, or null if no match is found
+   * @throws IllegalArgumentException if either subject or startDateTime is null
    */
   @Override
   public Event findEvent(String subject, LocalDateTime startDateTime) {
@@ -199,7 +256,8 @@ public class Calendar implements ICalendar {
     }
 
     return events.stream()
-            .filter(e -> e.getSubject().equals(subject) && e.getStartDateTime().equals(startDateTime))
+            .filter(e -> e.getSubject().equals(subject)
+                    && e.getStartDateTime().equals(startDateTime))
             .findFirst().orElse(null);
   }
 
@@ -249,7 +307,8 @@ public class Calendar implements ICalendar {
     int count = 0;
 
     List<Event> matchingEvents = events.stream()
-            .filter(e -> e.getSubject().equals(subject) && !e.getStartDateTime().isBefore(startDateTime))
+            .filter(e -> e.getSubject().equals(subject)
+                    && !e.getStartDateTime().isBefore(startDateTime))
             .collect(Collectors.toList());
 
     for (Event event : matchingEvents) {
@@ -482,7 +541,8 @@ public class Calendar implements ICalendar {
 
     // Visibility/privacy updaters
     EventPropertyUpdater visibilityUpdater = (event, value) -> {
-      boolean isPublic = value.equalsIgnoreCase("public") || value.equalsIgnoreCase("true");
+      boolean isPublic = value.equalsIgnoreCase("public")
+              || value.equalsIgnoreCase("true");
       event.setPublic(isPublic);
       return true;
     };
@@ -492,7 +552,8 @@ public class Calendar implements ICalendar {
 
     // Special case for "private" - inverts the logic
     propertyUpdaters.put("private", (event, value) -> {
-      boolean isPrivate = value.equalsIgnoreCase("true") || value.equalsIgnoreCase("private");
+      boolean isPrivate = value.equalsIgnoreCase("true")
+              || value.equalsIgnoreCase("private");
       event.setPublic(!isPrivate);
       return true;
     });

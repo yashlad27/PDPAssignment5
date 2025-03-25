@@ -118,6 +118,7 @@ public class RecurringEvent extends Event {
 
     /**
      * Validates the builder parameters.
+     *
      * @throws IllegalArgumentException if parameters are invalid
      */
     private void validate() {

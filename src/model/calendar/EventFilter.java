@@ -1,5 +1,8 @@
 package model.calendar;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import model.event.Event;
 
 /**
@@ -47,5 +50,22 @@ public interface EventFilter {
    */
   default EventFilter negate() {
     return event -> !matches(event);
+  }
+
+  /**
+   * Filters a list of events based on the filter criteria.
+   * This is a default method that uses the matches method to filter events.
+   *
+   * @param events the list of events to filter
+   * @return a list of events that match the filter criteria
+   */
+  default List<Event> filterEvents(List<Event> events) {
+    List<Event> filteredEvents = new ArrayList<>();
+    for (Event event : events) {
+      if (matches(event)) {
+        filteredEvents.add(event);
+      }
+    }
+    return filteredEvents;
   }
 }

@@ -1,6 +1,6 @@
-create calendar --name Work --timezone America/New_York
 create calendar --name Personal --timezone Europe/London
 create calendar --name Travel --timezone Asia/Tokyo
+create calendar --name Work --timezone America/New_York
 use calendar --name Work
 create event "Team Meeting" from 2025-03-25T10:00 to 2025-03-25T11:00 desc "Weekly team sync" at "Conference Room A"
 create event "Project Deadline" from 2025-03-28T09:00 to 2025-03-28T17:00 desc "Final deliverable due" at "Office"
@@ -28,7 +28,7 @@ edit event location "Dinner with Friends" from 2025-03-27T19:00 with "Mexican Re
 print events on 2025-03-26
 print events from 2025-03-25 to 2025-03-30
 show status on 2025-03-26T18:30
-edit calendar --name Personal --property timezone Europe/Paris
+edit calendar --name Personal --property timezone "Europe/Paris"
 use calendar --name Travel
 print events from 2025-04-15 to 2025-04-20
 export cal travel_events.csv
