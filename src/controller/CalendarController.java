@@ -64,22 +64,16 @@ public class CalendarController {
    * loose coupling between components. It validates all dependencies to
    * ensure the controller is properly initialized.
    *
-   * @param commandFactory         Factory for creating event-related commands
-   * @param calendarCommandFactory Factory for creating calendar-related commands
+   * @param commandFactory         Factory for creating event-related commands (can be null during initialization)
+   * @param calendarCommandFactory Factory for creating calendar-related commands (can be null during initialization)
    * @param calendarManager        Manager for calendar operations
    * @param view                   View component for user interaction
-   * @throws IllegalArgumentException if any parameter is null
+   * @throws IllegalArgumentException if calendarManager or view is null
    */
   public CalendarController(ICommandFactory commandFactory,
                             ICommandFactory calendarCommandFactory,
                             CalendarManager calendarManager,
                             ICalendarView view) {
-    if (commandFactory == null) {
-      throw new IllegalArgumentException("CommandFactory cannot be null");
-    }
-    if (calendarCommandFactory == null) {
-      throw new IllegalArgumentException("CalendarCommandFactory cannot be null");
-    }
     if (calendarManager == null) {
       throw new IllegalArgumentException("CalendarManager cannot be null");
     }
@@ -91,7 +85,11 @@ public class CalendarController {
     this.calendarCommandFactory = calendarCommandFactory;
     this.calendarManager = calendarManager;
     this.commandFactory = commandFactory;
-    this.parser = new CommandParser(commandFactory);
+    
+    // Initialize parser only if commandFactory is not null
+    if (commandFactory != null) {
+      this.parser = new CommandParser(commandFactory);
+    }
     this.exporter = new CSVCalendarExporter();
   }
 
@@ -118,6 +116,10 @@ public class CalendarController {
 
     try {
       if (isCalendarCommand(normalizedCommand)) {
+        if (calendarCommandFactory == null) {
+          return "Error: Calendar command factory not initialized";
+        }
+        
         String result = processCalendarCommand(normalizedCommand);
 
         if (normalizedCommand.startsWith("use calendar")) {
@@ -130,6 +132,10 @@ public class CalendarController {
         return result;
       }
 
+      if (commandFactory == null || parser == null) {
+        return "Error: Event command factory not initialized";
+      }
+      
       CommandParser.CommandWithArgs commandWithArgs = parser.parseCommand(normalizedCommand);
       return commandWithArgs.execute();
     } catch (IllegalArgumentException e) {
@@ -172,6 +178,10 @@ public class CalendarController {
    * the currently active calendar.
    */
   private void updateCommandFactory() {
+    if (commandFactory == null) {
+      return;
+    }
+    
     try {
       ICalendar activeCalendar = calendarManager.getActiveCalendar();
       if (this.commandFactory instanceof CommandFactory) {
@@ -195,6 +205,10 @@ public class CalendarController {
    * @throws Exception if command execution fails
    */
   private String processCalendarCommand(String commandStr) throws Exception {
+    if (calendarCommandFactory == null) {
+      return "Error: Calendar command factory not initialized";
+    }
+    
     String[] parts = parseCommand(commandStr);
     if (parts.length < 2) {
       return "Error: Invalid calendar command format";

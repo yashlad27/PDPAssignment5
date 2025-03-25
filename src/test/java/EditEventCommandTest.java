@@ -23,6 +23,56 @@ public class EditEventCommandTest {
   private ICalendar calendar;
   private EditEventCommand editCommand;
 
+  /**
+   * TestUtil class for creating special calendar instances for testing exception
+   * handling paths.
+   */
+  private static class TestUtil {
+    /**
+     * Creates a calendar that will throw IllegalArgumentException on editSingleEvent.
+     */
+    public static ICalendar createIllegalArgumentCalendar() {
+      return new TestCalendar() {
+        @Override
+        public Event findEvent(String subject, LocalDateTime startDateTime) {
+          return new Event("Test Event", startDateTime, startDateTime.plusHours(1),
+                  null, null, true);
+        }
+
+        @Override
+        public boolean editSingleEvent(String subject, LocalDateTime startDateTime,
+                                       String property, String newValue) {
+          throw new IllegalArgumentException("Invalid argument format: property cannot be null");
+        }
+      };
+    }
+
+    /**
+     * Creates a calendar that will throw generic RuntimeException on editSingleEvent.
+     */
+    public static ICalendar createGenericExceptionCalendar() {
+      return new TestCalendar() {
+        @Override
+        public Event findEvent(String subject, LocalDateTime startDateTime) {
+          return new Event("Test Event", startDateTime, startDateTime.plusHours(1),
+                  null, null, true);
+        }
+
+        @Override
+        public boolean editSingleEvent(String subject, LocalDateTime startDateTime,
+                                       String property, String newValue) {
+          throw new RuntimeException("Unexpected system error occurred during edit operation");
+        }
+      };
+    }
+  }
+
+  /**
+   * Base test calendar class that provides default implementations.
+   */
+  private static class TestCalendar extends Calendar {
+  }
+
   @Before
   public void setUp() throws ConflictingEventException, InvalidEventException {
     calendar = new Calendar();
@@ -335,5 +385,41 @@ public class EditEventCommandTest {
     String[] args = {"single", "subject", "Meeting", "2023-03-12T02:00", "DST Meeting"};
     String result = editCommand.execute(args);
     assertTrue(result.contains("Failed to edit event"));
+  }
+
+  /**
+   * Tests the IllegalArgumentException handler in the EditEventCommand.
+   * This tests the specific catch block for IllegalArgumentException.
+   */
+  @Test
+  public void testIllegalArgumentExceptionHandler() {
+    ICalendar mockCalendar = TestUtil.createIllegalArgumentCalendar();
+    EditEventCommand command = new EditEventCommand(mockCalendar);
+
+    String[] args = {"single", "subject", "Meeting", "2023-05-15T10:00", "Updated Meeting"};
+    String result = command.execute(args);
+
+    assertTrue("Should return proper IllegalArgumentException message",
+            result.contains("Error in command arguments"));
+    assertTrue("Should include exception message",
+            result.contains("Invalid argument format"));
+  }
+
+  /**
+   * Tests the general Exception handler in the EditEventCommand.
+   * This tests the specific catch block for general exceptions.
+   */
+  @Test
+  public void testGenericExceptionHandler() {
+    ICalendar mockCalendar = TestUtil.createGenericExceptionCalendar();
+    EditEventCommand command = new EditEventCommand(mockCalendar);
+
+    String[] args = {"single", "subject", "Meeting", "2023-05-15T10:00", "Updated Meeting"};
+    String result = command.execute(args);
+
+    assertTrue("Should return proper generic exception message",
+            result.contains("Unexpected error"));
+    assertTrue("Should include exception message",
+            result.contains("Unexpected system error occurred during edit operation"));
   }
 }

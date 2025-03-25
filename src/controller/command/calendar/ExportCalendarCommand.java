@@ -35,8 +35,8 @@ public class ExportCalendarCommand implements ICalendarCommand {
      * 
      * @param calendarName The name of the calendar to export
      * @param filePath The path where the CSV file should be created
-     * @param controller The CalendarController that will handle the export operation
-     * @throws IllegalArgumentException if any parameter is null or empty
+     * @param controller The CalendarController that will handle the export operation (can be null during initialization)
+     * @throws IllegalArgumentException if calendarName or filePath is null or empty
      */
     public ExportCalendarCommand(String calendarName, String filePath, CalendarController controller) {
         if (calendarName == null || calendarName.trim().isEmpty()) {
@@ -44,9 +44,6 @@ public class ExportCalendarCommand implements ICalendarCommand {
         }
         if (filePath == null || filePath.trim().isEmpty()) {
             throw new IllegalArgumentException("File path cannot be null or empty");
-        }
-        if (controller == null) {
-            throw new IllegalArgumentException("Controller cannot be null");
         }
 
         this.calendarName = calendarName;
@@ -64,6 +61,9 @@ public class ExportCalendarCommand implements ICalendarCommand {
      */
     @Override
     public String execute() {
+        if (controller == null) {
+            return "Error: Controller not initialized";
+        }
         return controller.exportCalendarToCSV(calendarName, filePath);
     }
 } 
