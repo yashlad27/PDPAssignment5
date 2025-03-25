@@ -242,4 +242,211 @@ public class CSVCalendarExporterTest {
     assertTrue("London description not found in London calendar export", londonContent.contains("Meeting in London timezone"));
     assertTrue("London location not found in London calendar export", londonContent.contains("Room 2"));
   }
+
+  @Test
+  public void testExportWithMultiDayEvent() throws Exception {
+    LocalDateTime baseTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    Event multiDayEvent = new Event("Conference",
+            baseTime,
+            baseTime.plusDays(3).plusHours(8), // 3 days and 8 hours
+            "Annual tech conference",
+            "Convention Center",
+            true);
+    calendar.addEvent(multiDayEvent, false);
+
+    StringBuilder sb = new StringBuilder();
+    exporter.exportToAppendable(calendar, sb);
+    String csvContent = sb.toString();
+
+    assertTrue(csvContent.contains("Conference"));
+    assertTrue(csvContent.contains("Annual tech conference"));
+    assertTrue(csvContent.contains("Convention Center"));
+    assertTrue(csvContent.contains("true"));
+  }
+
+  @Test
+  public void testExportWithEventsAtDifferentTimes() throws Exception {
+    LocalDateTime baseTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    
+    // Morning event
+    Event morningEvent = new Event("Morning Meeting",
+            baseTime,
+            baseTime.plusHours(1),
+            "Morning sync",
+            "Room 1",
+            true);
+
+    // Afternoon event
+    Event afternoonEvent = new Event("Afternoon Meeting",
+            baseTime.plusHours(4),
+            baseTime.plusHours(5),
+            "Project review",
+            "Room 2",
+            true);
+
+    // Evening event
+    Event eveningEvent = new Event("Evening Meeting",
+            baseTime.plusHours(8),
+            baseTime.plusHours(9),
+            "Team dinner",
+            "Restaurant",
+            true);
+
+    calendar.addEvent(morningEvent, false);
+    calendar.addEvent(afternoonEvent, false);
+    calendar.addEvent(eveningEvent, false);
+
+    StringBuilder sb = new StringBuilder();
+    exporter.exportToAppendable(calendar, sb);
+    String csvContent = sb.toString();
+
+    assertTrue(csvContent.contains("Morning Meeting"));
+    assertTrue(csvContent.contains("Afternoon Meeting"));
+    assertTrue(csvContent.contains("Evening Meeting"));
+    assertTrue(csvContent.contains("Morning sync"));
+    assertTrue(csvContent.contains("Project review"));
+    assertTrue(csvContent.contains("Team dinner"));
+  }
+
+  @Test
+  public void testExportWithEventsWithLongDescriptions() throws Exception {
+    LocalDateTime baseTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    String longDescription = "This is a very long description that contains multiple lines\n" +
+            "and special characters like: !@#$%^&*()\n" +
+            "and some more text to make it even longer...";
+    
+    Event event = new Event("Long Description Event",
+            baseTime,
+            baseTime.plusHours(1),
+            longDescription,
+            "Room 1",
+            true);
+    calendar.addEvent(event, false);
+
+    StringBuilder sb = new StringBuilder();
+    exporter.exportToAppendable(calendar, sb);
+    String csvContent = sb.toString();
+
+    assertTrue(csvContent.contains("Long Description Event"));
+    assertTrue(csvContent.contains(longDescription));
+  }
+
+  @Test
+  public void testExportWithEventsWithUnicodeCharacters() throws Exception {
+    LocalDateTime baseTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    Event event = new Event("Meeting with Unicode: 你好世界",
+            baseTime,
+            baseTime.plusHours(1),
+            "Description with Unicode: 🌟✨",
+            "Location with Unicode: 会议室",
+            true);
+    calendar.addEvent(event, false);
+
+    StringBuilder sb = new StringBuilder();
+    exporter.exportToAppendable(calendar, sb);
+    String csvContent = sb.toString();
+
+    assertTrue(csvContent.contains("Meeting with Unicode: 你好世界"));
+    assertTrue(csvContent.contains("Description with Unicode: 🌟✨"));
+    assertTrue(csvContent.contains("Location with Unicode: 会议室"));
+  }
+
+  @Test
+  public void testExportWithEventsWithVeryLongSubjects() throws Exception {
+    LocalDateTime baseTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    String longSubject = "This is a very long subject that should be properly handled in the CSV export " +
+            "and should not cause any issues with the formatting or escaping of the CSV content";
+    
+    Event event = new Event(longSubject,
+            baseTime,
+            baseTime.plusHours(1),
+            "Description",
+            "Location",
+            true);
+    calendar.addEvent(event, false);
+
+    StringBuilder sb = new StringBuilder();
+    exporter.exportToAppendable(calendar, sb);
+    String csvContent = sb.toString();
+
+    assertTrue(csvContent.contains(longSubject));
+  }
+
+  @Test
+  public void testExportWithEventsWithWhitespace() throws Exception {
+    LocalDateTime baseTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    Event event = new Event("  Event with Spaces  ",
+            baseTime,
+            baseTime.plusHours(1),
+            "  Description with Spaces  ",
+            "  Location with Spaces  ",
+            true);
+    calendar.addEvent(event, false);
+
+    StringBuilder sb = new StringBuilder();
+    exporter.exportToAppendable(calendar, sb);
+    String csvContent = sb.toString();
+
+    assertTrue(csvContent.contains("  Event with Spaces  "));
+    assertTrue(csvContent.contains("  Description with Spaces  "));
+    assertTrue(csvContent.contains("  Location with Spaces  "));
+  }
+
+  @Test
+  public void testExportWithEventsWithTabsAndNewlines() throws Exception {
+    LocalDateTime baseTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    Event event = new Event("Event\twith\tTabs",
+            baseTime,
+            baseTime.plusHours(1),
+            "Description\nwith\nNewlines",
+            "Location\twith\tTabs",
+            true);
+    calendar.addEvent(event, false);
+
+    StringBuilder sb = new StringBuilder();
+    exporter.exportToAppendable(calendar, sb);
+    String csvContent = sb.toString();
+
+    assertTrue(csvContent.contains("Event\twith\tTabs"));
+    assertTrue(csvContent.contains("Description\nwith\nNewlines"));
+    assertTrue(csvContent.contains("Location\twith\tTabs"));
+  }
+
+  @Test
+  public void testExportWithEventsWithVeryShortDuration() throws Exception {
+    LocalDateTime baseTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    Event event = new Event("Short Meeting",
+            baseTime,
+            baseTime.plusMinutes(15), // 15-minute meeting
+            "Quick sync",
+            "Room 1",
+            true);
+    calendar.addEvent(event, false);
+
+    StringBuilder sb = new StringBuilder();
+    exporter.exportToAppendable(calendar, sb);
+    String csvContent = sb.toString();
+
+    assertTrue(csvContent.contains("Short Meeting"));
+    assertTrue(csvContent.contains("Quick sync"));
+  }
+
+  @Test
+  public void testExportWithEventsWithVeryLongDuration() throws Exception {
+    LocalDateTime baseTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    Event event = new Event("Long Meeting",
+            baseTime,
+            baseTime.plusDays(7).plusHours(12), // 7 days and 12 hours
+            "Extended conference",
+            "Conference Center",
+            true);
+    calendar.addEvent(event, false);
+
+    StringBuilder sb = new StringBuilder();
+    exporter.exportToAppendable(calendar, sb);
+    String csvContent = sb.toString();
+
+    assertTrue(csvContent.contains("Long Meeting"));
+    assertTrue(csvContent.contains("Extended conference"));
+  }
 }

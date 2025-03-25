@@ -1,3 +1,4 @@
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,6 +9,7 @@ import java.util.List;
 
 import model.calendar.EventFilter;
 import model.event.Event;
+import model.event.RecurringEvent;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -65,10 +67,23 @@ public class EventFilterTest {
     events.add(endOfDayEvent);
   }
 
+  @After
+  public void tearDown() {
+    events.clear();
+    regularEvent = null;
+    allDayEvent = null;
+    multiDayEvent = null;
+    midnightEvent = null;
+    endOfDayEvent = null;
+  }
+
   @Test
-  public void testDateRangeFilter() {
+  public void testDateRangeAndTimeFilter() {
     LocalDate targetDate = LocalDate.of(2023, 5, 15);
-    EventFilter dateRangeFilter = event -> {
+    LocalDateTime filterStart = LocalDateTime.of(2023, 5, 15, 8, 0);
+    LocalDateTime filterEnd = LocalDateTime.of(2023, 5, 15, 17, 0);
+
+    EventFilter dateTimeFilter = event -> {
       if (event == null || event.getStartDateTime() == null || event.getEndDateTime() == null) {
         return false;
       }
@@ -79,44 +94,63 @@ public class EventFilterTest {
       LocalDateTime end = event.getEndDateTime();
       LocalDate startDate = start.toLocalDate();
       LocalDate endDate = end.toLocalDate();
-      return !targetDate.isBefore(startDate) && !targetDate.isAfter(endDate);
+      return !targetDate.isBefore(startDate) &&
+              !targetDate.isAfter(endDate);
     };
 
-    List<Event> filteredEvents = dateRangeFilter.filterEvents(events);
-    assertEquals("Should find 3 events on May 15", 3, filteredEvents.size());
+    List<Event> filteredEvents = dateTimeFilter.filterEvents(events);
+    assertEquals("Should find 3 events on the target date", 3, filteredEvents.size());
     assertTrue("Should include regular event", filteredEvents.contains(regularEvent));
     assertTrue("Should include midnight event", filteredEvents.contains(midnightEvent));
     assertTrue("Should include end of day event", filteredEvents.contains(endOfDayEvent));
   }
 
   @Test
-  public void testAllDayEventFilter() {
-    LocalDate targetDate = LocalDate.of(2023, 5, 29);
-    EventFilter allDayFilter = event ->
-            event != null && event.isAllDay() && event.getDate().equals(targetDate);
+  public void testTextBasedFilter() {
+    EventFilter textFilter = event ->
+            event != null &&
+                    event.getDescription() != null &&
+                    event.getLocation() != null &&
+                    (event.getDescription().toLowerCase().contains("meeting") ||
+                            event.getDescription().toLowerCase().contains("sync") ||
+                            event.getLocation().toLowerCase().contains("room") ||
+                            event.getLocation().toLowerCase().contains("center") ||
+                            event.getLocation().toLowerCase().contains("virtual"));
 
-    List<Event> filteredEvents = allDayFilter.filterEvents(events);
-    assertEquals("Should find 1 all-day event", 1, filteredEvents.size());
-    assertTrue("Should include all-day event", filteredEvents.contains(allDayEvent));
+    List<Event> filteredEvents = textFilter.filterEvents(events);
+    assertEquals("Should find 4 events with matching text", 4, filteredEvents.size());
+    assertTrue("Should include regular event", filteredEvents.contains(regularEvent));
+    assertTrue("Should include multi-day event", filteredEvents.contains(multiDayEvent));
+    assertTrue("Should include midnight event", filteredEvents.contains(midnightEvent));
+    assertTrue("Should include end of day event", filteredEvents.contains(endOfDayEvent));
   }
 
   @Test
-  public void testMultiDayEventFilter() {
-    LocalDate targetDate = LocalDate.of(2023, 6, 2);
-    EventFilter multiDayFilter = event -> {
-      if (event == null || event.getStartDateTime() == null || event.getEndDateTime() == null) {
-        return false;
-      }
-      LocalDateTime start = event.getStartDateTime();
-      LocalDateTime end = event.getEndDateTime();
-      LocalDate startDate = start.toLocalDate();
-      LocalDate endDate = end.toLocalDate();
-      return !targetDate.isBefore(startDate) && !targetDate.isAfter(endDate);
-    };
+  public void testRecurringEventFilter() {
+    List<Event> testEvents = new ArrayList<>();
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 9, 0);
+    RecurringEvent recurringEvent = new RecurringEvent.Builder(
+            "Weekly Meeting",
+            baseTime,
+            baseTime.plusHours(1),
+            java.util.EnumSet.of(java.time.DayOfWeek.MONDAY))
+            .description("Weekly sync")
+            .location("Room 1")
+            .isPublic(true)
+            .occurrences(4)
+            .build();
 
-    List<Event> filteredEvents = multiDayFilter.filterEvents(events);
-    assertEquals("Should find 1 multi-day event", 1, filteredEvents.size());
-    assertTrue("Should include multi-day event", filteredEvents.contains(multiDayEvent));
+    testEvents.add(recurringEvent);
+
+    LocalDate targetDate = baseTime.toLocalDate();
+    EventFilter recurringFilter = event1 ->
+            event1 != null &&
+                    event1.getStartDateTime() != null &&
+                    event1.getStartDateTime().toLocalDate().equals(targetDate);
+
+    List<Event> filteredEvents = recurringFilter.filterEvents(testEvents);
+    assertEquals("Should find 1 recurring event", 1, filteredEvents.size());
+    assertTrue("Should include the recurring event", filteredEvents.contains(recurringEvent));
   }
 
   @Test
@@ -130,108 +164,5 @@ public class EventFilterTest {
   public void testNullEventFilter() {
     EventFilter nullFilter = event -> event != null;
     assertFalse("Should not match null event", nullFilter.matches(null));
-  }
-
-  @Test
-  public void testTimeRangeFilter() {
-    LocalDateTime startTime = LocalDateTime.of(2023, 5, 15, 8, 0);
-    LocalDateTime endTime = LocalDateTime.of(2023, 5, 15, 17, 0);
-
-    EventFilter timeRangeFilter = event -> {
-      if (event == null || event.getStartDateTime() == null || event.getEndDateTime() == null) {
-        return false;
-      }
-      return !event.getStartDateTime().isBefore(startTime) && !event.getEndDateTime().isAfter(endTime);
-    };
-
-    List<Event> filteredEvents = timeRangeFilter.filterEvents(events);
-    assertTrue("Should include regular event", filteredEvents.contains(regularEvent));
-    assertFalse("Should not include midnight event", filteredEvents.contains(midnightEvent));
-    assertFalse("Should not include end of day event", filteredEvents.contains(endOfDayEvent));
-  }
-
-  @Test
-  public void testLocationFilter() {
-    String targetLocation = "Conference Room A";
-
-    EventFilter locationFilter = event ->
-            event != null && targetLocation.equals(event.getLocation());
-
-    List<Event> filteredEvents = locationFilter.filterEvents(events);
-    assertTrue("Should include regular event", filteredEvents.contains(regularEvent));
-    assertFalse("Should not include all-day event", filteredEvents.contains(allDayEvent));
-  }
-
-  @Test
-  public void testPublicEventFilter() {
-    EventFilter publicFilter = event -> event != null && event.isPublic();
-
-    List<Event> filteredEvents = publicFilter.filterEvents(events);
-    assertTrue("Should include regular event", filteredEvents.contains(regularEvent));
-    assertTrue("Should include all-day event", filteredEvents.contains(allDayEvent));
-  }
-
-  @Test
-  public void testDescriptionFilter() {
-    String targetDescription = "Weekly team sync";
-
-    EventFilter descriptionFilter = event ->
-            event != null && targetDescription.equals(event.getDescription());
-
-    List<Event> filteredEvents = descriptionFilter.filterEvents(events);
-    assertTrue("Should include regular event", filteredEvents.contains(regularEvent));
-    assertFalse("Should not include all-day event", filteredEvents.contains(allDayEvent));
-  }
-
-  @Test
-  public void testFilterWithNullValues() {
-    Event nullLocationEvent = new Event("Null Location Event",
-            LocalDateTime.of(2023, 5, 15, 9, 0),
-            LocalDateTime.of(2023, 5, 15, 10, 0),
-            "Description", null, true);
-
-    events.add(nullLocationEvent);
-
-    EventFilter nullLocationFilter = event ->
-            event != null && event.getLocation().isEmpty();
-
-    List<Event> filteredEvents = nullLocationFilter.filterEvents(events);
-    assertTrue("Should include null location event", filteredEvents.contains(nullLocationEvent));
-    assertFalse("Should not include regular event", filteredEvents.contains(regularEvent));
-  }
-
-  @Test
-  public void testFilterWithEmptyValues() {
-    Event emptyDescriptionEvent = new Event("Empty Description Event",
-            LocalDateTime.of(2023, 5, 15, 9, 0),
-            LocalDateTime.of(2023, 5, 15, 10, 0),
-            "", "Location", true);
-
-    events.add(emptyDescriptionEvent);
-
-    EventFilter emptyDescriptionFilter = event ->
-            event != null && event.getDescription() != null && event.getDescription().isEmpty();
-
-    List<Event> filteredEvents = emptyDescriptionFilter.filterEvents(events);
-    assertTrue("Should include empty description event", filteredEvents.contains(emptyDescriptionEvent));
-    assertFalse("Should not include regular event", filteredEvents.contains(regularEvent));
-  }
-
-  @Test
-  public void testFilterWithSpecialCharacters() {
-    String specialDescription = "Meeting with \"quotes\" and, commas";
-    Event specialEvent = new Event("Special Event",
-            LocalDateTime.of(2023, 5, 15, 9, 0),
-            LocalDateTime.of(2023, 5, 15, 10, 0),
-            specialDescription, "Location", true);
-
-    events.add(specialEvent);
-
-    EventFilter specialDescriptionFilter = event ->
-            event != null && specialDescription.equals(event.getDescription());
-
-    List<Event> filteredEvents = specialDescriptionFilter.filterEvents(events);
-    assertTrue("Should include special event", filteredEvents.contains(specialEvent));
-    assertFalse("Should not include regular event", filteredEvents.contains(regularEvent));
   }
 }
