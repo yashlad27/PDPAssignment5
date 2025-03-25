@@ -18,7 +18,7 @@ import model.event.RecurringEvent;
 import model.exceptions.ConflictingEventException;
 import utilities.CSVExporter;
 import utilities.DateTimeUtil;
-import utilities.EventPropertyUpdater;
+import model.core.updater.EventPropertyUpdater;
 
 /**
  * Implementation of the ICalendar interface that manages a calendar's events and operations.
@@ -499,7 +499,6 @@ public class Calendar implements ICalendar {
       return true;
     });
 
-    // Start date/time updaters
     EventPropertyUpdater startTimeUpdater = (event, value) -> {
       try {
         LocalDateTime newStartTime;
@@ -519,7 +518,6 @@ public class Calendar implements ICalendar {
     propertyUpdaters.put("starttime", startTimeUpdater);
     propertyUpdaters.put("startdatetime", startTimeUpdater);
 
-    // End date/time updaters
     EventPropertyUpdater endTimeUpdater = (event, value) -> {
       try {
         LocalDateTime newEndTime;
@@ -539,7 +537,6 @@ public class Calendar implements ICalendar {
     propertyUpdaters.put("endtime", endTimeUpdater);
     propertyUpdaters.put("enddatetime", endTimeUpdater);
 
-    // Visibility/privacy updaters
     EventPropertyUpdater visibilityUpdater = (event, value) -> {
       boolean isPublic = value.equalsIgnoreCase("public")
               || value.equalsIgnoreCase("true");

@@ -9,7 +9,6 @@ import model.exceptions.InvalidEventException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -190,8 +189,8 @@ public class SingleEventCreatorTest {
       fail("Should throw IllegalArgumentException when end time is before start time");
     } catch (IllegalArgumentException e) {
       // Test passed - expected exception was thrown
-      assertTrue("Exception message should indicate invalid time order", 
-          e.getMessage().contains("End date/time cannot be before start date/time"));
+      assertTrue("Exception message should indicate invalid time order",
+              e.getMessage().contains("End date/time cannot be before start date/time"));
     } catch (InvalidEventException e) {
       throw new RuntimeException(e);
     }

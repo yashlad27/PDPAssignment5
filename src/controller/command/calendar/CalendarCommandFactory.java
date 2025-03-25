@@ -3,18 +3,19 @@ package controller.command.calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import controller.CalendarController;
 import controller.ICommandFactory;
 import controller.command.CommandAdapter;
 import controller.command.ICommand;
 import controller.command.copy.CopyEventCommand;
 import model.calendar.CalendarManager;
+import model.core.timezone.TimeZoneHandler;
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.DuplicateCalendarException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
 import model.exceptions.InvalidTimezoneException;
-import utilities.TimeZoneHandler;
 import view.ICalendarView;
 
 /**
@@ -39,6 +40,7 @@ public class CalendarCommandFactory implements ICommandFactory {
   private final Map<String, CalendarCommandHandler> commands;
   private final CalendarManager calendarManager;
   private final ICalendarView view;
+  private final CalendarController controller;
 
   /**
    * Constructs a new CalendarCommandFactory with the specified dependencies.
@@ -49,9 +51,11 @@ public class CalendarCommandFactory implements ICommandFactory {
    *
    * @param calendarManager Manager for calendar operations, must not be null
    * @param view            View component for user interaction, must not be null
+   * @param controller      Controller for handling calendar operations (can be null for initialization)
    * @throws IllegalArgumentException if calendarManager or view is null
    */
-  public CalendarCommandFactory(CalendarManager calendarManager, ICalendarView view) {
+  public CalendarCommandFactory(CalendarManager calendarManager, ICalendarView view,
+                                CalendarController controller) {
     if (calendarManager == null) {
       throw new IllegalArgumentException("CalendarManager cannot be null");
     }
@@ -63,6 +67,7 @@ public class CalendarCommandFactory implements ICommandFactory {
     this.commands = new HashMap<>();
     this.calendarManager = calendarManager;
     this.view = view;
+    this.controller = controller;
     TimeZoneHandler timezoneHandler = calendarManager.getTimezoneHandler();
     CopyEventCommand copyEventCommand = new CopyEventCommand(calendarManager, timezoneHandler);
 
@@ -76,13 +81,13 @@ public class CalendarCommandFactory implements ICommandFactory {
     commands.put("copy", args -> {
       try {
         return copyEventCommand.execute(args);
-      } catch (ConflictingEventException e) {
-        throw new RuntimeException(e);
-      } catch (InvalidEventException e) {
-        throw new RuntimeException(e);
-      } catch (EventNotFoundException e) {
+      } catch (ConflictingEventException | InvalidEventException | EventNotFoundException e) {
         throw new RuntimeException(e);
       }
+    });
+    commands.put("export", args -> {
+      ICalendarCommand command = createExportCalendarCommand(args);
+      return command.execute();
     });
   }
 
@@ -146,18 +151,20 @@ public class CalendarCommandFactory implements ICommandFactory {
     }
   }
 
-  private String executeCopyCommand(String[] args) {
-    if (args.length < 3) {
-      return "Error: Insufficient arguments for copy command";
+  private ICalendarCommand createExportCalendarCommand(String[] args) {
+    if (args.length != 4) {
+      return new ErrorCommand("Invalid export command format. "
+              + "Usage: export calendar <calendar_name> <file_path>");
     }
 
-    try {
-      TimeZoneHandler timezoneHandler = calendarManager.getTimezoneHandler();
-      CopyEventCommand copyEventCommand = new CopyEventCommand(calendarManager, timezoneHandler);
-      return copyEventCommand.execute(args);
-    } catch (Exception e) {
-      return "Error: " + e.getMessage();
+    String calendarName = args[2];
+    String filePath = args[3];
+
+    if (calendarName == null || calendarName.trim().isEmpty() || calendarName.length() > 100) {
+      return new ErrorCommand("Invalid calendar name: " + calendarName);
     }
+
+    return new ExportCalendarCommand(calendarName, filePath, getController());
   }
 
   public boolean hasCommand(String commandName) {
@@ -181,5 +188,15 @@ public class CalendarCommandFactory implements ICommandFactory {
       });
     }
     return null;
+  }
+
+  /**
+   * Protected getter for the controller to allow subclasses to override.
+   * This supports breaking circular dependencies in initialization.
+   *
+   * @return The CalendarController instance
+   */
+  protected CalendarController getController() {
+    return controller;
   }
 }

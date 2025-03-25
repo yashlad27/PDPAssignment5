@@ -7,7 +7,7 @@ import model.calendar.CalendarManager;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
-import utilities.TimeZoneHandler;
+import model.core.timezone.TimeZoneHandler;
 
 /**
  * Command for copying events between calendars.

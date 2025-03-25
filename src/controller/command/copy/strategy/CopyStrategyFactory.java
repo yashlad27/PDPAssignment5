@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.calendar.CalendarManager;
-import utilities.TimeZoneHandler;
+import model.core.timezone.TimeZoneHandler;
 
 /**
  * Factory for creating appropriate copy strategies based on command arguments.

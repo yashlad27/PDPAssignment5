@@ -12,8 +12,8 @@ import model.exceptions.CalendarNotFoundException;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.InvalidEventException;
 import utilities.DateTimeUtil;
-import utilities.TimeZoneHandler;
-import utilities.TimezoneConverter;
+import model.core.timezone.TimeZoneHandler;
+import model.core.timezone.TimezoneConverter;
 
 /**
  * Strategy for copying all events on a specific date from one calendar to another.

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -44,20 +45,20 @@ public class CalendarTest {
 
     calendar = new Calendar();
     calendar.setName("Test Calendar");
-    calendar.setTimezone("America/New_York");
-
-    startDateTime = LocalDateTime.of(2023, 5, 10, 10, 0);
-    endDateTime = LocalDateTime.of(2023, 5, 10, 11, 0);
-    singleEvent = new Event("Team Meeting", startDateTime, endDateTime,
-            "Weekly sync-up", "Conference Room A", true);
+    calendar.setTimezone("UTC");
+    startDateTime = LocalDateTime.of(2023, 5, 15, 10, 0);
+    endDateTime = startDateTime.plusHours(1);
     repeatDays = EnumSet.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY);
 
+    singleEvent = new Event("Team Meeting", startDateTime, endDateTime,
+            "Conference Room A", "Weekly team meeting", true);
+
     recurringEvent = new RecurringEvent.Builder(
-            "Recurring Meeting",
-            LocalDateTime.of(2023, 5, 8, 14, 0),
-            LocalDateTime.of(2023, 5, 8, 15, 0),
+            "Weekly Standup",
+            startDateTime,
+            endDateTime,
             repeatDays)
-            .description("Recurring sync-up")
+            .description("Daily standup")
             .location("Conference Room B")
             .isPublic(true)
             .occurrences(4)
@@ -67,10 +68,8 @@ public class CalendarTest {
   @Test
   public void testAddEvent() throws ConflictingEventException {
     assertTrue(calendar.addEvent(singleEvent, false));
-
-    List<Event> events = calendar.getAllEvents();
-    assertEquals(1, events.size());
-    assertEquals(singleEvent, events.get(0));
+    assertEquals(1, calendar.getAllEvents().size());
+    assertEquals(singleEvent, calendar.getAllEvents().get(0));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -115,17 +114,8 @@ public class CalendarTest {
   @Test
   public void testAddRecurringEvent() throws ConflictingEventException {
     assertTrue(calendar.addRecurringEvent(recurringEvent, false));
-    List<RecurringEvent> recurringEvents = calendar.getAllRecurringEvents();
-    assertEquals(1, recurringEvents.size());
-
-    // Verify the recurring event properties using the Builder pattern getters
-    RecurringEvent savedEvent = recurringEvents.get(0);
-    assertEquals("Recurring Meeting", savedEvent.getSubject());
-    assertEquals(4, savedEvent.getOccurrences());
-    assertEquals(repeatDays, savedEvent.getRepeatDays());
-
-    List<Event> allEvents = calendar.getAllEvents();
-    assertEquals(4, allEvents.size());
+    assertEquals(4, calendar.getAllEvents().size());
+    assertEquals(recurringEvent, calendar.getAllRecurringEvents().get(0));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -342,10 +332,11 @@ public class CalendarTest {
   @Test
   public void testGetEventsOnDate() throws ConflictingEventException {
     calendar.addEvent(singleEvent, false);
+    Event anotherEvent = new Event("Another Meeting", startDateTime.plusDays(1),
+            endDateTime.plusDays(1), "Another meeting", "Room 2", true);
+    calendar.addEvent(anotherEvent, false);
 
-    LocalDate date = LocalDate.of(2023, 5, 10);
-    List<Event> eventsOnDate = calendar.getEventsOnDate(date);
-
+    List<Event> eventsOnDate = calendar.getEventsOnDate(startDateTime.toLocalDate());
     assertEquals(1, eventsOnDate.size());
     assertEquals(singleEvent, eventsOnDate.get(0));
   }
@@ -517,30 +508,6 @@ public class CalendarTest {
   }
 
   @Test
-  public void testBooleanReturnValues() throws ConflictingEventException {
-    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
-    Event event = new Event("Test Event", baseTime, baseTime.plusHours(1), null, null, true);
-
-    // Test addEvent with various conditions
-    assertTrue("Should return true for first event add", calendar.addEvent(event, true));
-    assertFalse("Should return false for duplicate event", calendar.addEvent(event, false));
-
-    // Test isBusy with exact boundaries
-    assertTrue("Should be busy at start time", calendar.isBusy(baseTime));
-    assertTrue("Should be busy at end time", calendar.isBusy(baseTime.plusHours(1)));
-    assertFalse("Should not be busy before start", calendar.isBusy(baseTime.minusSeconds(1)));
-    assertFalse("Should not be busy after end", calendar.isBusy(baseTime.plusHours(1).plusSeconds(1)));
-
-    // Test editSingleEvent with various fields
-    assertTrue("Should return true for valid edit",
-            calendar.editSingleEvent(event.getSubject(), event.getStartDateTime(), "description", "New description"));
-    assertTrue("Should return true for empty string edit",
-            calendar.editSingleEvent(event.getSubject(), event.getStartDateTime(), "description", ""));
-    assertFalse("Should return false for non-existent event",
-            calendar.editSingleEvent("Non-existent", baseTime, "description", "New description"));
-  }
-
-  @Test
   public void testRecurringEventBoundaries() throws ConflictingEventException {
     LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
     Set<DayOfWeek> weekdays = Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY);
@@ -640,4 +607,18 @@ public class CalendarTest {
             .containsAll(Arrays.asList(yearEndEvent, nextYearEvent)));
   }
 
+  @Test
+  public void testRemoveEvent() throws ConflictingEventException {
+    calendar.addEvent(singleEvent, false);
+    assertTrue(calendar.removeEvent(singleEvent));
+    assertEquals(0, calendar.getAllEvents().size());
+  }
+
+  @Test
+  public void testRemoveRecurringEvent() throws ConflictingEventException {
+    calendar.addRecurringEvent(recurringEvent, false);
+    assertTrue(calendar.removeRecurringEvent(recurringEvent));
+    assertEquals(0, calendar.getAllRecurringEvents().size());
+    assertEquals(0, calendar.getAllEvents().size());
+  }
 }

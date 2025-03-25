@@ -1,4 +1,4 @@
-package utilities;
+package model.core.validation;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 
 /**
  * Utility class for validating calendar names.
+ * Maintains a set of existing calendar names to prevent duplicates.
  */
 public class CalendarNameValidator {
   private static final Set<String> existingNames = new HashSet<>();

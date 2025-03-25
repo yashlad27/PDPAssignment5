@@ -6,8 +6,8 @@ import java.util.function.Consumer;
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
 import model.exceptions.InvalidTimezoneException;
-import utilities.TimeZoneHandler;
-import utilities.CalendarNameValidator;
+import model.core.timezone.TimeZoneHandler;
+import model.core.validation.CalendarNameValidator;
 
 /**
  * Manages calendar operations and coordinates between the CalendarRegistry and TimeZoneHandler.
@@ -176,19 +176,6 @@ public class CalendarManager {
    */
   public boolean hasCalendar(String name) {
     return calendarRegistry.hasCalendar(name);
-  }
-
-  /**
-   * Edits a calendar's name.
-   *
-   * @param oldName the current name of the calendar
-   * @param newName the new name for the calendar
-   * @throws CalendarNotFoundException  if no calendar with the specified name exists
-   * @throws DuplicateCalendarException if a calendar with the new name already exists
-   */
-  public void editCalendarName(String oldName, String newName)
-          throws CalendarNotFoundException, DuplicateCalendarException {
-    calendarRegistry.renameCalendar(oldName, newName);
   }
 
   /**
