@@ -17,7 +17,7 @@ import utilities.TimezoneConverter;
 
 /**
  * Strategy for copying all events on a specific date from one calendar to another.
- * Format: copy events on <dateString> --target <calendarName> to <dateString>
+ * Format: {@code copy events on <dateString> --target <calendarName> to <dateString>}
  */
 public class DayEventsCopyStrategy implements CopyStrategy {
 
@@ -79,48 +79,38 @@ public class DayEventsCopyStrategy implements CopyStrategy {
    */
   private String copyEventsOnDate(String dateStr, String targetCalendarName, String targetDateStr)
           throws Exception {
-    // Parse the dates
     LocalDate sourceDate = DateTimeUtil.parseDate(dateStr);
     LocalDate targetDate = DateTimeUtil.parseDate(targetDateStr);
 
-    // Validate target calendar exists
     if (!calendarManager.hasCalendar(targetCalendarName)) {
       throw new CalendarNotFoundException("Target calendar '" + targetCalendarName
               + "' does not exist");
     }
 
-    // Get source calendar (active calendar)
     ICalendar sourceCalendar = calendarManager.getActiveCalendar();
 
-    // Get events on the source date
     List<Event> eventsOnDate = sourceCalendar.getEventsOnDate(sourceDate);
 
     if (eventsOnDate.isEmpty()) {
       return "No events found on " + sourceDate + " to copy.";
     }
 
-    // Get the source and target timezones
     String sourceTimezone = ((Calendar) sourceCalendar).getTimezone();
     String targetTimezone = calendarManager.executeOnCalendar(targetCalendarName,
             calendar -> ((model.calendar.Calendar) calendar).getTimezone());
 
-    // Create timezone converter
     TimezoneConverter converter = timezoneHandler.getConverter(sourceTimezone, targetTimezone);
 
-    // Calculate date difference in days
     long daysDifference = targetDate.toEpochDay() - sourceDate.toEpochDay();
 
     int successCount = 0;
     int failCount = 0;
 
-    // Copy each event
     for (Event sourceEvent : eventsOnDate) {
       try {
-        // Create a new event with the adjusted date
         Event newEvent;
 
         if (sourceEvent.isAllDay()) {
-          // All-day event
           newEvent = Event.createAllDayEvent(
                   sourceEvent.getSubject(),
                   targetDate,
@@ -129,7 +119,6 @@ public class DayEventsCopyStrategy implements CopyStrategy {
                   sourceEvent.isPublic()
           );
         } else {
-          // Regular event - adjust date and convert timezone
           LocalDateTime adjustedStart = sourceEvent.getStartDateTime().plusDays(daysDifference);
           LocalDateTime adjustedEnd = sourceEvent.getEndDateTime().plusDays(daysDifference);
 
@@ -143,7 +132,6 @@ public class DayEventsCopyStrategy implements CopyStrategy {
           );
         }
 
-        // Add the event to the target calendar
         calendarManager.executeOnCalendar(targetCalendarName,
                 calendar -> calendar.addEvent(newEvent, true));
 

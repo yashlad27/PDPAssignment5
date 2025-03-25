@@ -13,30 +13,30 @@ import model.exceptions.InvalidEventException;
 
 /**
  * Interface defining the core functionality of a calendar system.
- * <p>
- * This interface provides a comprehensive API for managing calendar events, including:
+ *
+ * <p>This interface provides a comprehensive API for managing calendar events, including:
  * - Creating and managing single events
  * - Creating and managing recurring events
  * - Querying events by date or date range
  * - Editing event properties
  * - Checking schedule conflicts
  * - Exporting calendar data
- * <p>
- * The calendar supports two main types of events:
+ *
+ * <p>The calendar supports two main types of events:
  * 1. Single events: One-time events with a specific start and end time
  * 2. Recurring events: Events that repeat on specified days with either:
  * - A fixed number of occurrences
  * - An end date
- * <p>
- * All operations that modify events include conflict checking to maintain
+ *
+ * <p>All operations that modify events include conflict checking to maintain
  * calendar consistency and prevent double-booking.
  */
 public interface ICalendar {
 
   /**
    * Adds a single event to the calendar with optional conflict checking.
-   * <p>
-   * If autoDecline is true, the method will throw a ConflictingEventException
+   *
+   * <p>If autoDecline is true, the method will throw a ConflictingEventException
    * when the event conflicts with any existing events. If false, it will
    * return false for conflicts, allowing the caller to handle the situation.
    *
@@ -50,8 +50,8 @@ public interface ICalendar {
 
   /**
    * Adds a recurring event to the calendar with optional conflict checking.
-   * <p>
-   * The method checks for conflicts across all occurrences of the recurring event.
+   *
+   * <p>The method checks for conflicts across all occurrences of the recurring event.
    * If autoDecline is true, it will throw an exception if any occurrence conflicts
    * with existing events. If false, it will return false for conflicts.
    *
@@ -66,12 +66,12 @@ public interface ICalendar {
 
   /**
    * Creates a recurring event that repeats on specified weekdays until a given end date.
-   * <p>
-   * Example weekdays format: "MWF" for Monday, Wednesday, Friday
+   *
+   * <p>Example weekdays format: "MWF" for Monday, Wednesday, Friday
    * Valid weekday codes: M (Monday), T (Tuesday), W (Wednesday), R (Thursday),
    * F (Friday), S (Saturday), U (Sunday)
-   * <p>
-   * The event will repeat on the specified weekdays starting from the start date
+   *
+   * <p>The event will repeat on the specified weekdays starting from the start date
    * until the untilDate (inclusive). Each occurrence will have the same duration
    * as the first occurrence.
    *
@@ -91,8 +91,8 @@ public interface ICalendar {
 
   /**
    * Creates an all-day recurring event with a fixed number of occurrences.
-   * <p>
-   * An all-day event spans from the start to the end of the specified date(s).
+   *
+   * <p>An all-day event spans from the start to the end of the specified date(s).
    * The event will repeat on the specified weekdays for the given number of
    * occurrences, starting from the initial date.
    *
@@ -131,8 +131,8 @@ public interface ICalendar {
 
   /**
    * Gets all events occurring on a specific date.
-   * <p>
-   * This includes:
+   *
+   * <p>This includes:
    * - Single events that occur on the date
    * - Occurrences of recurring events that fall on the date
    * - All-day events scheduled for the date
@@ -145,13 +145,13 @@ public interface ICalendar {
 
   /**
    * Gets all events occurring within a date range (inclusive).
-   * <p>
-   * This includes:
+   *
+   * <p>This includes:
    * - Single events within the range
    * - Occurrences of recurring events that fall within the range
    * - All-day events scheduled within the range
-   * <p>
-   * Events that partially overlap with the range (start before but end within,
+   *
+   * <p>Events that partially overlap with the range (start before but end within,
    * or start within but end after) are included.
    *
    * @param startDate Start of the date range (inclusive)
@@ -188,8 +188,8 @@ public interface ICalendar {
 
   /**
    * Edits a single event identified by its subject and start date/time.
-   * <p>
-   * Supported properties for editing:
+   *
+   * <p>Supported properties for editing:
    * - subject: The event's name/title
    * - startTime: The event's start time (format: HH:mm)
    * - endTime: The event's end time (format: HH:mm)
@@ -242,8 +242,8 @@ public interface ICalendar {
 
   /**
    * Exports the calendar to a CSV file compatible with common calendar applications.
-   * <p>
-   * The exported CSV includes all events (both single and recurring) with their:
+   *
+   * <p>The exported CSV includes all events (both single and recurring) with their:
    * - Subject
    * - Start date/time
    * - End date/time

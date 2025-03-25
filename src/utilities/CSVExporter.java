@@ -1,10 +1,7 @@
 package utilities;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,14 +32,14 @@ public class CSVExporter {
 
       // Write events using streams
       events.stream()
-          .map(CSVExporter::formatEventForCSV)
-          .forEach(line -> {
-            try {
-              writer.write(line);
-            } catch (IOException e) {
-              throw new RuntimeException("Failed to write event to CSV", e);
-            }
-          });
+              .map(CSVExporter::formatEventForCSV)
+              .forEach(line -> {
+                try {
+                  writer.write(line);
+                } catch (IOException e) {
+                  throw new RuntimeException("Failed to write event to CSV", e);
+                }
+              });
     }
     return filePath;
   }
@@ -50,7 +47,7 @@ public class CSVExporter {
   /**
    * Formats a list of events for display.
    *
-   * @param events the list of events to format
+   * @param events      the list of events to format
    * @param showDetails whether to show detailed information
    * @return a formatted string representation of the events
    */
@@ -60,40 +57,37 @@ public class CSVExporter {
     }
 
     return events.stream()
-        .map(event -> formatEventForDisplay(event, showDetails))
-        .collect(Collectors.joining("\n"));
+            .map(event -> formatEventForDisplay(event, showDetails))
+            .collect(Collectors.joining("\n"));
   }
 
   private static String formatEventForCSV(Event event) {
     return String.format("%s,%s,%s,%s,%s,%b,%s,%s,%b\n",
-        escapeCSV(event.getSubject()),
-        event.getStartDateTime().format(DATE_FORMATTER),
-        event.getStartDateTime().format(TIME_FORMATTER),
-        event.getEndDateTime().format(DATE_FORMATTER),
-        event.getEndDateTime().format(TIME_FORMATTER),
-        event.isAllDay(),
-        escapeCSV(event.getDescription()),
-        escapeCSV(event.getLocation()),
-        event.isPublic());
+            escapeCSV(event.getSubject()),
+            event.getStartDateTime().format(DATE_FORMATTER),
+            event.getStartDateTime().format(TIME_FORMATTER),
+            event.getEndDateTime().format(DATE_FORMATTER),
+            event.getEndDateTime().format(TIME_FORMATTER),
+            event.isAllDay(),
+            escapeCSV(event.getDescription()),
+            escapeCSV(event.getLocation()),
+            event.isPublic());
   }
 
   private static String formatEventForDisplay(Event event, boolean showDetails) {
     StringBuilder display = new StringBuilder();
-    
-    // Basic event info
+
     display.append(event.getSubject());
-    
-    // Add time information
+
     if (event.isAllDay()) {
       display.append(" (All Day)");
     } else {
       display.append(" from ")
-             .append(event.getStartDateTime().format(TIME_FORMATTER))
-             .append(" to ")
-             .append(event.getEndDateTime().format(TIME_FORMATTER));
+              .append(event.getStartDateTime().format(TIME_FORMATTER))
+              .append(" to ")
+              .append(event.getEndDateTime().format(TIME_FORMATTER));
     }
 
-    // Add optional details if requested
     if (showDetails) {
       String description = event.getDescription();
       if (description != null && !description.trim().isEmpty()) {
@@ -115,12 +109,11 @@ public class CSVExporter {
     if (value == null) {
       return "";
     }
-    
-    // If the value contains commas, quotes, or newlines, wrap it in quotes
+
     if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
       return "\"" + value.replace("\"", "\"\"") + "\"";
     }
-    
+
     return value;
   }
 }

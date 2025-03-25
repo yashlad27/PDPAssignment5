@@ -1,14 +1,13 @@
 package controller.parser;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.HashSet;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
 
 import controller.ICommandFactory;
 import controller.command.ICommand;
@@ -43,7 +42,8 @@ public class CommandParser {
   private void initializePatterns() {
     // Create calendar pattern
     registerPattern("create_calendar",
-            Pattern.compile("create calendar --name ([\"']?[^\"']+[\"']?|[^\\s]+) --timezone ([\\w/]+)"),
+            Pattern.compile("create calendar --name ([\"']?[^\"']+[\"']?|[^\\s]+) "
+                    + "--timezone ([\\w/]+)"),
             this::parseCreateCalendarCommand);
 
     // Create event pattern
@@ -65,14 +65,17 @@ public class CommandParser {
 
     // Create all-day event pattern
     registerPattern("create_all_day_event",
-            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) on (\\d{4}-\\d{2}-\\d{2})"
+            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+)"
+                    + " on (\\d{4}-\\d{2}-\\d{2})"
                     + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
             this::parseCreateAllDayEventCommand);
 
     // Create event patterns
     registerPattern("create_recurring_until_event",
-            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) from "
-                    + "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+)"
+                    + " from "
+                    + "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+                    + "to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
                     + "repeats ([MTWRFSU]+) until (\\d{4}-\\d{2}-\\d{2})"
                     + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
             this::parseCreateRecurringUntilEventCommand);
@@ -179,13 +182,11 @@ public class CommandParser {
 
     String command = parts[0].toLowerCase();
 
-    // Check if the command is valid
     if (!VALID_COMMANDS_SET.contains(command)) {
       throw new IllegalArgumentException("Invalid command: " + command + ". Valid commands are: " +
               String.join(", ", VALID_COMMANDS));
     }
 
-    // Try to match with registered patterns
     for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
       Matcher matcher = entry.getValue().getPattern().matcher(commandString);
       if (matcher.matches()) {
@@ -218,8 +219,8 @@ public class CommandParser {
             endTime,
             description,
             location,
-            String.valueOf(!isPrivate),  // isPublic is opposite of isPrivate
-            String.valueOf(autoDecline)   // autoDecline flag
+            String.valueOf(!isPrivate),
+            String.valueOf(autoDecline)
     };
     return new CommandWithArgs(
             commandFactory.getCommand("create"),
@@ -247,8 +248,8 @@ public class CommandParser {
             date,
             description,
             location,
-            String.valueOf(!isPrivate),  // isPublic is opposite of isPrivate
-            String.valueOf(autoDecline)   // autoDecline flag
+            String.valueOf(!isPrivate),
+            String.valueOf(autoDecline)
     };
     return new CommandWithArgs(
             commandFactory.getCommand("create"),
@@ -280,8 +281,8 @@ public class CommandParser {
             occurrences,
             description != null ? description : "",
             location != null ? location : "",
-            "true",  // isPublic
-            "false"  // autoDecline
+            "true",
+            "false"
     };
     return new CommandWithArgs(
             commandFactory.getCommand("create"),
@@ -427,7 +428,13 @@ public class CommandParser {
     String timezone = matcher.group(2);
     return new CommandWithArgs(
             commandFactory.getCommand("create"),
-            new String[]{"calendar", "--name", calendarName, "--timezone", timezone}
+            new String[]{
+                    "calendar",
+                    "--name",
+                    calendarName,
+                    "--timezone",
+                    timezone
+            }
     );
   }
 
@@ -528,7 +535,6 @@ public class CommandParser {
       throw new IllegalArgumentException("Invalid date time format. Expected format: YYYY-MM-DDThh:mm");
     }
 
-    // Validate the date time format
     if (!dateTime.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}")) {
       throw new IllegalArgumentException("Invalid date time format. Expected format: YYYY-MM-DDThh:mm");
     }
