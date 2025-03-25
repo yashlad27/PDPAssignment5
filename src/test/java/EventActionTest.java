@@ -10,8 +10,8 @@ import model.event.Event;
 import model.event.EventAction;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for the EventAction interface.
@@ -75,16 +75,16 @@ public class EventActionTest {
     // Test single event
     String originalSubject = regularEvent.getSubject();
     String originalDesc = regularEvent.getDescription();
-    
+
     modifyAction.execute(regularEvent);
-    
+
     assertEquals("Event subject should be modified", originalSubject + " (Modified)", regularEvent.getSubject());
     assertEquals("Event description should be modified", originalDesc + " (Updated)", regularEvent.getDescription());
 
     // Test list of events
     modifyAction.executeOnList(events);
-    assertTrue("All events should have modified subjects", 
-        events.stream().allMatch(e -> e.getSubject().endsWith(" (Modified)")));
+    assertTrue("All events should have modified subjects",
+            events.stream().allMatch(e -> e.getSubject().endsWith(" (Modified)")));
   }
 
   @Test
@@ -109,8 +109,8 @@ public class EventActionTest {
         assertTrue("Event should have valid start time", event.getStartDateTime() != null);
         assertTrue("Event should have valid end time", event.getEndDateTime() != null);
         if (!event.isAllDay()) {
-          assertTrue("End time should be after start time", 
-              event.getEndDateTime().isAfter(event.getStartDateTime()));
+          assertTrue("End time should be after start time",
+                  event.getEndDateTime().isAfter(event.getStartDateTime()));
         }
       }
     };
@@ -125,16 +125,16 @@ public class EventActionTest {
   @Test
   public void testActionComposition() {
     List<String> actionLog = new ArrayList<>();
-    
+
     EventAction firstAction = event -> actionLog.add("First action on " + event.getSubject());
     EventAction secondAction = event -> actionLog.add("Second action on " + event.getSubject());
-    
+
     // Compose actions
     EventAction composedAction = firstAction.andThen(secondAction);
-    
+
     // Execute composed action
     composedAction.execute(regularEvent);
-    
+
     assertEquals("Should have two log entries", 2, actionLog.size());
     assertTrue("First action should be logged", actionLog.get(0).startsWith("First action"));
     assertTrue("Second action should be logged", actionLog.get(1).startsWith("Second action"));
@@ -145,7 +145,7 @@ public class EventActionTest {
     EventAction anyAction = event -> {
       // Do nothing
     };
-    
+
     // Should not throw any exception
     anyAction.executeOnList(new ArrayList<>());
   }

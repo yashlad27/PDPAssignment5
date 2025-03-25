@@ -84,15 +84,15 @@ public class CSVExporterTest {
             formatted.contains("Conference Room A"));
     assertTrue("Output should contain Company Holiday",
             formatted.contains("Company Holiday"));
-    
+
     // Check time format
     assertTrue("Output should show time format",
             formatted.contains("09:00 to 10:30"));
-    
+
     // Check all-day event format
     assertTrue("Output should indicate all-day events",
             formatted.contains("(All Day)"));
-    
+
     // Check details
     assertTrue("Output should contain description",
             formatted.contains("Weekly team sync"));
@@ -111,15 +111,15 @@ public class CSVExporterTest {
             formatted.contains("Team Meeting"));
     assertTrue("Output should contain Company Holiday",
             formatted.contains("Company Holiday"));
-    
+
     // Check time format
     assertTrue("Output should show time format",
             formatted.contains("09:00 to 10:30"));
-    
+
     // Check all-day event format
     assertTrue("Output should indicate all-day events",
             formatted.contains("(All Day)"));
-    
+
     // Verify details are not shown
     assertFalse("Output should not contain description",
             formatted.contains("Weekly team sync"));

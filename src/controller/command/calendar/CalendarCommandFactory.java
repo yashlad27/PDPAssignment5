@@ -51,8 +51,8 @@ public class CalendarCommandFactory implements ICommandFactory {
    *
    * @param calendarManager Manager for calendar operations, must not be null
    * @param view            View component for user interaction, must not be null
-   * @param controller      Controller for handling calendar operations, must not be null
-   * @throws IllegalArgumentException if calendarManager, view, or controller is null
+   * @param controller      Controller for handling calendar operations (can be null for initialization)
+   * @throws IllegalArgumentException if calendarManager or view is null
    */
   public CalendarCommandFactory(CalendarManager calendarManager, ICalendarView view,
                                 CalendarController controller) {
@@ -62,10 +62,6 @@ public class CalendarCommandFactory implements ICommandFactory {
 
     if (view == null) {
       throw new IllegalArgumentException("View cannot be null");
-    }
-
-    if (controller == null) {
-      throw new IllegalArgumentException("Controller cannot be null");
     }
 
     this.commands = new HashMap<>();
@@ -168,7 +164,7 @@ public class CalendarCommandFactory implements ICommandFactory {
       return new ErrorCommand("Invalid calendar name: " + calendarName);
     }
 
-    return new ExportCalendarCommand(calendarName, filePath, controller);
+    return new ExportCalendarCommand(calendarName, filePath, getController());
   }
 
   public boolean hasCommand(String commandName) {
@@ -192,5 +188,15 @@ public class CalendarCommandFactory implements ICommandFactory {
       });
     }
     return null;
+  }
+
+  /**
+   * Protected getter for the controller to allow subclasses to override.
+   * This supports breaking circular dependencies in initialization.
+   *
+   * @return The CalendarController instance
+   */
+  protected CalendarController getController() {
+    return controller;
   }
 }

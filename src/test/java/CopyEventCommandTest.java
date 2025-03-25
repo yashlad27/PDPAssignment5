@@ -1,23 +1,22 @@
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.After;
 
 import java.time.LocalDateTime;
 
 import controller.command.copy.CopyEventCommand;
 import model.calendar.CalendarManager;
 import model.calendar.ICalendar;
+import model.core.timezone.TimeZoneHandler;
+import model.core.validation.CalendarNameValidator;
 import model.event.Event;
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
 import model.exceptions.InvalidTimezoneException;
-import model.core.validation.CalendarNameValidator;
-import model.core.timezone.TimeZoneHandler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
 
 public class CopyEventCommandTest {
 

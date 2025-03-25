@@ -10,8 +10,8 @@ import model.calendar.EventFilter;
 import model.event.Event;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for the EventFilter interface.
@@ -92,8 +92,8 @@ public class EventFilterTest {
   @Test
   public void testAllDayEventFilter() {
     LocalDate targetDate = LocalDate.of(2023, 5, 29);
-    EventFilter allDayFilter = event -> 
-      event != null && event.isAllDay() && event.getDate().equals(targetDate);
+    EventFilter allDayFilter = event ->
+            event != null && event.isAllDay() && event.getDate().equals(targetDate);
 
     List<Event> filteredEvents = allDayFilter.filterEvents(events);
     assertEquals("Should find 1 all-day event", 1, filteredEvents.size());
@@ -136,7 +136,7 @@ public class EventFilterTest {
   public void testTimeRangeFilter() {
     LocalDateTime startTime = LocalDateTime.of(2023, 5, 15, 8, 0);
     LocalDateTime endTime = LocalDateTime.of(2023, 5, 15, 17, 0);
-    
+
     EventFilter timeRangeFilter = event -> {
       if (event == null || event.getStartDateTime() == null || event.getEndDateTime() == null) {
         return false;
@@ -153,9 +153,9 @@ public class EventFilterTest {
   @Test
   public void testLocationFilter() {
     String targetLocation = "Conference Room A";
-    
-    EventFilter locationFilter = event -> 
-      event != null && targetLocation.equals(event.getLocation());
+
+    EventFilter locationFilter = event ->
+            event != null && targetLocation.equals(event.getLocation());
 
     List<Event> filteredEvents = locationFilter.filterEvents(events);
     assertTrue("Should include regular event", filteredEvents.contains(regularEvent));
@@ -174,9 +174,9 @@ public class EventFilterTest {
   @Test
   public void testDescriptionFilter() {
     String targetDescription = "Weekly team sync";
-    
-    EventFilter descriptionFilter = event -> 
-      event != null && targetDescription.equals(event.getDescription());
+
+    EventFilter descriptionFilter = event ->
+            event != null && targetDescription.equals(event.getDescription());
 
     List<Event> filteredEvents = descriptionFilter.filterEvents(events);
     assertTrue("Should include regular event", filteredEvents.contains(regularEvent));
@@ -192,8 +192,8 @@ public class EventFilterTest {
 
     events.add(nullLocationEvent);
 
-    EventFilter nullLocationFilter = event -> 
-      event != null && event.getLocation().isEmpty();
+    EventFilter nullLocationFilter = event ->
+            event != null && event.getLocation().isEmpty();
 
     List<Event> filteredEvents = nullLocationFilter.filterEvents(events);
     assertTrue("Should include null location event", filteredEvents.contains(nullLocationEvent));
@@ -209,8 +209,8 @@ public class EventFilterTest {
 
     events.add(emptyDescriptionEvent);
 
-    EventFilter emptyDescriptionFilter = event -> 
-      event != null && event.getDescription() != null && event.getDescription().isEmpty();
+    EventFilter emptyDescriptionFilter = event ->
+            event != null && event.getDescription() != null && event.getDescription().isEmpty();
 
     List<Event> filteredEvents = emptyDescriptionFilter.filterEvents(events);
     assertTrue("Should include empty description event", filteredEvents.contains(emptyDescriptionEvent));
@@ -227,8 +227,8 @@ public class EventFilterTest {
 
     events.add(specialEvent);
 
-    EventFilter specialDescriptionFilter = event -> 
-      event != null && specialDescription.equals(event.getDescription());
+    EventFilter specialDescriptionFilter = event ->
+            event != null && specialDescription.equals(event.getDescription());
 
     List<Event> filteredEvents = specialDescriptionFilter.filterEvents(events);
     assertTrue("Should include special event", filteredEvents.contains(specialEvent));

@@ -67,11 +67,13 @@ public class CalendarFactory {
    *
    * @param calendarManager the calendar manager to operate on
    * @param view            the view to interact with
+   * @param controller      the calendar controller (can be null during initialization)
    * @return an ICommandFactory for calendar commands
    */
   public ICommandFactory createCalendarCommandFactory(CalendarManager calendarManager,
-                                                      ICalendarView view) {
-    return new CalendarCommandFactory(calendarManager, view);
+                                                      ICalendarView view,
+                                                      CalendarController controller) {
+    return new CalendarCommandFactory(calendarManager, view, controller);
   }
 
   /**

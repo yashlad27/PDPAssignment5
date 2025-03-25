@@ -541,8 +541,7 @@ public class CalendarControllerTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testConstructorWithNullCommandFactory() {
-    new CalendarController(null, null, null,
-            view);
+    new CalendarController(null, null, null, null);
   }
 
   @Test

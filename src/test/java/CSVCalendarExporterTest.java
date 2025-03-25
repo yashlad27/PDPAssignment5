@@ -2,6 +2,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 import io.CSVCalendarExporter;
 import model.calendar.Calendar;
@@ -16,7 +17,9 @@ public class CSVCalendarExporterTest {
 
   @Before
   public void setUp() {
-    calendar = new Calendar("Test Calendar", "UTC");
+    calendar = new Calendar();
+    calendar.setName("Test Calendar");
+    calendar.setTimezone("UTC");
     exporter = new CSVCalendarExporter();
   }
 
@@ -26,16 +29,16 @@ public class CSVCalendarExporterTest {
     Event event1 = new Event("Meeting", LocalDateTime.now(), LocalDateTime.now().plusHours(1), "Room 1", "Team meeting", true);
     Event event2 = new Event("Lunch", LocalDateTime.now().plusHours(2), LocalDateTime.now().plusHours(3), "Cafeteria", "Team lunch", false);
 
-    RecurringEvent recurringEvent = new RecurringEvent(
+    RecurringEvent recurringEvent = new RecurringEvent.Builder(
             "Weekly Standup",
             LocalDateTime.now(),
             LocalDateTime.now().plusHours(1),
-            "Conference Room",
-            "Weekly team standup",
-            true,
-            "WEEKLY",
-            4
-    );
+            java.util.EnumSet.of(java.time.DayOfWeek.MONDAY, java.time.DayOfWeek.WEDNESDAY, java.time.DayOfWeek.FRIDAY))
+            .description("Weekly team standup")
+            .location("Conference Room")
+            .isPublic(true)
+            .occurrences(4)
+            .build();
 
     // Add events to calendar
     calendar.addEvent(event1, false);

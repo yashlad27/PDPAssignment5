@@ -5,16 +5,17 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import controller.CalendarController;
 import controller.command.calendar.CalendarCommandFactory;
 import controller.command.event.CommandFactory;
 import model.calendar.CalendarManager;
 import model.calendar.ICalendar;
+import model.core.timezone.TimeZoneHandler;
+import model.core.validation.CalendarNameValidator;
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
-import model.core.validation.CalendarNameValidator;
-import model.core.timezone.TimeZoneHandler;
 import view.ICalendarView;
 
 import static org.junit.Assert.assertFalse;
@@ -25,6 +26,7 @@ public class CalendarCommandFactoryTest {
   private CalendarManager calendarManager;
   private MockCalendarView mockView;
   private CalendarCommandFactory factory;
+  private CalendarController mockController;
 
   @Before
   public void setUp() {
@@ -33,7 +35,9 @@ public class CalendarCommandFactoryTest {
             .timezoneHandler(timezoneHandler)
             .build();
     mockView = new MockCalendarView();
-    factory = new CalendarCommandFactory(calendarManager, mockView);
+    CommandFactory commandFactory = new CommandFactory(null, mockView);
+    mockController = new CalendarController(commandFactory, commandFactory, calendarManager, mockView);
+    factory = new CalendarCommandFactory(calendarManager, mockView, mockController);
     CalendarNameValidator.clear(); // Clear the validator before each test
   }
 
@@ -44,12 +48,17 @@ public class CalendarCommandFactoryTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testConstructorWithNullCalendarManager() {
-    new CalendarCommandFactory(null, mockView);
+    new CalendarCommandFactory(null, mockView, mockController);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testConstructorWithNullView() {
-    new CalendarCommandFactory(calendarManager, null);
+    new CalendarCommandFactory(calendarManager, null, mockController);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConstructorWithNullController() {
+    new CalendarCommandFactory(calendarManager, mockView, null);
   }
 
   @Test
