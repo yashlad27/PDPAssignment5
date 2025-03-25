@@ -8,8 +8,9 @@ import java.time.zone.ZoneRulesException;
 /**
  * Wrapper class for date/time operations that handles timezone conversions.
  * This abstraction makes the design more flexible for dealing with different date/time types.
+ * Implements Comparable to support use in sorted collections.
  */
-public class DateTimeWrapper {
+public class DateTimeWrapper implements Comparable<DateTimeWrapper> {
   private final ZonedDateTime dateTime;
 
   public DateTimeWrapper(LocalDateTime dateTime, String timezone) {
@@ -86,5 +87,17 @@ public class DateTimeWrapper {
   public String toString() {
     return "DateTimeWrapper{dateTime=" + dateTime.toLocalDateTime() + 
            ", timezone=" + dateTime.getZone() + "}";
+  }
+
+  /**
+   * Compares this DateTimeWrapper to another based on their instants.
+   * 
+   * @param other the DateTimeWrapper to compare to
+   * @return a negative integer, zero, or a positive integer as this object
+   *         is less than, equal to, or greater than the specified object.
+   */
+  @Override
+  public int compareTo(DateTimeWrapper other) {
+    return dateTime.toInstant().compareTo(other.dateTime.toInstant());
   }
 } 
