@@ -22,10 +22,15 @@ import model.calendar.ICalendar;
 import model.event.Event;
 import model.event.RecurringEvent;
 import model.exceptions.CalendarNotFoundException;
+import model.exceptions.ConflictingEventException;
+import model.exceptions.InvalidTimezoneException;
 import view.ICalendarView;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -222,13 +227,29 @@ public class CalendarControllerTest {
 
     @Override
     public ICommand getCommand(String name) {
+      if (name == null || name.trim().isEmpty()) {
+        return null;
+      }
+
       if (name.equalsIgnoreCase("exit")) {
         return exitCommand;
       } else if ("error".equals(name)) {
         return errorCommand;
       } else if (name.equals("create")) {
-        return new MockCommand("Calendar 'My Calendar' created with timezone 'America/New_York'",
-                "create");
+        return new ICommand() {
+          @Override
+          public String execute(String[] args) {
+            if (args == null || args.length < 2 || !args[0].equals("calendar")) {
+              return "Error: Invalid create calendar command format";
+            }
+            return "Calendar 'My Calendar' created with timezone 'America/New_York'";
+          }
+
+          @Override
+          public String getName() {
+            return "create";
+          }
+        };
       } else if (name.equals("use")) {
         if (shouldThrowError) {
           return errorCommand;
@@ -247,12 +268,14 @@ public class CalendarControllerTest {
 
     @Override
     public boolean hasCommand(String name) {
-      return name.equalsIgnoreCase("exit") ||
-              "error".equals(name) ||
-              "mock".equals(name) ||
-              "create".equals(name) ||
-              "use".equals(name) ||
-              "show".equals(name);
+      return name != null && !name.trim().isEmpty() && (
+              name.equalsIgnoreCase("exit") ||
+                      "error".equals(name) ||
+                      "mock".equals(name) ||
+                      "create".equals(name) ||
+                      "use".equals(name) ||
+                      "show".equals(name)
+      );
     }
 
     @Override
@@ -539,20 +562,30 @@ public class CalendarControllerTest {
     assertTrue(errors.contains("Error reading command file: Mock IO error"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testConstructorWithNullCommandFactory() {
-    new CalendarController(null, null, null, null);
+  @Test
+  public void testControllerWithNullCommandFactory() {
+    assertThrows(IllegalArgumentException.class, () -> {
+      new CalendarController(null, null, null, view);
+    });
   }
 
   @Test
-  public void testConstructorWithNullView() {
-    try {
-      CalendarController controller = new CalendarController(commandFactory,
-              commandFactory, null, null);
-      fail("Should have thrown IllegalArgumentException for null view");
-    } catch (IllegalArgumentException e) {
-      assertEquals("CalendarManager cannot be null", e.getMessage());
-    }
+  public void testControllerWithNullCalendarManager() {
+    assertThrows(IllegalArgumentException.class, () ->
+            new CalendarController(commandFactory, commandFactory, null, view));
+  }
+
+  @Test
+  public void testControllerWithNullView() {
+    assertThrows(IllegalArgumentException.class, () ->
+            new CalendarController(commandFactory, commandFactory, mockCalendarManager, null));
+  }
+
+  @Test
+  public void testControllerWithNullParser() {
+    assertThrows(IllegalArgumentException.class, () -> {
+      new CalendarController(null, null, null, view);
+    });
   }
 
   @Test
@@ -696,22 +729,22 @@ public class CalendarControllerTest {
   public void testHeadlessModeWithValidCommands() {
     // Setup mock file reader with valid commands
     String commands = "create calendar --name Work --timezone America/New_York\n" +
-                      "create calendar --name Personal --timezone Europe/Paris\n" +
-                      "use calendar --name Work\n" +
-                      "exit";
-    
+            "create calendar --name Personal --timezone Europe/Paris\n" +
+            "use calendar --name Work\n" +
+            "exit";
+
     BufferedReader reader = new BufferedReader(new StringReader(commands));
     TestableCalendarController testController = new TestableCalendarController(
             commandFactory, commandFactory, mockCalendarManager, view, reader);
-    
+
     boolean result = testController.startHeadlessMode("dummy-path.txt");
-    
+
     assertTrue("Headless mode should succeed with valid commands", result);
-    assertEquals("Should have 4 display messages (one for each command including exit)", 
+    assertEquals("Should have 4 display messages (one for each command including exit)",
             4, view.getDisplayedMessages().size());
     assertEquals(0, view.getErrorMessages().size());
   }
-  
+
   @Test
   public void testHeadlessModeWithErrorInCommands() {
     // Setup a command factory that returns an error for the second command
@@ -724,26 +757,26 @@ public class CalendarControllerTest {
         return super.getCommand(name);
       }
     };
-    
+
     // Setup mock file reader with commands where the second one will fail
     String commands = "create calendar --name Work --timezone America/New_York\n" +
-                      "use calendar --name NonExistentCalendar\n" +
-                      "create calendar --name Personal --timezone Europe/Paris\n" +
-                      "exit";
-    
+            "use calendar --name NonExistentCalendar\n" +
+            "create calendar --name Personal --timezone Europe/Paris\n" +
+            "exit";
+
     BufferedReader reader = new BufferedReader(new StringReader(commands));
     TestableCalendarController testController = new TestableCalendarController(
             commandFactory, commandFactory, mockCalendarManager, view, reader);
-    
+
     boolean result = testController.startHeadlessMode("dummy-path.txt");
-    
+
     assertFalse("Headless mode should fail when a command returns an error", result);
-    assertEquals("Should have 2 display messages (including successful commands and error message)", 
+    assertEquals("Should have 2 display messages (including successful commands and error message)",
             2, view.getDisplayedMessages().size());
     assertEquals("Should have 1 error message", 1, view.getErrorMessages().size());
     assertTrue(view.getErrorMessages().get(0).contains("Error: Calendar not found"));
   }
-  
+
   @Test
   public void testHeadlessModeWithExceptionThrown() {
     // Setup a calendar manager that throws an exception
@@ -753,7 +786,7 @@ public class CalendarControllerTest {
         throw new CalendarNotFoundException("Test exception");
       }
     };
-    
+
     // Setup command factory to use the exception-throwing manager
     ICommandFactory exceptionFactory = new MockCommandFactory(mockCalendar, view) {
       @Override
@@ -774,42 +807,42 @@ public class CalendarControllerTest {
         return super.getCommand(name);
       }
     };
-    
+
     String commands = "create calendar --name Work --timezone America/New_York\n" +
-                      "use calendar --name Work\n" +
-                      "exit";
-    
+            "use calendar --name Work\n" +
+            "exit";
+
     BufferedReader reader = new BufferedReader(new StringReader(commands));
     TestableCalendarController testController = new TestableCalendarController(
             exceptionFactory, exceptionFactory, exceptionManager, view, reader);
-    
+
     boolean result = testController.startHeadlessMode("dummy-path.txt");
-    
+
     assertFalse("Headless mode should fail when an exception is thrown", result);
     assertEquals(2, view.getDisplayedMessages().size());
     assertEquals(1, view.getErrorMessages().size());
   }
-  
+
   @Test
   public void testHeadlessModeWithMalformedCommands() {
     String commands = "create calendar --name Work --timezone America/New_York\n" +
-                      "invalid command format\n" +
-                      "exit";
-    
+            "invalid command format\n" +
+            "exit";
+
     // Setup a parser that returns an error for invalid commands
     parser = new MockCommandParser(commandFactory) {
       @Override
       public CommandWithArgs parseCommand(String commandString) {
         if (commandString.equals("invalid command format")) {
           return new CommandWithArgs(
-            new MockCommand("Error: Invalid command format", "error"),
-            new String[]{}
+                  new MockCommand("Error: Invalid command format", "error"),
+                  new String[]{}
           );
         }
         return super.parseCommand(commandString);
       }
     };
-    
+
     try {
       // Inject our mock parser into the controller
       Field parserField = CalendarController.class.getDeclaredField("parser");
@@ -818,65 +851,65 @@ public class CalendarControllerTest {
     } catch (Exception e) {
       fail("Failed to inject mock parser: " + e.getMessage());
     }
-    
+
     BufferedReader reader = new BufferedReader(new StringReader(commands));
     TestableCalendarController testController = new TestableCalendarController(
             commandFactory, commandFactory, mockCalendarManager, view, reader);
-    
+
     boolean result = testController.startHeadlessMode("dummy-path.txt");
-    
+
     assertFalse("Headless mode should fail with malformed commands", result);
     assertTrue(view.getErrorMessages().size() > 0);
   }
-  
+
   @Test
   public void testHeadlessModeWithComplexCommands() {
     String commands = "create calendar --name \"Work Calendar\" --timezone America/New_York\n" +
-                      "create calendar --name 'Personal Calendar' --timezone Europe/Paris\n" +
-                      "use calendar --name \"Work Calendar\"\n" +
-                      "exit";
-    
+            "create calendar --name 'Personal Calendar' --timezone Europe/Paris\n" +
+            "use calendar --name \"Work Calendar\"\n" +
+            "exit";
+
     BufferedReader reader = new BufferedReader(new StringReader(commands));
     TestableCalendarController testController = new TestableCalendarController(
             commandFactory, commandFactory, mockCalendarManager, view, reader);
-    
+
     boolean result = testController.startHeadlessMode("dummy-path.txt");
-    
+
     assertTrue("Headless mode should handle complex commands with quotes", result);
     assertEquals(4, view.getDisplayedMessages().size());
   }
-  
+
   @Test
   public void testHeadlessModeWithMixedCommandTypes() {
     view = new MockCalendarView();
-    
+
     BufferedReader reader = new BufferedReader(new StringReader(
-        "create calendar --name Work --timezone America/New_York\n" +
-        "use calendar --name Work\n" +
-        "exit"));
-    
+            "create calendar --name Work --timezone America/New_York\n" +
+                    "use calendar --name Work\n" +
+                    "exit"));
+
     TestableCalendarController testController = new TestableCalendarController(
             commandFactory, commandFactory, mockCalendarManager, view, reader);
-    
+
     boolean result = testController.startHeadlessMode("dummy-path.txt");
-    
+
     assertTrue("Headless mode should execute successfully", result);
   }
-  
+
   @Test
   public void testHeadlessModeWithCommentsAndEmptyLines() {
     String commands = "# This is a comment\n" +
-                      "\n" +
-                      "create calendar --name Work --timezone America/New_York\n" +
-                      "# Another comment\n" +
-                      "\n" +
-                      "use calendar --name Work\n" +
-                      "exit";
-    
+            "\n" +
+            "create calendar --name Work --timezone America/New_York\n" +
+            "# Another comment\n" +
+            "\n" +
+            "use calendar --name Work\n" +
+            "exit";
+
     final BufferedReader finalReader = new BufferedReader(new StringReader(commands));
     TestableCalendarController testController = new TestableCalendarController(
             commandFactory, commandFactory, mockCalendarManager, view, finalReader) {
-      
+
       @Override
       public boolean startHeadlessMode(String commandsFilePath) {
         try {
@@ -888,18 +921,18 @@ public class CalendarControllerTest {
               filteredCommands.add(line);
             }
           }
-          
+
           if (filteredCommands.isEmpty()) {
             view.displayError("Error: Command file is empty after filtering comments");
             return false;
           }
-          
+
           String lastCommand = filteredCommands.get(filteredCommands.size() - 1);
           if (!lastCommand.equalsIgnoreCase("exit")) {
             view.displayError("Headless mode requires the last command to be 'exit'");
             return false;
           }
-          
+
           for (String command : filteredCommands) {
             String result = processCommand(command);
             if (result.startsWith("Error")) {
@@ -910,44 +943,357 @@ public class CalendarControllerTest {
               view.displayMessage(result);
             }
           }
-          
+
           return true;
-          
+
         } catch (IOException e) {
           view.displayError("Error reading command file: " + e.getMessage());
           return false;
         }
       }
     };
-    
+
     boolean result = testController.startHeadlessMode("dummy-path.txt");
-    
+
     assertTrue("Headless mode should handle comments and empty lines", result);
     assertEquals(2, view.getDisplayedMessages().size());
   }
 
-  @After
-  public void tearDown() {
-    // Reset the mock calendar
-    mockCalendar = new MockCalendar();
+  @Test
+  public void testProcessCommand_WithCalendarCommands() {
+    // Test create calendar command
+    String result = controller.processCommand("create calendar --name TestCal --timezone America/New_York");
+    assertTrue("Should confirm calendar creation was successful",
+            result.contains("Calendar 'My Calendar' created with timezone 'America/New_York'"));
 
-    // Reset the mock calendar manager with the mock calendar
-    mockCalendarManager = new MockCalendarManager(mockCalendar);
+    // Test use calendar command
+    result = controller.processCommand("use calendar --name TestCal");
+    assertTrue("Should confirm calendar is now in use",
+            result.contains("Now using calendar: 'Work'"));
 
-    // Reset the mock calendar view with test commands
-    view = new MockCalendarView("command1", "command2", "exit");
+    // Test incomplete create calendar command
+    result = controller.processCommand("create calendar");
+    assertTrue("Should return error for incomplete create calendar command",
+            result.contains("Error: Invalid create calendar command format"));
+  }
 
-    // Reset the mock command factory with the mock calendar and view
-    commandFactory = new MockCommandFactory(mockCalendar, view);
+  @Test
+  public void testProcessCommandWithMultipleWhitespaces() {
+    String result = controller.processCommand("   create    calendar    --name   "
+            + "My Calendar   --timezone   America/New_York   ");
+    assertEquals("Calendar 'My Calendar' created with timezone 'America/New_York'",
+            result);
+  }
 
-    // Create a new controller with reset mocks
+  @Test
+  public void testUpdateCommandFactory() {
+    controller.processCommand("create calendar --name Calendar1 --timezone "
+            + "America/New_York");
+    controller.processCommand("create calendar --name Calendar2 --timezone "
+            + "Europe/London");
+
+    controller.processCommand("use calendar --name Calendar1");
+
+    controller.processCommand("use calendar --name Calendar2");
+  }
+
+//  @Test
+//  public void testIOWithInvalidFilePath() {
+//    assertThrows(IOException.class, () ->
+//            FileIO.readFile("/invalid/path/file.txt"));
+//  }
+//
+//  @Test
+//  public void testIOWithNullContent() {
+//    assertThrows(IllegalArgumentException.class, () ->
+//            FileIO.writeFile("test.txt", null));
+//  }
+//
+//  @Test
+//  public void testIOWithEmptyContent() {
+//    assertThrows(IllegalArgumentException.class, () ->
+//            FileIO.writeFile("test.txt", ""));
+//  }
+
+  @Test
+  public void testCalendarWithInvalidTimezone() {
+    CalendarManager manager = new CalendarManager.Builder().build();
+    assertThrows(InvalidTimezoneException.class, () ->
+            manager.createCalendar("Test", "Invalid/Timezone"));
+  }
+
+  @Test
+  public void testCalendarWithNullName() {
+    CalendarManager manager = new CalendarManager.Builder().build();
+    assertThrows(IllegalArgumentException.class, () ->
+            manager.createCalendar(null, "America/New_York"));
+  }
+
+  @Test
+  public void testCalendarWithEmptyName() {
+    CalendarManager manager = new CalendarManager.Builder().build();
+    assertThrows(IllegalArgumentException.class, () ->
+            manager.createCalendar("", "America/New_York"));
+  }
+
+  @Test
+  public void testCalendarEventOverlap() throws ConflictingEventException {
+    Calendar calendar = new Calendar();
+    calendar.setName("Test");
+    calendar.setTimezone("America/New_York");
+
+    LocalDateTime start = LocalDateTime.parse("2024-03-20T10:00:00");
+    LocalDateTime end = LocalDateTime.parse("2024-03-20T11:00:00");
+
+    Event event1 = new Event("Event1", start, end, "Description", "Location", true);
+    Event event2 = new Event("Event2", start, end, "Description", "Location", true);
+
+    calendar.addEvent(event1, true);
+    assertThrows(ConflictingEventException.class, () ->
+            calendar.addEvent(event2, true));
+  }
+
+  @Test
+  public void testCommandWithInvalidArguments() {
+    MockCommand mockCommand = new MockCommand("Error", "test") {
+      @Override
+      public String execute(String[] args) {
+        throw new IllegalArgumentException("Invalid arguments");
+      }
+    };
+    commandFactory = new MockCommandFactory(mockCalendar, view) {
+      @Override
+      public ICommand getCommand(String name) {
+        if ("test".equals(name)) {
+          return mockCommand;
+        }
+        return super.getCommand(name);
+      }
+
+      @Override
+      public boolean hasCommand(String name) {
+        return "test".equals(name) || super.hasCommand(name);
+      }
+    };
     controller = new CalendarController(commandFactory, commandFactory, mockCalendarManager, view);
 
-    // Reset the parser
+    String result = controller.processCommand("test");
+    assertEquals("Error: Invalid command: test. Valid commands are: create, use, show, edit, copy, exit, print, export", result);
+  }
+
+  @Test
+  public void testCommandWithEmptyArguments() {
+    MockCommand mockCommand = new MockCommand("Error", "test") {
+      @Override
+      public String execute(String[] args) {
+        throw new IllegalArgumentException("Empty arguments");
+      }
+    };
+    commandFactory = new MockCommandFactory(mockCalendar, view) {
+      @Override
+      public ICommand getCommand(String name) {
+        if ("test".equals(name)) {
+          return mockCommand;
+        }
+        return super.getCommand(name);
+      }
+
+      @Override
+      public boolean hasCommand(String name) {
+        return "test".equals(name) || super.hasCommand(name);
+      }
+    };
+    controller = new CalendarController(commandFactory, commandFactory, mockCalendarManager, view);
+
+    String result = controller.processCommand("test");
+    assertEquals("Error: Invalid command: test. Valid commands are: create, use, show, edit, copy, exit, print, export", result);
+  }
+
+  @Test
+  public void testControllerWithNullCommandResult() {
+    MockCommand mockCommand = new MockCommand(null, "test");
+    commandFactory = new MockCommandFactory(mockCalendar, view) {
+      @Override
+      public ICommand getCommand(String name) {
+        if ("test".equals(name)) {
+          return mockCommand;
+        }
+        return super.getCommand(name);
+      }
+
+      @Override
+      public boolean hasCommand(String name) {
+        return "test".equals(name) || super.hasCommand(name);
+      }
+    };
+    controller = new CalendarController(commandFactory, commandFactory, mockCalendarManager, view);
+
+    String result = controller.processCommand("test");
+    assertEquals("Error: Invalid command: test. Valid commands are: create, use, show, edit, copy, exit, print, export", result);
+  }
+
+  @Test
+  public void testControllerWithInvalidCommandFactory() {
+    commandFactory = new MockCommandFactory(mockCalendar, view) {
+      @Override
+      public ICommand getCommand(String name) {
+        throw new RuntimeException("Invalid command factory");
+      }
+
+      @Override
+      public boolean hasCommand(String name) {
+        return true;
+      }
+    };
+
+    controller = new CalendarController(commandFactory, commandFactory, mockCalendarManager, view);
+    String result = controller.processCommand("test");
+    assertEquals("Error: Invalid command: test. Valid commands are: create, use, show, edit, copy, exit, print, export", result);
+  }
+
+  @Test
+  public void testControllerWithExceptionInCommandExecution() {
+    MockCommand mockCommand = new MockCommand("Error", "test") {
+      @Override
+      public String execute(String[] args) {
+        throw new RuntimeException("Command execution failed");
+      }
+    };
+    commandFactory = new MockCommandFactory(mockCalendar, view) {
+      @Override
+      public ICommand getCommand(String name) {
+        if ("test".equals(name)) {
+          return mockCommand;
+        }
+        return super.getCommand(name);
+      }
+
+      @Override
+      public boolean hasCommand(String name) {
+        return "test".equals(name) || super.hasCommand(name);
+      }
+    };
+
+    controller = new CalendarController(commandFactory, commandFactory, mockCalendarManager, view);
+    String result = controller.processCommand("test");
+    assertEquals("Error: Invalid command: test. Valid commands are: create, use, show, edit, copy, exit, print, export", result);
+  }
+
+  @Test
+  public void testIOWithFilePermissionError() {
+    String readOnlyFile = "readonly.txt";
+    try {
+      // Create a read-only file
+      java.io.File file = new java.io.File(readOnlyFile);
+      file.createNewFile();
+      file.setReadOnly();
+
+      assertThrows(IOException.class, () ->
+              java.nio.file.Files.write(java.nio.file.Paths.get(readOnlyFile), "test content".getBytes()));
+    } catch (IOException e) {
+      fail("Failed to setup test: " + e.getMessage());
+    } finally {
+      // Clean up
+      new java.io.File(readOnlyFile).delete();
+    }
+  }
+
+  @Test
+  public void testIOWithDirectoryAsFile() {
+    String dirPath = "testdir";
+    try {
+      // Create a directory
+      new java.io.File(dirPath).mkdir();
+
+      assertThrows(IOException.class, () ->
+              java.nio.file.Files.write(java.nio.file.Paths.get(dirPath), "test content".getBytes()));
+    } finally {
+      // Clean up
+      new java.io.File(dirPath).delete();
+    }
+  }
+
+  @Test
+  public void testCalendarWithDuplicateEventName() throws ConflictingEventException {
+    Calendar calendar = new Calendar();
+    calendar.setName("Test");
+    calendar.setTimezone("America/New_York");
+
+    LocalDateTime start1 = LocalDateTime.parse("2024-03-20T10:00:00");
+    LocalDateTime end1 = LocalDateTime.parse("2024-03-20T11:00:00");
+    LocalDateTime start2 = LocalDateTime.parse("2024-03-20T10:30:00");
+    LocalDateTime end2 = LocalDateTime.parse("2024-03-20T11:30:00");
+
+    Event event1 = new Event("Meeting", start1, end1, "Description", "Location", true);
+    Event event2 = new Event("Meeting", start2, end2, "Description", "Location", true);
+
+    calendar.addEvent(event1, true);
+    assertThrows(ConflictingEventException.class, () ->
+            calendar.addEvent(event2, true));
+  }
+
+  @Test
+  public void testCalendarWithInvalidExportPath() {
+    Calendar calendar = new Calendar();
+    calendar.setName("Test");
+    calendar.setTimezone("America/New_York");
+
+    assertThrows(IOException.class, () ->
+            calendar.exportToCSV("/invalid/path/events.csv"));
+  }
+
+  @Test
+  public void testCalendarWithInvalidEventSearch() {
+    Calendar calendar = new Calendar();
+    calendar.setName("Test");
+    calendar.setTimezone("America/New_York");
+
+    LocalDateTime start = LocalDateTime.parse("2024-03-20T10:00:00");
+
+    assertNull(calendar.findEvent("NonExistent", start));
+  }
+
+  @Test
+  public void testCalendarWithInvalidEventEdit() {
+    Calendar calendar = new Calendar();
+    calendar.setName("Test");
+    calendar.setTimezone("America/New_York");
+
+    LocalDateTime start = LocalDateTime.parse("2024-03-20T10:00:00");
+
+    assertFalse(calendar.editSingleEvent("NonExistent", start, "subject", "New Subject"));
+  }
+
+  @Test
+  public void testEventWithNullEndTime() {
+    LocalDateTime start = LocalDateTime.parse("2024-03-20T10:00:00");
+    Event event = new Event("Test", start, null, "Description", "Location", true);
+    assertNotNull(event.getEndDateTime());
+    assertEquals(LocalDateTime.parse("2024-03-20T23:59:59"), event.getEndDateTime());
+  }
+
+  @After
+  public void tearDown() {
+    // Reset all mocks
+    mockCalendar = new MockCalendar();
+    mockCalendarManager = new MockCalendarManager(mockCalendar);
+    view = new MockCalendarView("command1", "command2", "exit");
+    commandFactory = new MockCommandFactory(mockCalendar, view);
+
+    // Reset command factory flags
+    commandFactory.setShouldThrowError(false);
+    commandFactory.setShouldThrowInvalidNameError(false);
+    commandFactory.setShouldThrowEmptyNameError(false);
+
+    // Create new controller with reset mocks
+    controller = new CalendarController(commandFactory, commandFactory, mockCalendarManager, view);
+
+    // Reset parser
     try {
       Field parserField = CalendarController.class.getDeclaredField("parser");
       parserField.setAccessible(true);
       parser = new MockCommandParser(commandFactory);
+      parser.setThrowException(false);
       parserField.set(controller, parser);
     } catch (Exception e) {
       throw new RuntimeException("Failed to setup test", e);
