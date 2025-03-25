@@ -179,19 +179,6 @@ public class CalendarManager {
   }
 
   /**
-   * Edits a calendar's name.
-   *
-   * @param oldName the current name of the calendar
-   * @param newName the new name for the calendar
-   * @throws CalendarNotFoundException  if no calendar with the specified name exists
-   * @throws DuplicateCalendarException if a calendar with the new name already exists
-   */
-  public void editCalendarName(String oldName, String newName)
-          throws CalendarNotFoundException, DuplicateCalendarException {
-    calendarRegistry.renameCalendar(oldName, newName);
-  }
-
-  /**
    * Edits a calendar's timezone.
    *
    * @param calendarName the name of the calendar

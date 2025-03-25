@@ -2,6 +2,7 @@ package controller;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,10 +15,17 @@ import java.util.stream.Collectors;
 
 import controller.command.event.CommandFactory;
 import controller.parser.CommandParser;
+import model.calendar.Calendar;
 import model.calendar.CalendarManager;
 import model.calendar.ICalendar;
 import model.exceptions.CalendarNotFoundException;
 import view.ICalendarView;
+import model.event.Event;
+import model.event.RecurringEvent;
+import model.core.timezone.TimeZoneHandler;
+import model.core.validation.CalendarNameValidator;
+import io.CalendarExporter;
+import io.CSVCalendarExporter;
 
 /**
  * Controller class that manages calendar operations and user interactions.
@@ -47,6 +55,7 @@ public class CalendarController {
   private static final Set<String> VALID_COMMANDS = new HashSet<>(Arrays.asList(
           "create", "use", "show", "edit", "copy", "exit"
   ));
+  private final CalendarExporter exporter;
 
   /**
    * Constructs a new CalendarController with all necessary dependencies.
@@ -83,6 +92,7 @@ public class CalendarController {
     this.calendarManager = calendarManager;
     this.commandFactory = commandFactory;
     this.parser = new CommandParser(commandFactory);
+    this.exporter = new CSVCalendarExporter();
   }
 
   /**
@@ -359,5 +369,22 @@ public class CalendarController {
     String[] parts = commandString.trim().split("\\s+");
 
     return String.join(" ", parts);
+  }
+
+  public String exportCalendarToCSV(String calendarName, String filePath) {
+    try {
+      Calendar calendar = calendarManager.getCalendar(calendarName);
+      if (calendar == null) {
+        return "Calendar not found: " + calendarName;
+      }
+
+      if (exporter.exportToAppendable(calendar, new FileWriter(filePath))) {
+        return "Calendar exported successfully to: " + filePath;
+      } else {
+        return "Failed to export calendar to: " + filePath;
+      }
+    } catch (IOException | CalendarNotFoundException e) {
+      return "Error exporting calendar: " + e.getMessage();
+    }
   }
 }

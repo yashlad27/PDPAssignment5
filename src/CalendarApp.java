@@ -3,8 +3,8 @@ import controller.ICommandFactory;
 import model.calendar.Calendar;
 import model.calendar.CalendarManager;
 import model.calendar.ICalendar;
-import model.factory.CalendarFactory;
 import model.core.timezone.TimeZoneHandler;
+import model.factory.CalendarFactory;
 import view.ConsoleView;
 import view.ICalendarView;
 
