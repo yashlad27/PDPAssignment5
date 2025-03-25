@@ -32,7 +32,7 @@ public class Event {
    * @param isPublic      whether the event is public
    */
   public Event(String subject, LocalDateTime startDateTime, LocalDateTime endDateTime,
-      String description, String location, boolean isPublic) {
+               String description, String location, boolean isPublic) {
     if (subject == null || subject.trim().isEmpty()) {
       throw new IllegalArgumentException("Event subject cannot be null or empty");
     }
@@ -70,7 +70,7 @@ public class Event {
    * @return a new all-day Event
    */
   public static Event createAllDayEvent(String subject, LocalDate date, String description,
-      String location, boolean isPublic) {
+                                        String location, boolean isPublic) {
     LocalDateTime start = LocalDateTime.of(date, LocalTime.of(0, 0));
     LocalDateTime end = LocalDateTime.of(date, LocalTime.of(23, 59, 59));
 
@@ -93,7 +93,7 @@ public class Event {
     }
 
     return !this.endDateTime.isBefore(other.startDateTime) && !other.endDateTime.isBefore(
-        this.startDateTime);
+            this.startDateTime);
   }
 
   /**
@@ -309,7 +309,7 @@ public class Event {
     }
     Event event = (Event) o;
     return Objects.equals(subject, event.subject) && Objects.equals(startDateTime,
-        event.startDateTime) && Objects.equals(endDateTime, event.endDateTime);
+            event.startDateTime) && Objects.equals(endDateTime, event.endDateTime);
   }
 
   @Override
@@ -320,7 +320,7 @@ public class Event {
   @Override
   public String toString() {
     return "Event{" + "subject='" + subject + '\'' + ", startDateTime=" + startDateTime
-        + ", endDateTime=" + endDateTime + ", isAllDay=" + isAllDay + ", location='" + (
-        location != null ? location : "N/A") + '\'' + '}';
+            + ", endDateTime=" + endDateTime + ", isAllDay=" + isAllDay + ", location='" + (
+            location != null ? location : "N/A") + '\'' + '}';
   }
 }

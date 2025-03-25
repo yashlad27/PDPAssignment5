@@ -15,8 +15,7 @@ import utilities.TimezoneConverter;
 
 /**
  * Strategy for copying a single event from one calendar to another.
- * Format: copy event <eventName> on <dateStringTtimeString> --target <calendarName>
- * to <dateStringTtimeString>
+ * Format: {@code copy event <eventId> --target <calendarName> to <dateString>}
  */
 public class SingleEventCopyStrategy implements CopyStrategy {
 
@@ -99,38 +98,30 @@ public class SingleEventCopyStrategy implements CopyStrategy {
   private String copyEvent(String eventName, String dateTimeStr, String targetCalendarName,
                            String targetDateTimeStr)
           throws Exception {
-    // Parse the date/time
     LocalDateTime sourceDateTime = DateTimeUtil.parseDateTime(dateTimeStr);
     LocalDateTime targetDateTime = DateTimeUtil.parseDateTime(targetDateTimeStr);
 
-    // Validate target calendar exists
     if (!calendarManager.hasCalendar(targetCalendarName)) {
       throw new CalendarNotFoundException("Target calendar '" + targetCalendarName + "' does not "
               + "exist");
     }
 
-    // Get source calendar (active calendar)
     ICalendar sourceCalendar = calendarManager.getActiveCalendar();
 
-    // Find the event
     Event sourceEvent = sourceCalendar.findEvent(eventName, sourceDateTime);
     if (sourceEvent == null) {
       throw new EventNotFoundException("Event not found: " + eventName + " at " + sourceDateTime);
     }
 
-    // Get the source and target timezones
     String sourceTimezone = ((model.calendar.Calendar) sourceCalendar).getTimezone();
     String targetTimezone = calendarManager.executeOnCalendar(targetCalendarName,
             calendar -> ((model.calendar.Calendar) calendar).getTimezone());
 
-    // Create timezone converter
     TimezoneConverter converter = timezoneHandler.getConverter(sourceTimezone, targetTimezone);
 
-    // Calculate duration of the source event
     long durationSeconds = sourceEvent.getEndDateTime().toEpochSecond(java.time.ZoneOffset.UTC) -
             sourceEvent.getStartDateTime().toEpochSecond(java.time.ZoneOffset.UTC);
 
-    // Create a new event with the adjusted time
     Event newEvent = new Event(
             sourceEvent.getSubject(),
             converter.convert(targetDateTime),
@@ -140,7 +131,6 @@ public class SingleEventCopyStrategy implements CopyStrategy {
             sourceEvent.isPublic()
     );
 
-    // Add the event to the target calendar
     boolean success = calendarManager.executeOnCalendar(targetCalendarName,
             calendar -> calendar.addEvent(newEvent, true));
 

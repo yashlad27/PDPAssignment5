@@ -17,7 +17,8 @@ import utilities.TimezoneConverter;
 
 /**
  * Strategy for copying events within a date range from one calendar to another.
- * Format: copy events between <dateString> and <dateString> --target <calendarName> to <dateString>
+ * Format: {@code copy events between <dateString> and <dateString> --target <calendarName>
+ * to <dateString>}
  */
 public class RangeEventsCopyStrategy implements CopyStrategy {
 
@@ -89,55 +90,44 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
   private String copyEventsBetweenDates(String startDateStr, String endDateStr,
                                         String targetCalendarName,
                                         String targetStartDateStr) throws Exception {
-    // Parse the dates
     LocalDate sourceStartDate = DateTimeUtil.parseDate(startDateStr);
     LocalDate sourceEndDate = DateTimeUtil.parseDate(endDateStr);
     LocalDate targetStartDate = DateTimeUtil.parseDate(targetStartDateStr);
 
-    // Validate target calendar exists
     if (!calendarManager.hasCalendar(targetCalendarName)) {
       throw new CalendarNotFoundException("Target calendar '" + targetCalendarName
               + "' does not exist");
     }
 
-    // Get source calendar (active calendar)
     ICalendar sourceCalendar = calendarManager.getActiveCalendar();
 
-    // Get events in the date range
     List<Event> eventsInRange = sourceCalendar.getEventsInRange(sourceStartDate, sourceEndDate);
 
     if (eventsInRange.isEmpty()) {
       return "No events found between " + sourceStartDate + " and " + sourceEndDate + " to copy.";
     }
 
-    // Get the source and target timezones
     String sourceTimezone = ((Calendar) sourceCalendar).getTimezone();
     String targetTimezone = calendarManager.executeOnCalendar(targetCalendarName,
             calendar -> ((model.calendar.Calendar) calendar).getTimezone());
 
-    // Create timezone converter
     TimezoneConverter converter = timezoneHandler.getConverter(sourceTimezone, targetTimezone);
 
-    // Calculate date difference in days
     long daysDifference = targetStartDate.toEpochDay() - sourceStartDate.toEpochDay();
 
     int successCount = 0;
     int failCount = 0;
 
-    // Copy each event
     for (Event sourceEvent : eventsInRange) {
       try {
-        // Create a new event with the adjusted date
         Event newEvent;
 
         if (sourceEvent.isAllDay()) {
-          // All-day event
           LocalDate eventDate = sourceEvent.getDate();
           if (eventDate == null) {
             eventDate = sourceEvent.getStartDateTime().toLocalDate();
           }
 
-          // Calculate the adjusted date
           LocalDate adjustedDate = eventDate.plusDays(daysDifference);
 
           newEvent = Event.createAllDayEvent(
@@ -148,7 +138,6 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
                   sourceEvent.isPublic()
           );
         } else {
-          // Regular event - adjust date and convert timezone
           LocalDateTime adjustedStart = sourceEvent.getStartDateTime().plusDays(daysDifference);
           LocalDateTime adjustedEnd = sourceEvent.getEndDateTime().plusDays(daysDifference);
 
@@ -162,7 +151,6 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
           );
         }
 
-        // Add the event to the target calendar
         calendarManager.executeOnCalendar(targetCalendarName,
                 calendar -> calendar.addEvent(newEvent, true));
 

@@ -32,8 +32,8 @@ public abstract class AbstractEventCreator implements EventCreator {
    */
   protected String removeQuotes(String value) {
     if (value != null && value.length() >= 2) {
-      if ((value.startsWith("\"") && value.endsWith("\"")) ||
-              (value.startsWith("'") && value.endsWith("'"))) {
+      if ((value.startsWith("\"") && value.endsWith("\""))
+              || (value.startsWith("'") && value.endsWith("'"))) {
         return value.substring(1, value.length() - 1);
       }
     }

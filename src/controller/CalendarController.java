@@ -21,18 +21,18 @@ import view.ICalendarView;
 
 /**
  * Controller class that manages calendar operations and user interactions.
- * <p>
- * This class serves as the main controller in the MVC architecture, handling:
+ *
+ * <p>This class serves as the main controller in the MVC architecture, handling:
  * - Command processing and execution
  * - Calendar management operations
  * - Event management operations
  * - Interactive and headless mode operations
- * <p>
- * The controller supports two modes of operation:
+ *
+ * <p>The controller supports two modes of operation:
  * 1. Interactive Mode: Processes commands entered by users in real-time
  * 2. Headless Mode: Processes commands from a file without user interaction
- * <p>
- * The controller uses command factories to create appropriate command objects
+ *
+ * <p>The controller uses command factories to create appropriate command objects
  * for both calendar-level operations (e.g., creating calendars) and
  * event-level operations (e.g., creating events).
  */
@@ -50,8 +50,8 @@ public class CalendarController {
 
   /**
    * Constructs a new CalendarController with all necessary dependencies.
-   * <p>
-   * This constructor follows the Dependency Injection pattern to maintain
+   *
+   * <p>This constructor follows the Dependency Injection pattern to maintain
    * loose coupling between components. It validates all dependencies to
    * ensure the controller is properly initialized.
    *
@@ -87,8 +87,8 @@ public class CalendarController {
 
   /**
    * Processes a single command and returns the result.
-   * <p>
-   * This method handles both calendar-level and event-level commands by:
+   *
+   * <p>This method handles both calendar-level and event-level commands by:
    * 1. Validating and normalizing the command string
    * 2. Determining if it's a calendar management command
    * 3. Routing to appropriate handler (calendar or event)
@@ -104,20 +104,15 @@ public class CalendarController {
       return "Error: Command cannot be empty";
     }
 
-    // Normalize whitespace in the command
     String normalizedCommand = normalizeCommand(commandString);
 
     try {
-      // First, check if it's a calendar management command
       if (isCalendarCommand(normalizedCommand)) {
-        // Handle calendar-specific commands
         String result = processCalendarCommand(normalizedCommand);
 
-        // If we changed the active calendar, we need to update the parser with a new CommandFactory
         if (normalizedCommand.startsWith("use calendar")) {
           String calendarName = extractCalendarName(normalizedCommand);
           if (calendarName != null) {
-            // Update the command factory with the new active calendar
             updateCommandFactory();
           }
         }
@@ -125,7 +120,6 @@ public class CalendarController {
         return result;
       }
 
-      // Otherwise, treat it as a regular event command
       CommandParser.CommandWithArgs commandWithArgs = parser.parseCommand(normalizedCommand);
       return commandWithArgs.execute();
     } catch (IllegalArgumentException e) {
@@ -158,22 +152,20 @@ public class CalendarController {
 
   /**
    * Updates the command factory when switching between calendars.
-   * <p>
-   * This method:
+   *
+   * <p>This method:
    * 1. Gets the currently active calendar
    * 2. Creates a new command factory for that calendar
    * 3. Updates the command parser with the new factory
-   * <p>
-   * This ensures that commands are executed in the context of
+   *
+   * <p>This ensures that commands are executed in the context of
    * the currently active calendar.
    */
   private void updateCommandFactory() {
     try {
       ICalendar activeCalendar = calendarManager.getActiveCalendar();
       if (this.commandFactory instanceof CommandFactory) {
-        // Create a new CommandFactory with the active calendar
         this.commandFactory = new CommandFactory(activeCalendar, view);
-        // Create a new parser with the updated factory
         this.parser = new CommandParser(this.commandFactory);
       }
     } catch (CalendarNotFoundException e) {
@@ -183,8 +175,8 @@ public class CalendarController {
 
   /**
    * Processes a calendar-specific command.
-   * <p>
-   * This method handles commands that operate on calendars rather than events.
+   *
+   * <p>This method handles commands that operate on calendars rather than events.
    * It parses the command into components and routes it to the appropriate
    * handler in the calendar command factory.
    *
@@ -201,7 +193,6 @@ public class CalendarController {
     String action = parts[0]; // e.g., "create", "edit", "use", "copy"
     String targetType = parts[1]; // e.g., "calendar", "event", "events"
 
-    // For copy commands, just pass the entire parts array to the copy command handler
     if (action.equals("copy")) {
       return calendarCommandFactory.getCommand("copy").execute(parts);
     }
@@ -225,14 +216,14 @@ public class CalendarController {
 
   /**
    * Parses a command string into tokens, properly handling quoted strings.
-   * <p>
-   * This method:
+   *
+   * <p>This method:
    * 1. Splits the command on whitespace
    * 2. Preserves quoted strings as single tokens
    * 3. Handles both single and double quotes
    * 4. Removes the quotes from the final tokens
-   * <p>
-   * Example:
+   *
+   * <p>Example:
    * Input: create event "Team Meeting" from 2023-01-01
    * Output: ["create", "event", "Team Meeting", "from", "2023-01-01"]
    *
@@ -271,8 +262,8 @@ public class CalendarController {
 
   /**
    * Starts the controller in interactive mode.
-   * <p>
-   * In this mode, the controller:
+   *
+   * <p>In this mode, the controller:
    * 1. Displays welcome message
    * 2. Enters a command processing loop
    * 3. Reads commands from user input
@@ -295,14 +286,14 @@ public class CalendarController {
 
   /**
    * Starts the controller in headless mode.
-   * <p>
-   * In this mode, the controller:
+   *
+   * <p>In this mode, the controller:
    * 1. Reads commands from the specified file
    * 2. Processes each command in sequence
    * 3. Stops on first error or after processing all commands
    * 4. Requires 'exit' as the last command
-   * <p>
-   * The method enforces several validations:
+   *
+   * <p>The method enforces several validations:
    * - File must not be empty
    * - File must contain at least one command
    * - Last command must be 'exit'
@@ -310,7 +301,6 @@ public class CalendarController {
    *
    * @param commandsFilePath Path to the file containing commands
    * @return true if all commands were executed successfully
-   * @throws IOException if there are issues reading the file
    */
   public boolean startHeadlessMode(String commandsFilePath) {
     if (commandsFilePath == null || commandsFilePath.trim().isEmpty()) {
@@ -324,20 +314,17 @@ public class CalendarController {
               .filter(line -> !line.isEmpty())
               .collect(Collectors.toList());
 
-      // Check if file was empty
       if (commands.isEmpty()) {
         view.displayError("Error: Command file is empty. At least one command (exit) is required.");
         return false;
       }
 
-      // Check if the last command was an exit command
       String lastCommand = commands.get(commands.size() - 1);
       if (!lastCommand.equalsIgnoreCase(EXIT_COMMAND)) {
         view.displayError("Headless mode requires the last command to be 'exit'");
         return false;
       }
 
-      // Process all commands
       for (String command : commands) {
         String result = processCommand(command);
         if (result.startsWith("Error")) {
@@ -359,8 +346,8 @@ public class CalendarController {
 
   /**
    * Normalizes a command string by removing extra whitespace.
-   * <p>
-   * This method:
+   *
+   * <p>This method:
    * 1. Trims leading and trailing whitespace
    * 2. Replaces multiple spaces with single spaces
    * 3. Ensures consistent command format for parsing
@@ -369,10 +356,8 @@ public class CalendarController {
    * @return Normalized command string
    */
   private String normalizeCommand(String commandString) {
-    // Split by whitespace and filter out empty strings
     String[] parts = commandString.trim().split("\\s+");
 
-    // Join parts with single space
     return String.join(" ", parts);
   }
 }

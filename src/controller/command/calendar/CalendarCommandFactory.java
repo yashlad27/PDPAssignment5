@@ -9,19 +9,48 @@ import controller.command.ICommand;
 import controller.command.copy.CopyEventCommand;
 import model.calendar.CalendarManager;
 import model.exceptions.CalendarNotFoundException;
+import model.exceptions.ConflictingEventException;
 import model.exceptions.DuplicateCalendarException;
+import model.exceptions.EventNotFoundException;
+import model.exceptions.InvalidEventException;
 import model.exceptions.InvalidTimezoneException;
 import utilities.TimeZoneHandler;
 import view.ICalendarView;
 
+/**
+ * Factory class for creating and managing calendar-related commands.
+ *
+ * <p>This factory implements the Command pattern to handle various calendar operations
+ * such as creating calendars, editing calendar properties, switching between calendars,
+ * and copying events between calendars.
+ *
+ * <p>The factory maintains a registry of command handlers and provides methods to:
+ * - Create command instances
+ * - Execute calendar operations
+ * - Manage command registration
+ * - Handle command execution errors
+ *
+ * @see ICommandFactory
+ * @see CalendarManager
+ * @see ICalendarView
+ */
 public class CalendarCommandFactory implements ICommandFactory {
 
   private final Map<String, CalendarCommandHandler> commands;
   private final CalendarManager calendarManager;
   private final ICalendarView view;
-  private final TimeZoneHandler timezoneHandler;
-  private final CopyEventCommand copyEventCommand;
 
+  /**
+   * Constructs a new CalendarCommandFactory with the specified dependencies.
+   *
+   * <p>This factory manages calendar-level commands such as creating, editing,
+   * and using calendars. It initializes command handlers and validates
+   * required dependencies.
+   *
+   * @param calendarManager Manager for calendar operations, must not be null
+   * @param view            View component for user interaction, must not be null
+   * @throws IllegalArgumentException if calendarManager or view is null
+   */
   public CalendarCommandFactory(CalendarManager calendarManager, ICalendarView view) {
     if (calendarManager == null) {
       throw new IllegalArgumentException("CalendarManager cannot be null");
@@ -34,17 +63,27 @@ public class CalendarCommandFactory implements ICommandFactory {
     this.commands = new HashMap<>();
     this.calendarManager = calendarManager;
     this.view = view;
-    this.timezoneHandler = calendarManager.getTimezoneHandler();
-    this.copyEventCommand = new CopyEventCommand(calendarManager, timezoneHandler);
+    TimeZoneHandler timezoneHandler = calendarManager.getTimezoneHandler();
+    CopyEventCommand copyEventCommand = new CopyEventCommand(calendarManager, timezoneHandler);
 
-    registerCommands();
+    registerCommands(copyEventCommand);
   }
 
-  private void registerCommands() {
+  private void registerCommands(CopyEventCommand copyEventCommand) {
     commands.put("create", this::executeCreateCommand);
     commands.put("edit", this::executeEditCalendarCommand);
     commands.put("use", this::executeUseCalendarCommand);
-    commands.put("copy", this::executeCopyCommand);
+    commands.put("copy", args -> {
+      try {
+        return copyEventCommand.execute(args);
+      } catch (ConflictingEventException e) {
+        throw new RuntimeException(e);
+      } catch (InvalidEventException e) {
+        throw new RuntimeException(e);
+      } catch (EventNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   private String executeCreateCommand(String[] args) {
@@ -55,7 +94,6 @@ public class CalendarCommandFactory implements ICommandFactory {
     String calendarName = args[2];
     String timezone = args[4];
 
-    // Validate calendar name length
     if (calendarName.length() > 100) {
       return "Error: Calendar name cannot exceed 100 characters";
     }
@@ -114,6 +152,8 @@ public class CalendarCommandFactory implements ICommandFactory {
     }
 
     try {
+      TimeZoneHandler timezoneHandler = calendarManager.getTimezoneHandler();
+      CopyEventCommand copyEventCommand = new CopyEventCommand(calendarManager, timezoneHandler);
       return copyEventCommand.execute(args);
     } catch (Exception e) {
       return "Error: " + e.getMessage();
@@ -128,10 +168,6 @@ public class CalendarCommandFactory implements ICommandFactory {
   public ICommand getCommand(String commandName) {
     if (commandName == null) {
       return null;
-    }
-
-    if (commandName.equals("copy")) {
-      return copyEventCommand;
     }
 
     CalendarCommandHandler handler = commands.get(commandName);

@@ -25,14 +25,14 @@ import utilities.EventPropertyUpdater;
  * This class provides comprehensive functionality for managing both single and recurring events,
  * including creation, modification, querying, and conflict detection.
  *
- * <p> Key Features:
+ * <p>Key Features:
  * - Manages both single and recurring events
  * - Supports event conflict detection
  * - Provides flexible event querying (by date, range, or custom filters)
  * - Handles event property updates
  * - Supports calendar data export to CSV
  *
- * <p> The calendar maintains separate collections for single and recurring events,
+ * <p>The calendar maintains separate collections for single and recurring events,
  * with UUID-based indexing for efficient event lookup.
  */
 public class Calendar implements ICalendar {
@@ -68,13 +68,13 @@ public class Calendar implements ICalendar {
 
   /**
    * Adds a single event to the calendar with conflict checking.
-   * <p> The method performs the following steps:
+   *
+   * <p>The method performs the following steps:
    * 1. Validates the event is not null
    * 2. Checks for conflicts with existing events
    * 3. If autoDecline is true, throws exception on conflict
    * 4. If autoDecline is false, returns false on conflict
    * 5. Adds the event to both the events list and ID mapping
-   * </p>
    *
    * @param event       The event to add, must not be null
    * @param autoDecline If true, throws exception on conflict; if false, returns false
@@ -90,8 +90,9 @@ public class Calendar implements ICalendar {
 
     if (hasConflict(event)) {
       if (autoDecline) {
-        throw new ConflictingEventException("Cannot add event '" + event.getSubject()
-                + "' due to conflict with an existing event");
+        throw new ConflictingEventException(
+                "Cannot add event '" + event.getSubject() + "' due to conflict with an existing event"
+        );
       }
       return false;
     }
@@ -103,7 +104,8 @@ public class Calendar implements ICalendar {
 
   /**
    * Adds a recurring event to the calendar with conflict checking for all occurrences.
-   * <p> The method performs the following steps:
+   *
+   * <p>The method performs the following steps:
    * 1. Validates the recurring event is not null
    * 2. Generates all event occurrences
    * 3. Checks each occurrence for conflicts
@@ -129,9 +131,10 @@ public class Calendar implements ICalendar {
     for (Event occurrence : occurrences) {
       if (hasConflict(occurrence)) {
         if (autoDecline) {
-          throw new ConflictingEventException("Cannot add recurring event '"
-                  + recurringEvent.getSubject()
-                  + "' due to conflict with an existing event");
+          throw new ConflictingEventException(
+                  "Cannot add recurring event '" + recurringEvent.getSubject() +
+                          "' due to conflict with an existing event"
+          );
         }
         return false;
       }

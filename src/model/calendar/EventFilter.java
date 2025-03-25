@@ -1,9 +1,9 @@
 package model.calendar;
 
-import model.event.Event;
-import java.time.LocalDate;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import model.event.Event;
 
 /**
  * Functional interface for filtering events based on specified criteria.
