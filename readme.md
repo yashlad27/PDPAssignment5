@@ -108,7 +108,7 @@ java -jar PDPAssignment5.jar --mode interactive
 
 ### Headless Mode
 ```bash
-java -jar PDPAssignment5.jar --mode headless <command-file>
+java -jar PDPAssignment5.jar --mode headless <command-file-path>
 ```
 
 ## Example Command Files
@@ -126,7 +126,7 @@ The application handles various error cases including:
 
 ## Dependencies
 - Java 11 or higher
-- JUnit 5 for testing
+- JUnit 4 for testing
 
 ## Project Structure
 ```
@@ -143,12 +143,6 @@ src/
 └── CalendarApp.java
 ```
 
-## Testing
-Run tests using:
-```bash
-./gradlew test
-```
-
 ## Feature Status
 
 ### Working Features
@@ -160,14 +154,13 @@ Run tests using:
 - Interactive and headless modes
 - CSV export
 
-### Known Issues
-- None at this time. All required functionality is implemented and working as specified.
+
 
 ## Team Contribution
-- Calendar Management & Timezone Support: [Team Member Name]
-- Copy Functionality & Command System: [Team Member Name]
-- UI Improvements & Testing: [Team Member Name]
-- Documentation & Bug Fixes: [Team Member Name]
+- Calendar Management & Timezone Support: Gaurav Bidani
+- Copy Functionality & Command System: Yash Lad
+- UI Improvements & Testing: Gaurav Bidani
+- Documentation & Bug Fixes: Yash Lad
 
 ## Exit
 To exit the application, use the `exit` command.
