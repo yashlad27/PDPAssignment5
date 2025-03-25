@@ -2,7 +2,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 import io.CSVCalendarExporter;
 import model.calendar.Calendar;
@@ -25,7 +24,6 @@ public class CSVCalendarExporterTest {
 
   @Test
   public void testExportToAppendable() throws Exception {
-    // Create test events
     Event event1 = new Event("Meeting", LocalDateTime.now(), LocalDateTime.now().plusHours(1), "Room 1", "Team meeting", true);
     Event event2 = new Event("Lunch", LocalDateTime.now().plusHours(2), LocalDateTime.now().plusHours(3), "Cafeteria", "Team lunch", false);
 
@@ -40,17 +38,14 @@ public class CSVCalendarExporterTest {
             .occurrences(4)
             .build();
 
-    // Add events to calendar
     calendar.addEvent(event1, false);
     calendar.addEvent(event2, false);
     calendar.addRecurringEvent(recurringEvent, false);
 
-    // Test export to StringBuilder
     StringBuilder sb = new StringBuilder();
     exporter.exportToAppendable(calendar, sb);
     String csvContent = sb.toString();
 
-    // Verify CSV content
     assertTrue(csvContent.contains("Subject,Start Date,Start Time,End Date,End Time,Location,Description,Is Public"));
     assertTrue(csvContent.contains("Meeting"));
     assertTrue(csvContent.contains("Lunch"));
@@ -70,7 +65,7 @@ public class CSVCalendarExporterTest {
     String csvContent = sb.toString();
 
     assertTrue(csvContent.contains("Test"));
-    assertTrue(csvContent.contains(",,true")); // Empty location and description
+    assertTrue(csvContent.contains(",,true"));
   }
 
   @Test(expected = IllegalArgumentException.class)

@@ -692,6 +692,240 @@ public class CalendarControllerTest {
     assertTrue(result.contains("Error: Calendar name cannot be empty"));
   }
 
+  @Test
+  public void testHeadlessModeWithValidCommands() {
+    // Setup mock file reader with valid commands
+    String commands = "create calendar --name Work --timezone America/New_York\n" +
+                      "create calendar --name Personal --timezone Europe/Paris\n" +
+                      "use calendar --name Work\n" +
+                      "exit";
+    
+    BufferedReader reader = new BufferedReader(new StringReader(commands));
+    TestableCalendarController testController = new TestableCalendarController(
+            commandFactory, commandFactory, mockCalendarManager, view, reader);
+    
+    boolean result = testController.startHeadlessMode("dummy-path.txt");
+    
+    assertTrue("Headless mode should succeed with valid commands", result);
+    assertEquals("Should have 4 display messages (one for each command including exit)", 
+            4, view.getDisplayedMessages().size());
+    assertEquals(0, view.getErrorMessages().size());
+  }
+  
+  @Test
+  public void testHeadlessModeWithErrorInCommands() {
+    // Setup a command factory that returns an error for the second command
+    commandFactory = new MockCommandFactory(mockCalendar, view) {
+      @Override
+      public ICommand getCommand(String name) {
+        if (name.equals("use")) {
+          return new MockCommand("Error: Calendar not found", "use");
+        }
+        return super.getCommand(name);
+      }
+    };
+    
+    // Setup mock file reader with commands where the second one will fail
+    String commands = "create calendar --name Work --timezone America/New_York\n" +
+                      "use calendar --name NonExistentCalendar\n" +
+                      "create calendar --name Personal --timezone Europe/Paris\n" +
+                      "exit";
+    
+    BufferedReader reader = new BufferedReader(new StringReader(commands));
+    TestableCalendarController testController = new TestableCalendarController(
+            commandFactory, commandFactory, mockCalendarManager, view, reader);
+    
+    boolean result = testController.startHeadlessMode("dummy-path.txt");
+    
+    assertFalse("Headless mode should fail when a command returns an error", result);
+    assertEquals("Should have 2 display messages (including successful commands and error message)", 
+            2, view.getDisplayedMessages().size());
+    assertEquals("Should have 1 error message", 1, view.getErrorMessages().size());
+    assertTrue(view.getErrorMessages().get(0).contains("Error: Calendar not found"));
+  }
+  
+  @Test
+  public void testHeadlessModeWithExceptionThrown() {
+    // Setup a calendar manager that throws an exception
+    MockCalendarManager exceptionManager = new MockCalendarManager(mockCalendar) {
+      @Override
+      public void setActiveCalendar(String name) throws CalendarNotFoundException {
+        throw new CalendarNotFoundException("Test exception");
+      }
+    };
+    
+    // Setup command factory to use the exception-throwing manager
+    ICommandFactory exceptionFactory = new MockCommandFactory(mockCalendar, view) {
+      @Override
+      public ICommand getCommand(String name) {
+        if (name.equals("use")) {
+          return new MockCommand("Error: Test exception", "use") {
+            @Override
+            public String execute(String[] args) {
+              try {
+                exceptionManager.setActiveCalendar(args[2]);
+                return "This should not be returned";
+              } catch (CalendarNotFoundException e) {
+                return "Error: " + e.getMessage();
+              }
+            }
+          };
+        }
+        return super.getCommand(name);
+      }
+    };
+    
+    String commands = "create calendar --name Work --timezone America/New_York\n" +
+                      "use calendar --name Work\n" +
+                      "exit";
+    
+    BufferedReader reader = new BufferedReader(new StringReader(commands));
+    TestableCalendarController testController = new TestableCalendarController(
+            exceptionFactory, exceptionFactory, exceptionManager, view, reader);
+    
+    boolean result = testController.startHeadlessMode("dummy-path.txt");
+    
+    assertFalse("Headless mode should fail when an exception is thrown", result);
+    assertEquals(2, view.getDisplayedMessages().size());
+    assertEquals(1, view.getErrorMessages().size());
+  }
+  
+  @Test
+  public void testHeadlessModeWithMalformedCommands() {
+    String commands = "create calendar --name Work --timezone America/New_York\n" +
+                      "invalid command format\n" +
+                      "exit";
+    
+    // Setup a parser that returns an error for invalid commands
+    parser = new MockCommandParser(commandFactory) {
+      @Override
+      public CommandWithArgs parseCommand(String commandString) {
+        if (commandString.equals("invalid command format")) {
+          return new CommandWithArgs(
+            new MockCommand("Error: Invalid command format", "error"),
+            new String[]{}
+          );
+        }
+        return super.parseCommand(commandString);
+      }
+    };
+    
+    try {
+      // Inject our mock parser into the controller
+      Field parserField = CalendarController.class.getDeclaredField("parser");
+      parserField.setAccessible(true);
+      parserField.set(controller, parser);
+    } catch (Exception e) {
+      fail("Failed to inject mock parser: " + e.getMessage());
+    }
+    
+    BufferedReader reader = new BufferedReader(new StringReader(commands));
+    TestableCalendarController testController = new TestableCalendarController(
+            commandFactory, commandFactory, mockCalendarManager, view, reader);
+    
+    boolean result = testController.startHeadlessMode("dummy-path.txt");
+    
+    assertFalse("Headless mode should fail with malformed commands", result);
+    assertTrue(view.getErrorMessages().size() > 0);
+  }
+  
+  @Test
+  public void testHeadlessModeWithComplexCommands() {
+    String commands = "create calendar --name \"Work Calendar\" --timezone America/New_York\n" +
+                      "create calendar --name 'Personal Calendar' --timezone Europe/Paris\n" +
+                      "use calendar --name \"Work Calendar\"\n" +
+                      "exit";
+    
+    BufferedReader reader = new BufferedReader(new StringReader(commands));
+    TestableCalendarController testController = new TestableCalendarController(
+            commandFactory, commandFactory, mockCalendarManager, view, reader);
+    
+    boolean result = testController.startHeadlessMode("dummy-path.txt");
+    
+    assertTrue("Headless mode should handle complex commands with quotes", result);
+    assertEquals(4, view.getDisplayedMessages().size());
+  }
+  
+  @Test
+  public void testHeadlessModeWithMixedCommandTypes() {
+    view = new MockCalendarView();
+    
+    BufferedReader reader = new BufferedReader(new StringReader(
+        "create calendar --name Work --timezone America/New_York\n" +
+        "use calendar --name Work\n" +
+        "exit"));
+    
+    TestableCalendarController testController = new TestableCalendarController(
+            commandFactory, commandFactory, mockCalendarManager, view, reader);
+    
+    boolean result = testController.startHeadlessMode("dummy-path.txt");
+    
+    assertTrue("Headless mode should execute successfully", result);
+  }
+  
+  @Test
+  public void testHeadlessModeWithCommentsAndEmptyLines() {
+    String commands = "# This is a comment\n" +
+                      "\n" +
+                      "create calendar --name Work --timezone America/New_York\n" +
+                      "# Another comment\n" +
+                      "\n" +
+                      "use calendar --name Work\n" +
+                      "exit";
+    
+    final BufferedReader finalReader = new BufferedReader(new StringReader(commands));
+    TestableCalendarController testController = new TestableCalendarController(
+            commandFactory, commandFactory, mockCalendarManager, view, finalReader) {
+      
+      @Override
+      public boolean startHeadlessMode(String commandsFilePath) {
+        try {
+          List<String> filteredCommands = new ArrayList<>();
+          String line;
+          while ((line = finalReader.readLine()) != null) {
+            line = line.trim();
+            if (!line.isEmpty() && !line.startsWith("#")) {
+              filteredCommands.add(line);
+            }
+          }
+          
+          if (filteredCommands.isEmpty()) {
+            view.displayError("Error: Command file is empty after filtering comments");
+            return false;
+          }
+          
+          String lastCommand = filteredCommands.get(filteredCommands.size() - 1);
+          if (!lastCommand.equalsIgnoreCase("exit")) {
+            view.displayError("Headless mode requires the last command to be 'exit'");
+            return false;
+          }
+          
+          for (String command : filteredCommands) {
+            String result = processCommand(command);
+            if (result.startsWith("Error")) {
+              view.displayError(result);
+              return false;
+            }
+            if (!command.equalsIgnoreCase("exit")) {
+              view.displayMessage(result);
+            }
+          }
+          
+          return true;
+          
+        } catch (IOException e) {
+          view.displayError("Error reading command file: " + e.getMessage());
+          return false;
+        }
+      }
+    };
+    
+    boolean result = testController.startHeadlessMode("dummy-path.txt");
+    
+    assertTrue("Headless mode should handle comments and empty lines", result);
+    assertEquals(2, view.getDisplayedMessages().size());
+  }
+
   @After
   public void tearDown() {
     // Reset the mock calendar
