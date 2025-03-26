@@ -13,67 +13,63 @@ import model.exceptions.InvalidEventException;
 
 /**
  * Interface defining the core functionality of a calendar system.
- * <p>
- * This interface provides a comprehensive API for managing calendar events, including:
- * - Creating and managing single events
- * - Creating and managing recurring events
- * - Querying events by date or date range
- * - Editing event properties
- * - Checking schedule conflicts
- * - Exporting calendar data
- * <p>
- * The calendar supports two main types of events:
- * 1. Single events: One-time events with a specific start and end time
- * 2. Recurring events: Events that repeat on specified days with either:
- * - A fixed number of occurrences
- * - An end date
- * <p>
- * All operations that modify events include conflict checking to maintain
- * calendar consistency and prevent double-booking.
+ *
+ * <p>This interface provides a comprehensive API for managing calendar events, including: -
+ * Creating and managing single events - Creating and managing recurring events - Querying events by
+ * date or date range - Editing event properties - Checking schedule conflicts - Exporting calendar
+ * data
+ *
+ * <p>The calendar supports two main types of events: 1. Single events: One-time events with a
+ * specific start and end time 2. Recurring events: Events that repeat on specified days with
+ * either: - A fixed number of occurrences - An end date
+ *
+ * <p>All operations that modify events include conflict checking to maintain calendar consistency
+ * and prevent double-booking.
  */
 public interface ICalendar {
 
   /**
    * Adds a single event to the calendar with optional conflict checking.
-   * <p>
-   * If autoDecline is true, the method will throw a ConflictingEventException
-   * when the event conflicts with any existing events. If false, it will
-   * return false for conflicts, allowing the caller to handle the situation.
+   *
+   * <p>If autoDecline is true, the method will throw a ConflictingEventException when the event
+   * conflicts with any existing events. If false, it will return false for conflicts, allowing the
+   * caller to handle the situation.
    *
    * @param event       The event to add, must not be null
    * @param autoDecline If true, throws exception on conflict; if false, returns false
-   * @return true if the event was added successfully, false if there was a conflict and autoDecline is false
-   * @throws ConflictingEventException if autoDecline is true and the event conflicts with existing events
+   * @return true if the event was added successfully, false if there was a conflict and autoDecline
+   * is false
+   * @throws ConflictingEventException if autoDecline is true and the event conflicts with existing
+   *                                   events
    * @throws IllegalArgumentException  if event is null
    */
   boolean addEvent(Event event, boolean autoDecline) throws ConflictingEventException;
 
   /**
    * Adds a recurring event to the calendar with optional conflict checking.
-   * <p>
-   * The method checks for conflicts across all occurrences of the recurring event.
-   * If autoDecline is true, it will throw an exception if any occurrence conflicts
-   * with existing events. If false, it will return false for conflicts.
+   *
+   * <p> The method checks for conflicts across all occurrences of the recurring event. If
+   * autoDecline is true, it will throw an exception if any occurrence conflicts with existing
+   * events. If false, it will return false for conflicts.
    *
    * @param recurringEvent The recurring event to add, must not be null
    * @param autoDecline    If true, throws exception on conflict; if false, returns false
-   * @return true if the event was added successfully, false if there was a conflict and autoDecline is false
+   * @return true if the event was added successfully, false if there was a conflict and autoDecline
+   * is false
    * @throws ConflictingEventException if autoDecline is true and any occurrence conflicts
    * @throws IllegalArgumentException  if recurringEvent is null
    */
   boolean addRecurringEvent(RecurringEvent recurringEvent, boolean autoDecline)
-          throws ConflictingEventException;
+      throws ConflictingEventException;
 
   /**
    * Creates a recurring event that repeats on specified weekdays until a given end date.
-   * <p>
-   * Example weekdays format: "MWF" for Monday, Wednesday, Friday
-   * Valid weekday codes: M (Monday), T (Tuesday), W (Wednesday), R (Thursday),
-   * F (Friday), S (Saturday), U (Sunday)
-   * <p>
-   * The event will repeat on the specified weekdays starting from the start date
-   * until the untilDate (inclusive). Each occurrence will have the same duration
-   * as the first occurrence.
+   *
+   * <p>Example weekdays format: "MWF" for Monday, Wednesday, Friday Valid weekday codes: M
+   * (Monday), T (Tuesday), W (Wednesday), R (Thursday), F (Friday), S (Saturday), U (Sunday)
+   *
+   * <p>The event will repeat on the specified weekdays starting from the start date until the
+   * untilDate (inclusive). Each occurrence will have the same duration as the first occurrence.
    *
    * @param name        Event name/subject
    * @param start       Start date and time of the first occurrence
@@ -86,15 +82,15 @@ public interface ICalendar {
    * @throws ConflictingEventException if autoDecline is true and any occurrence conflicts
    */
   boolean createRecurringEventUntil(String name, LocalDateTime start, LocalDateTime end,
-                                    String weekdays, LocalDate untilDate, boolean autoDecline)
-          throws InvalidEventException, ConflictingEventException;
+      String weekdays, LocalDate untilDate, boolean autoDecline)
+      throws InvalidEventException, ConflictingEventException;
 
   /**
    * Creates an all-day recurring event with a fixed number of occurrences.
-   * <p>
-   * An all-day event spans from the start to the end of the specified date(s).
-   * The event will repeat on the specified weekdays for the given number of
-   * occurrences, starting from the initial date.
+   *
+   * <p>An all-day event spans from the start to the end of the specified date(s). The event will
+   * repeat on the specified weekdays for the given number of occurrences, starting from the initial
+   * date.
    *
    * @param name        Event name/subject
    * @param date        Initial date of the event
@@ -109,9 +105,8 @@ public interface ICalendar {
    * @throws ConflictingEventException if autoDecline is true and any occurrence conflicts
    */
   boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays, int occurrences,
-                                     boolean autoDecline, String description,
-                                     String location, boolean isPublic)
-          throws InvalidEventException, ConflictingEventException;
+      boolean autoDecline, String description, String location, boolean isPublic)
+      throws InvalidEventException, ConflictingEventException;
 
   /**
    * Creates an all-day recurring event that repeats until a specific date.
@@ -124,18 +119,14 @@ public interface ICalendar {
    * @return
    */
   boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
-                                          LocalDate untilDate, boolean autoDecline,
-                                          String description, String location,
-                                          boolean isPublic)
-          throws InvalidEventException, ConflictingEventException;
+      LocalDate untilDate, boolean autoDecline, String description, String location,
+      boolean isPublic) throws InvalidEventException, ConflictingEventException;
 
   /**
    * Gets all events occurring on a specific date.
-   * <p>
-   * This includes:
-   * - Single events that occur on the date
-   * - Occurrences of recurring events that fall on the date
-   * - All-day events scheduled for the date
+   *
+   * <p>This includes: - Single events that occur on the date - Occurrences of recurring events
+   * that fall on the date - All-day events scheduled for the date
    *
    * @param date The date to query
    * @return List of events occurring on the date, empty list if none found
@@ -145,14 +136,12 @@ public interface ICalendar {
 
   /**
    * Gets all events occurring within a date range (inclusive).
-   * <p>
-   * This includes:
-   * - Single events within the range
-   * - Occurrences of recurring events that fall within the range
-   * - All-day events scheduled within the range
-   * <p>
-   * Events that partially overlap with the range (start before but end within,
-   * or start within but end after) are included.
+   *
+   * <p>This includes: - Single events within the range - Occurrences of recurring events that fall
+   * within the range - All-day events scheduled within the range
+   *
+   * <p>Events that partially overlap with the range (start before but end within, or start within
+   * but end after) are included.
    *
    * @param startDate Start of the date range (inclusive)
    * @param endDate   End of the date range (inclusive)
@@ -188,14 +177,11 @@ public interface ICalendar {
 
   /**
    * Edits a single event identified by its subject and start date/time.
-   * <p>
-   * Supported properties for editing:
-   * - subject: The event's name/title
-   * - startTime: The event's start time (format: HH:mm)
-   * - endTime: The event's end time (format: HH:mm)
-   * - description: The event's description
-   * - location: The event's location
-   * - isPublic: The event's visibility (true/false)
+   *
+   * <p>Supported properties for editing: - subject: The event's name/title - startTime: The
+   * event's start time (format: HH:mm) - endTime: The event's end time (format: HH:mm) -
+   * description: The event's description - location: The event's location - isPublic: The event's
+   * visibility (true/false)
    *
    * @param subject       The subject of the event to edit
    * @param startDateTime The start date/time of the event to edit
@@ -207,8 +193,8 @@ public interface ICalendar {
    * @throws ConflictingEventException if the edit would create a conflict
    */
   boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property,
-                          String newValue)
-          throws EventNotFoundException, InvalidEventException, ConflictingEventException;
+      String newValue)
+      throws EventNotFoundException, InvalidEventException, ConflictingEventException;
 
   /**
    * Edits all events in a recurring series starting from a specific date.
@@ -220,7 +206,7 @@ public interface ICalendar {
    * @return the number of events that were edited
    */
   int editEventsFromDate(String subject, LocalDateTime startDateTime, String property,
-                         String newValue) throws InvalidEventException, ConflictingEventException;
+      String newValue) throws InvalidEventException, ConflictingEventException;
 
   /**
    * Edits all events with a specific subject.
@@ -231,7 +217,7 @@ public interface ICalendar {
    * @return the number of events that were edited
    */
   int editAllEvents(String subject, String property, String newValue)
-          throws InvalidEventException, ConflictingEventException;
+      throws InvalidEventException, ConflictingEventException;
 
   /**
    * Gets all recurring events in the calendar.
@@ -242,15 +228,10 @@ public interface ICalendar {
 
   /**
    * Exports the calendar to a CSV file compatible with common calendar applications.
-   * <p>
-   * The exported CSV includes all events (both single and recurring) with their:
-   * - Subject
-   * - Start date/time
-   * - End date/time
-   * - Description
-   * - Location
-   * - Visibility (public/private)
-   * - Recurrence information (if applicable)
+   *
+   * <p>The exported CSV includes all events (both single and recurring) with their: - Subject -
+   * Start date/time - End date/time - Description - Location - Visibility (public/private) -
+   * Recurrence information (if applicable)
    *
    * @param filePath The path where the CSV file should be created
    * @return The absolute path of the created CSV file
