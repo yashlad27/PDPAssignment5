@@ -15,48 +15,52 @@ import utilities.DateTimeUtil;
  */
 public class RecurringEventCreator extends AbstractEventCreator {
 
-  private final String eventName;
-  private final LocalDateTime startDateTime;
-  private final LocalDateTime endDateTime;
-  private final String weekdays;
-  private final Set<DayOfWeek> repeatDays;
-  private final int occurrences;
-  private final boolean autoDecline;
-  private final String description;
-  private final String location;
-  private final boolean isPublic;
+  private String eventName;
+  private LocalDateTime startDateTime;
+  private LocalDateTime endDateTime;
+  private Set<DayOfWeek> repeatDays;
+  private int occurrences;
+  private boolean autoDecline;
+  private String description;
+  private String location;
+  private boolean isPublic;
 
   /**
    * Constructs a strategy for creating a recurring event.
    *
    * @param args the arguments for event creation
+   * @throws InvalidEventException if event parameters are invalid
    */
   public RecurringEventCreator(String[] args) throws InvalidEventException {
+    validateInputArguments(args);
+    initializeFields(args);
+  }
+
+  /**
+   * Validates the input arguments array.
+   *
+   * @param args the arguments to validate
+   * @throws IllegalArgumentException if arguments are invalid
+   */
+  private void validateInputArguments(String[] args) {
     if (args == null) {
       throw new IllegalArgumentException("Arguments array cannot be null");
     }
     if (args.length < 7) {
       throw new IllegalArgumentException("Insufficient arguments for creating a recurring event");
     }
-    
-    try {
-      this.eventName = args[1];
-      this.startDateTime = DateTimeUtil.parseDateTime(args[2]);
-      this.endDateTime = DateTimeUtil.parseDateTime(args[3]);
-      this.weekdays = args[4];
-      
-      // Check for empty weekdays before parsing
-      if (this.weekdays == null || this.weekdays.trim().isEmpty()) {
-        throw new InvalidEventException("Repeat days cannot be empty");
-      }
-      
-      this.repeatDays = DateTimeUtil.parseWeekdays(args[4]);
-      this.occurrences = Integer.parseInt(args[5]);
-      this.autoDecline = Boolean.parseBoolean(args[6]);
+  }
 
-      this.description = args.length > 7 ? removeQuotes(args[7]) : null;
-      this.location = args.length > 8 ? removeQuotes(args[8]) : null;
-      this.isPublic = args.length > 9 ? Boolean.parseBoolean(args[9]) : true;
+  /**
+   * Initializes all fields from the input arguments.
+   *
+   * @param args the arguments to parse
+   * @throws InvalidEventException if event parameters are invalid
+   */
+  private void initializeFields(String[] args) throws InvalidEventException {
+    try {
+      initializeRequiredFields(args);
+      initializeOptionalFields(args);
     } catch (InvalidEventException e) {
       throw e;  // Re-throw InvalidEventException as is
     } catch (Exception e) {
@@ -64,26 +68,85 @@ public class RecurringEventCreator extends AbstractEventCreator {
     }
   }
 
-  @Override
-  public Event createEvent() throws InvalidEventException {
-    validateEventParameters(eventName);
+  /**
+   * Initializes the required fields from the input arguments.
+   *
+   * @param args the arguments to parse
+   * @throws InvalidEventException if required parameters are invalid
+   */
+  private void initializeRequiredFields(String[] args) throws InvalidEventException {
+    this.eventName = args[1];
+    this.startDateTime = DateTimeUtil.parseDateTime(args[2]);
+    this.endDateTime = DateTimeUtil.parseDateTime(args[3]);
 
-    if (startDateTime == null) {
-      throw new InvalidEventException("Start date/time cannot be null");
-    }
+    String weekdays = args[4];
     if (weekdays == null || weekdays.trim().isEmpty()) {
       throw new InvalidEventException("Repeat days cannot be empty");
     }
+
+    this.repeatDays = DateTimeUtil.parseWeekdays(weekdays);
+    if (this.repeatDays.isEmpty()) {
+      throw new InvalidEventException("Repeat days cannot be empty");
+    }
+
+    this.occurrences = Integer.parseInt(args[5]);
+    this.autoDecline = Boolean.parseBoolean(args[6]);
+  }
+
+  /**
+   * Initializes the optional fields from the input arguments.
+   *
+   * @param args the arguments to parse
+   */
+  private void initializeOptionalFields(String[] args) {
+    this.description = args.length > 7 ? removeQuotes(args[7]) : null;
+    this.location = args.length > 8 ? removeQuotes(args[8]) : null;
+    this.isPublic = args.length > 9 ? Boolean.parseBoolean(args[9]) : true;
+  }
+
+  @Override
+  public Event createEvent() throws InvalidEventException {
+    validateEventParameters();
+    return buildRecurringEvent();
+  }
+
+  /**
+   * Validates all event parameters before creation.
+   *
+   * @throws InvalidEventException if any parameter is invalid
+   */
+  private void validateEventParameters() throws InvalidEventException {
+    validateEventParameters(eventName);
+
+    // Validate date/time parameters
+    if (startDateTime == null) {
+      throw new InvalidEventException("Start date/time cannot be null");
+    }
+    if (endDateTime == null) {
+      throw new InvalidEventException("End date/time cannot be null");
+    }
+    if (endDateTime.isBefore(startDateTime)) {
+      throw new InvalidEventException("End date/time cannot be before start date/time");
+    }
+
+    // Validate recurrence parameters
     if (repeatDays == null || repeatDays.isEmpty()) {
       throw new InvalidEventException("Repeat days cannot be empty");
     }
     if (occurrences <= 0) {
       throw new InvalidEventException("Occurrences must be positive");
     }
+  }
 
+  /**
+   * Builds and returns the recurring event.
+   *
+   * @return the created recurring event
+   * @throws InvalidEventException if event creation fails
+   */
+  private Event buildRecurringEvent() throws InvalidEventException {
     try {
-      return new RecurringEvent.Builder(
-              eventName, startDateTime, endDateTime, repeatDays)
+      return new RecurringEvent.Builder(eventName, startDateTime, endDateTime, repeatDays)
               .description(description)
               .location(location)
               .isPublic(isPublic)
@@ -101,7 +164,9 @@ public class RecurringEventCreator extends AbstractEventCreator {
 
   @Override
   protected String getSuccessMessage(Event event) {
-    return "Recurring event '" + eventName + "' created successfully with " + occurrences
-            + " occurrences.";
+    return String.format("Recurring event '%s' created successfully with %d occurrences on %s",
+            eventName,
+            occurrences,
+            DateTimeUtil.formatWeekdays(repeatDays));
   }
 }
