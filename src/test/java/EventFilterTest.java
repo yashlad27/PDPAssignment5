@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -305,5 +306,54 @@ public class EventFilterTest {
     };
     List<Event> filteredEvents = sameDateFilter.filterEvents(events);
     assertNotNull("Filtered events list should not be null", filteredEvents);
+  }
+
+  @Test
+  public void testMatches() {
+    Event event1 = new Event("Meeting", LocalDateTime.of(2025, 3, 26, 10, 0), LocalDateTime.of(2025, 3, 26, 11, 0), "Project discussion", "Room 101", true);
+    Event event2 = new Event("Workshop", LocalDateTime.of(2025, 3, 27, 14, 0), LocalDateTime.of(2025, 3, 27, 16, 0), "Tech workshop", "Hall A", false);
+
+    EventFilter meetingFilter = event -> "Meeting".equals(event.getSubject());
+    assertTrue(meetingFilter.matches(event1));
+    assertFalse(meetingFilter.matches(event2));
+  }
+
+  @Test
+  public void testAnd() {
+    Event event1 = new Event("Meeting", LocalDateTime.of(2025, 3, 26, 10, 0), LocalDateTime.of(2025, 3, 26, 11, 0), "Project discussion", "Room 101", true);
+    Event event2 = new Event("Workshop", LocalDateTime.of(2025, 3, 27, 14, 0), LocalDateTime.of(2025, 3, 27, 16, 0), "Tech workshop", "Hall A", false);
+
+    EventFilter meetingFilter = event -> "Meeting".equals(event.getSubject());
+    EventFilter dateFilter = event -> event.getStartDateTime().toLocalDate().toString().equals("2025-03-26");
+
+    EventFilter combinedFilter = meetingFilter.and(dateFilter);
+    assertTrue(combinedFilter.matches(event1));
+    assertFalse(combinedFilter.matches(event2));
+  }
+
+  @Test
+  public void testNegate() {
+    Event event1 = new Event("Meeting", LocalDateTime.of(2025, 3, 26, 10, 0), LocalDateTime.of(2025, 3, 26, 11, 0), "Project discussion", "Room 101", true);
+    Event event2 = new Event("Workshop", LocalDateTime.of(2025, 3, 27, 14, 0), LocalDateTime.of(2025, 3, 27, 16, 0), "Tech workshop", "Hall A", false);
+
+    EventFilter meetingFilter = event -> "Meeting".equals(event.getSubject());
+    EventFilter notMeetingFilter = meetingFilter.negate();
+
+    assertFalse(notMeetingFilter.matches(event1));
+    assertTrue(notMeetingFilter.matches(event2));
+  }
+
+  @Test
+  public void testFilterEvents() {
+    Event event1 = new Event("Meeting", LocalDateTime.of(2025, 3, 26, 10, 0), LocalDateTime.of(2025, 3, 26, 11, 0), "Project discussion", "Room 101", true);
+    Event event2 = new Event("Workshop", LocalDateTime.of(2025, 3, 27, 14, 0), LocalDateTime.of(2025, 3, 27, 16, 0), "Tech workshop", "Hall A", false);
+    Event event3 = new Event("Conference", LocalDateTime.of(2025, 3, 28, 9, 0), LocalDateTime.of(2025, 3, 28, 17, 0), "Annual conference", "Conference Hall", true);
+    List<Event> events = Arrays.asList(event1, event2, event3);
+
+    EventFilter workshopFilter = event -> "Workshop".equals(event.getSubject());
+    List<Event> filteredEvents = workshopFilter.filterEvents(events);
+
+    assertEquals(1, filteredEvents.size());
+    assertEquals("Workshop", filteredEvents.get(0).getSubject());
   }
 }
