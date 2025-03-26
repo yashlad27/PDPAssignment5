@@ -1,4 +1,6 @@
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import model.calendar.Calendar;
 import model.calendar.CalendarRegistry;
@@ -65,12 +67,14 @@ public class CalendarRegistryTest {
   }
 
   @Test(expected = CalendarNotFoundException.class)
-  public void testRenameCalendarNotFound() throws CalendarNotFoundException, DuplicateCalendarException {
+  public void testRenameCalendarNotFound()
+      throws CalendarNotFoundException, DuplicateCalendarException {
     calendarRegistry.renameCalendar("Non-existent Calendar", "New Name");
   }
 
   @Test(expected = DuplicateCalendarException.class)
-  public void testRenameCalendarToExistingName() throws DuplicateCalendarException, CalendarNotFoundException {
+  public void testRenameCalendarToExistingName()
+      throws DuplicateCalendarException, CalendarNotFoundException {
     calendarRegistry.registerCalendar("Calendar1", mockCalendar);
     Calendar anotherCalendar = new CalendarMock("Calendar2");
     calendarRegistry.registerCalendar("Calendar2", anotherCalendar);
@@ -113,11 +117,13 @@ public class CalendarRegistryTest {
 
   @Test(expected = CalendarNotFoundException.class)
   public void testApplyToCalendarNotFound() throws CalendarNotFoundException {
-    calendarRegistry.applyToCalendar("Non-existent Calendar", calendar -> {});
+    calendarRegistry.applyToCalendar("Non-existent Calendar", calendar -> {
+    });
   }
 
   @Test
-  public void testApplyToActiveCalendar() throws DuplicateCalendarException, CalendarNotFoundException {
+  public void testApplyToActiveCalendar()
+      throws DuplicateCalendarException, CalendarNotFoundException {
     calendarRegistry.registerCalendar("Test Calendar", mockCalendar);
     calendarRegistry.setActiveCalendar("Test Calendar");
     Consumer<Calendar> mockConsumer = calendar -> calendar.setName("Updated Active Calendar");
@@ -127,10 +133,12 @@ public class CalendarRegistryTest {
 
   @Test(expected = CalendarNotFoundException.class)
   public void testApplyToActiveCalendarNotFound() throws CalendarNotFoundException {
-    calendarRegistry.applyToActiveCalendar(calendar -> {});
+    calendarRegistry.applyToActiveCalendar(calendar -> {
+    });
   }
 
   private class CalendarMock extends Calendar {
+
     private String name;
 
     public CalendarMock(String name) {
