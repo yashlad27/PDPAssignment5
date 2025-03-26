@@ -34,7 +34,7 @@ public class CreateEventCommand implements ICommand {
    */
   @Override
   public String execute(String[] args) {
-    if (args.length < 1) {
+    if (args == null || args.length < 1) {
       return "Error: Insufficient arguments for create command";
     }
 

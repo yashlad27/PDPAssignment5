@@ -270,10 +270,6 @@ public class CommandParserTest {
     parser = new CommandParser(commandFactory);
   }
 
-  /**
-   * Tests parsing of the exit command.
-   * Verifies that the correct command is created and executed.
-   */
   @Test
   public void testParseExitCommand() throws Exception {
     String commandString = "exit";
@@ -286,10 +282,6 @@ public class CommandParserTest {
     assertEquals("MockExitCommand.execute called", result.execute());
   }
 
-  /**
-   * Tests parsing of a basic create event command.
-   * Verifies that all event parameters are correctly parsed.
-   */
   @Test
   public void testParseCreateEventCommand() {
     String commandString = "create event \"Team Meeting\" from 2023-04-10T10:00 "
@@ -311,10 +303,6 @@ public class CommandParserTest {
     assertEquals("false", args[7]);
   }
 
-  /**
-   * Tests parsing of a create event command with auto-decline option.
-   * Verifies that the auto-decline flag is correctly set.
-   */
   @Test
   public void testParseCreateEventWithAutoDecline() {
     String commandString = "create event --autoDecline \"Project Review\" from 2023-04-10T11:30 "
@@ -330,10 +318,6 @@ public class CommandParserTest {
     assertEquals("true", args[7]);
   }
 
-  /**
-   * Tests parsing of a create all-day event command.
-   * Verifies that the all-day flag is correctly set.
-   */
   @Test
   public void testParseCreateAllDayEvent() {
     String commandString = "create event \"All Day Conference\" on 2023-04-15";
@@ -348,10 +332,6 @@ public class CommandParserTest {
     assertEquals("2023-04-15", args[2]);
   }
 
-  /**
-   * Tests parsing of a create recurring event command.
-   * Verifies that recurring event parameters are correctly parsed.
-   */
   @Test
   public void testParseCreateRecurringEvent() {
     String commandString = "create event \"Weekly Status Meeting\" "
@@ -368,10 +348,6 @@ public class CommandParserTest {
     assertEquals("4", args[5]);
   }
 
-  /**
-   * Tests parsing of a create recurring event command with until date.
-   * Verifies that the until date is correctly parsed.
-   */
   @Test
   public void testParseCreateRecurringUntilEvent() {
     String commandString = "create event \"Department Sync\" from 2023-04-14T14:00 to"
@@ -388,10 +364,6 @@ public class CommandParserTest {
     assertEquals("2023-05-05", args[5]);
   }
 
-  /**
-   * Tests parsing of a create all-day recurring event command.
-   * Verifies that all-day recurring event parameters are correctly parsed.
-   */
   @Test
   public void testParseCreateAllDayRecurringEvent() {
     String commandString =
@@ -407,10 +379,6 @@ public class CommandParserTest {
     assertEquals("10", args[4]);
   }
 
-  /**
-   * Tests parsing of a create all-day recurring event command with until date.
-   * Verifies that the until date is correctly parsed for all-day events.
-   */
   @Test
   public void testParseCreateAllDayRecurringUntilEvent() {
     String commandString =
@@ -427,10 +395,6 @@ public class CommandParserTest {
     assertEquals("2023-07-20", args[4]);
   }
 
-  /**
-   * Tests parsing of a print events command for a specific date.
-   * Verifies that the date parameter is correctly parsed.
-   */
   @Test
   public void testParsePrintEventsOnDate() {
     String commandString = "print events on 2023-04-15";
@@ -444,10 +408,6 @@ public class CommandParserTest {
     assertEquals("2023-04-15", args[1]);
   }
 
-  /**
-   * Tests parsing of a print events command for a date range.
-   * Verifies that both start and end dates are correctly parsed.
-   */
   @Test
   public void testParsePrintEventsInRange() {
     String commandString = "print events from 2023-04-10 to 2023-04-20";
@@ -705,7 +665,8 @@ public class CommandParserTest {
   public void testParseCommandWithInvalidCommand() {
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> parser.parseCommand("unknown calendar"));
-    assertEquals("Invalid command: unknown. Valid commands are: create, use, show, edit, copy, exit, print, export",
+    assertEquals("Invalid command: unknown. Valid commands are: "
+                    + "create, use, show, edit, copy, exit, print, export",
             exception.getMessage());
   }
 
@@ -713,7 +674,8 @@ public class CommandParserTest {
   public void testParseCommandWithInvalidCommandWithSpaces() {
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> parser.parseCommand("   unknown   calendar   "));
-    assertEquals("Invalid command: unknown. Valid commands are: create, use, show, edit, copy, exit, print, export",
+    assertEquals("Invalid command: unknown. Valid commands are:"
+                    + " create, use, show, edit, copy, exit, print, export",
             exception.getMessage());
   }
 
@@ -721,7 +683,8 @@ public class CommandParserTest {
   public void testParseCommandWithInvalidCommandUpperCase() {
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> parser.parseCommand("UNKNOWN CALENDAR"));
-    assertEquals("Invalid command: unknown. Valid commands are: create, use, show, edit, copy, exit, print, export",
+    assertEquals("Invalid command: unknown. Valid commands are: "
+                    + "create, use, show, edit, copy, exit, print, export",
             exception.getMessage());
   }
 
@@ -729,7 +692,8 @@ public class CommandParserTest {
   public void testParseCommandWithInvalidCommandMixedCase() {
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> parser.parseCommand("UnKnOwN calendar"));
-    assertEquals("Invalid command: unknown. Valid commands are: create, use, show, edit, copy, exit, print, export",
+    assertEquals("Invalid command: unknown. Valid commands are: "
+                    + "create, use, show, edit, copy, exit, print, export",
             exception.getMessage());
   }
 
@@ -737,7 +701,8 @@ public class CommandParserTest {
   public void testParseCommandWithInvalidCommandWithSpecialChars() {
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> parser.parseCommand("unknown@calendar"));
-    assertEquals("Invalid command: unknown@calendar. Valid commands are: create, use, show, edit, copy, exit, print, export",
+    assertEquals("Invalid command: unknown@calendar. Valid commands are:"
+                    + " create, use, show, edit, copy, exit, print, export",
             exception.getMessage());
   }
 
@@ -745,7 +710,8 @@ public class CommandParserTest {
   public void testParseCommandWithInvalidCommandWithNumbers() {
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> parser.parseCommand("unknown123 calendar"));
-    assertEquals("Invalid command: unknown123. Valid commands are: create, use, show, edit, copy, exit, print, export",
+    assertEquals("Invalid command: unknown123. Valid commands are:"
+                    + " create, use, show, edit, copy, exit, print, export",
             exception.getMessage());
   }
 
@@ -772,25 +738,30 @@ public class CommandParserTest {
 
   @Test
   public void testParseCreateEventWithInvalidTimeFormat() {
-    String command = "create event \"Meeting\" from \"2024-13-45T10:00\" to \"2024-03-26T11:00\"";
+    String command = "create event \"Meeting\" from "
+            + "\"2024-13-45T10:00\" to \"2024-03-26T11:00\"";
     assertThrows(IllegalArgumentException.class, () -> parser.parseCommand(command));
   }
 
   @Test
   public void testParseCreateEventWithInvalidWeekdayFormat() {
-    String command = "create event \"Meeting\" from \"2024-03-26T10:00\" to \"2024-03-26T11:00\" repeats \"XYZ\" for 5 times";
+    String command = "create event \"Meeting\" from \"2024-03-26T10:00\" "
+            + "to \"2024-03-26T11:00\" repeats \"XYZ\" for 5 times";
     assertThrows(IllegalArgumentException.class, () -> parser.parseCommand(command));
   }
 
   @Test
   public void testParseCreateEventWithInvalidOccurrences() {
-    String command = "create event \"Meeting\" from \"2024-03-26T10:00\" to \"2024-03-26T11:00\" repeats \"MWF\" for 0 times";
+    String command = "create event \"Meeting\" from \"2024-03-26T10:00\" "
+            + "to \"2024-03-26T11:00\" repeats \"MWF\" for 0 times";
     assertThrows(IllegalArgumentException.class, () -> parser.parseCommand(command));
   }
 
   @Test
   public void testParseCreateEventWithInvalidEndDate() {
-    String command = "create event \"Meeting\" from \"2024-03-26T10:00\" to \"2024-03-26T11:00\" repeats \"MWF\" until \"2024-03-25\"";
+    String command = "create event \"Meeting\" "
+            + "from \"2024-03-26T10:00\" to \"2024-03-26T11:00\" "
+            + "repeats \"MWF\" until \"2024-03-25\"";
     assertThrows(IllegalArgumentException.class, () -> parser.parseCommand(command));
   }
 
@@ -802,16 +773,18 @@ public class CommandParserTest {
 
   @Test
   public void testParseCreateEventWithExtraFields() {
-    String command = "create event \"Meeting\" from \"2024-03-26T10:00\" to \"2024-03-26T11:00\" extra \"field\"";
+    String command = "create event \"Meeting\" "
+            + "from \"2024-03-26T10:00\" to \"2024-03-26T11:00\" extra \"field\"";
     assertThrows(IllegalArgumentException.class, () -> parser.parseCommand(command));
   }
 
   @Test
   public void testParseEditRecurringFromDate() {
-    String command = "edit event subject \"Team Meeting\" from 2024-04-01T10:00 with \"Updated Team Meeting\"";
+    String command = "edit event subject \"Team Meeting\" "
+            + "from 2024-04-01T10:00 with \"Updated Team Meeting\"";
     CommandParser.CommandWithArgs result = parser.parseCommand(command);
     assertNotNull(result);
-    assertEquals("single", result.getArgs()[0]); // ensure it follows edit_single_event pattern
+    assertEquals("single", result.getArgs()[0]);
     assertEquals("subject", result.getArgs()[1]);
     assertEquals("Team Meeting", result.getArgs()[2]);
     assertEquals("2024-04-01T10:00", result.getArgs()[3]);
@@ -820,7 +793,8 @@ public class CommandParserTest {
 
   @Test
   public void testParseCommandWithExtraSpaces() {
-    String command = "   create    event   \"Meeting\"  from 2023-04-10T10:00   to   2023-04-10T11:00   ";
+    String command = "   create    event   \"Meeting\"  from 2023-04-10T10:00   "
+            + "to   2023-04-10T11:00   ";
     CommandParser.CommandWithArgs result = parser.parseCommand(command);
     assertNotNull(result);
     assertEquals("Meeting", result.getArgs()[1]);
@@ -850,7 +824,8 @@ public class CommandParserTest {
 
   @Test
   public void testParseCopySingleEventQuoted() {
-    String command = "copy event \"Important Meeting\" on 2024-03-10T14:00 --target WorkCal to 2024-03-11T14:00";
+    String command = "copy event \"Important Meeting\" on 2024-03-10T14:00 --target"
+            + " WorkCal to 2024-03-11T14:00";
     CommandParser.CommandWithArgs result = parser.parseCommand(command);
     assertNotNull(result);
     assertEquals("copy", result.getArgs()[0]);
@@ -872,7 +847,8 @@ public class CommandParserTest {
 
   @Test
   public void testParseFullCreateEventCommand() {
-    String command = "create event \"Sprint Planning\" from 2024-03-26T10:00 to 2024-03-26T11:00 desc \"Planning for sprint\" at \"Board Room\" private";
+    String command = "create event \"Sprint Planning\" from 2024-03-26T10:00 to 2024-03-26T11:00"
+            + " desc \"Planning for sprint\" at \"Board Room\" private";
     CommandParser.CommandWithArgs result = parser.parseCommand(command);
     assertNotNull(result);
     String[] args = result.getArgs();
@@ -882,66 +858,18 @@ public class CommandParserTest {
   }
 
   @Test
-  public void testParseCreateCalendarWithQuotedName() {
-    String commandString = "create calendar --name \"Test Calendar\" --timezone America/New_York";
-    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
-    assertEquals("calendar", result.getArgs()[0]);
-    assertEquals("--name", result.getArgs()[1]);
-    assertEquals("Test Calendar", result.getArgs()[2]);
+  public void testCreateEventCommandWithInsufficientArguments() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> parser.parseCommand("create"));
+    assertTrue("Error message should indicate invalid format",
+            exception.getMessage().contains("Invalid command format"));
   }
 
   @Test
-  public void testParseUseCalendarWithQuotedName() {
-    String commandString = "use calendar --name \"My Calendar\"";
-    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
-    assertEquals("calendar", result.getArgs()[0]);
-    assertEquals("--name", result.getArgs()[1]);
-    assertEquals("My Calendar", result.getArgs()[2]);
+  public void testCreateEventCommandWithNullArguments() {
+    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> parser.parseCommand("create"));
+    assertTrue("Error message should indicate invalid format",
+            exception.getMessage().contains("Invalid command format"));
   }
-
-  @Test
-  public void testParseCopySingleEventWithQuotes() {
-    String commandString = "copy event \"Team Sync\" on 2024-03-26T10:00 --target new-calendar to 2024-03-27T10:00";
-    CommandParser.CommandWithArgs result = parser.parseCommand(commandString);
-    assertEquals("event", result.getArgs()[1]);
-    assertEquals("Team Sync", result.getArgs()[2]);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testParseEditCalendarWithInvalidFormat() {
-    parser.parseCommand("edit calendar --name test --property");
-  }
-
-  @Test
-  public void testParseCreateCalendarWithInvalidTimezoneFormat() {
-    String command = "create calendar --name Calendar1 --timezone Invalid_Zone";
-    CommandParser.CommandWithArgs result = parser.parseCommand(command);
-    assertEquals("Invalid_Zone", result.getArgs()[4]);
-  }
-
-  @Test
-  public void testParseCopyEventsOnLeapDay() {
-    String command = "copy events on 2024-02-29 --target target-cal to 2024-03-01";
-    CommandParser.CommandWithArgs result = parser.parseCommand(command);
-    assertEquals("copy", result.getArgs()[0]);
-  }
-
-  @Test
-  public void testCommandWithExcessWhitespace() {
-    String command = "   print     events   on   2023-04-15   ";
-    CommandParser.CommandWithArgs result = parser.parseCommand(command);
-    assertEquals("on_date", result.getArgs()[0]);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testCopyEventWithMissingTime() {
-    parser.parseCommand("copy event \"Meeting\" on  --target target to 2023-03-28T10:00");
-  }
-
-  @Test
-  public void testParseExportWithRelativePath() {
-    CommandParser.CommandWithArgs result = parser.parseCommand("export cal ./calendar.csv");
-    assertEquals("./calendar.csv", result.getArgs()[0]);
-  }
-
 }

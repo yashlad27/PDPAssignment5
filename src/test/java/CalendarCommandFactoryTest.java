@@ -21,6 +21,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Test class for CalendarCommandFactory.
+ * Tests the creation and execution of calendar-related commands.
+ */
 public class CalendarCommandFactoryTest {
   private CalendarManager calendarManager;
   private MockCalendarView mockView;

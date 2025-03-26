@@ -18,6 +18,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Test class for CopyEventCommand.
+ * Tests the copying of events between calendars with various scenarios and edge cases.
+ */
 public class CopyEventCommandTest {
 
   private CopyEventCommand copyCommand;

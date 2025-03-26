@@ -21,6 +21,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+/**
+ * Test class for AllDayRecurringEventCreator.
+ * Tests the creation of all-day recurring events with a specified number of occurrences.
+ */
 public class AllDayRecurringEventCreatorTest {
   @Test
   public void testConstructorWithNullArgs() {

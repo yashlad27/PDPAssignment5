@@ -8,6 +8,10 @@ import model.exceptions.InvalidTimezoneException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Test class for CalendarCommandHandler.
+ * Tests the handling of calendar commands and exception handling functionality.
+ */
 public class CalendarCommandHandlerTest {
 
   @Test

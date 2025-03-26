@@ -9,7 +9,6 @@ import model.exceptions.InvalidEventException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -20,22 +19,16 @@ public class SingleEventCreatorTest {
 
   @Test
   public void testCreateEventSuccess() throws InvalidEventException {
-    String[] args = {
-            "single",
-            "Team Meeting",
-            "2023-05-15T10:00",
-            "2023-05-15T11:00",
-            "Weekly team sync",
-            "Conference Room A",
-            "true",
-            "false"
-    };
+    String[] args = {"single", "Team Meeting", "2023-05-15T10:00", "2023-05-15T11:00",
+            "Weekly team sync", "Conference Room A", "true", "false"};
     SingleEventCreator creator = new SingleEventCreator(args);
     Event event = creator.createEvent();
 
     assertEquals("Team Meeting", event.getSubject());
-    assertEquals(LocalDateTime.of(2023, 5, 15, 10, 0), event.getStartDateTime());
-    assertEquals(LocalDateTime.of(2023, 5, 15, 11, 0), event.getEndDateTime());
+    assertEquals(LocalDateTime.of(2023, 5, 15, 10, 0),
+            event.getStartDateTime());
+    assertEquals(LocalDateTime.of(2023, 5, 15, 11, 0),
+            event.getEndDateTime());
     assertEquals("Weekly team sync", event.getDescription());
     assertEquals("Conference Room A", event.getLocation());
     assertTrue(event.isPublic());
@@ -54,11 +47,13 @@ public class SingleEventCreatorTest {
     Event event = creator.createEvent();
 
     assertEquals("Quick Meeting", event.getSubject());
-    assertEquals(LocalDateTime.of(2023, 5, 15, 14, 0), event.getStartDateTime());
-    assertEquals(LocalDateTime.of(2023, 5, 15, 15, 0), event.getEndDateTime());
+    assertEquals(LocalDateTime.of(2023, 5, 15, 14, 0),
+            event.getStartDateTime());
+    assertEquals(LocalDateTime.of(2023, 5, 15, 15, 0),
+            event.getEndDateTime());
     assertEquals("", event.getDescription());
     assertEquals("", event.getLocation());
-    assertTrue(event.isPublic()); // Default value
+    assertTrue(event.isPublic());
     assertFalse(event.isAllDay());
   }
 
@@ -69,7 +64,7 @@ public class SingleEventCreatorTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testCreateEventWithInsufficientArgs() {
-    String[] args = {"single", "Meeting", "2023-05-15T10:00"}; // Missing end time
+    String[] args = {"single", "Meeting", "2023-05-15T10:00"};
     new SingleEventCreator(args);
   }
 
@@ -109,30 +104,27 @@ public class SingleEventCreatorTest {
   }
 
   @Test
-  public void testCreateEventWithAutoDecline() throws InvalidEventException, ConflictingEventException {
-    String[] args = {
-            "single",
-            "Meeting",
-            "2023-05-15T10:00",
-            "2023-05-15T11:00",
-            null,
-            null,
-            "true",
-            "true"
-    };
+  public void testCreateEventWithAutoDecline() throws InvalidEventException,
+          ConflictingEventException {
+    String[] args = {"single", "Meeting", "2023-05-15T10:00", "2023-05-15T11:00",
+            null, null, "true", "true"};
     SingleEventCreator creator = new SingleEventCreator(args);
     model.calendar.Calendar calendar = new model.calendar.Calendar();
     String result = creator.executeCreation(calendar);
 
     // Verify the event was created successfully
-    assertTrue("Should return success message", result.contains("Event 'Meeting' created successfully"));
-    assertEquals("Should have one event in calendar", 1, calendar.getAllEvents().size());
+    assertTrue("Should return success message",
+            result.contains("Event 'Meeting' created successfully"));
+    assertEquals("Should have one event in calendar",
+            1, calendar.getAllEvents().size());
 
     // Verify the event details
     Event event = calendar.getAllEvents().get(0);
     assertEquals("Meeting", event.getSubject());
-    assertEquals(LocalDateTime.of(2023, 5, 15, 10, 0), event.getStartDateTime());
-    assertEquals(LocalDateTime.of(2023, 5, 15, 11, 0), event.getEndDateTime());
+    assertEquals(LocalDateTime.of(2023, 5, 15, 10, 0),
+            event.getStartDateTime());
+    assertEquals(LocalDateTime.of(2023, 5, 15, 11, 0),
+            event.getEndDateTime());
     assertTrue(event.isPublic());
   }
 
@@ -182,16 +174,15 @@ public class SingleEventCreatorTest {
             "single",
             "Meeting",
             "2023-05-15T11:00",
-            "2023-05-15T10:00"  // End time before start time
+            "2023-05-15T10:00"
     };
     try {
       SingleEventCreator creator = new SingleEventCreator(args);
       creator.createEvent();
       fail("Should throw IllegalArgumentException when end time is before start time");
     } catch (IllegalArgumentException e) {
-      // Test passed - expected exception was thrown
-      assertTrue("Exception message should indicate invalid time order", 
-          e.getMessage().contains("End date/time cannot be before start date/time"));
+      assertTrue("Exception message should indicate invalid time order",
+              e.getMessage().contains("End date/time cannot be before start date/time"));
     } catch (InvalidEventException e) {
       throw new RuntimeException(e);
     }

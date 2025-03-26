@@ -26,6 +26,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Test class for CalendarFactory.
+ * Tests the creation of calendar components including views, handlers, and managers.
+ */
 public class CalendarFactoryTest {
 
   private CalendarFactory factory;

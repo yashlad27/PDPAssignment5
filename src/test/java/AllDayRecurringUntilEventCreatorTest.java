@@ -20,6 +20,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+/**
+ * Test class for AllDayRecurringUntilEventCreator.
+ * Tests the creation of all-day recurring events with an end date.
+ */
 public class AllDayRecurringUntilEventCreatorTest {
 
   @Test

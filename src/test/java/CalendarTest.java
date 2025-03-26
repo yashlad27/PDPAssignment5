@@ -61,10 +61,6 @@ public class CalendarTest {
             .isPublic(true).occurrences(4).build();
   }
 
-  /**
-   * Tests adding a single event to the calendar.
-   * Verifies that the event is correctly added and can be retrieved.
-   */
   @Test
   public void testAddEvent() throws ConflictingEventException {
     assertTrue(calendar.addEvent(singleEvent, false));
@@ -74,18 +70,11 @@ public class CalendarTest {
     assertEquals(singleEvent, events.get(0));
   }
 
-  /**
-   * Tests that adding a null event throws IllegalArgumentException.
-   */
   @Test(expected = IllegalArgumentException.class)
   public void testAddNullEvent() throws ConflictingEventException {
     calendar.addEvent(null, false);
   }
 
-  /**
-   * Tests adding an event with auto-decline when there are no conflicts.
-   * Verifies the event is added successfully.
-   */
   @Test
   public void testAddEventWithAutoDeclineNoConflict() throws ConflictingEventException {
     assertTrue(calendar.addEvent(singleEvent, true));
@@ -98,10 +87,6 @@ public class CalendarTest {
     assertEquals(2, calendar.getAllEvents().size());
   }
 
-  /**
-   * Tests that adding an event with auto-decline throws ConflictingEventException
-   * when there is a conflict with an existing event.
-   */
   @Test(expected = ConflictingEventException.class)
   public void testAddEventWithAutoDeclineWithConflict() throws ConflictingEventException {
     assertTrue(calendar.addEvent(singleEvent, true));
@@ -113,10 +98,6 @@ public class CalendarTest {
     calendar.addEvent(conflictingEvent, true);
   }
 
-  /**
-   * Tests adding an event without auto-decline when there is a conflict.
-   * Verifies that the event is added despite the conflict.
-   */
   @Test
   public void testAddEventWithoutAutoDeclineWithConflict() throws ConflictingEventException {
     assertTrue(calendar.addEvent(singleEvent, false));
@@ -129,10 +110,6 @@ public class CalendarTest {
     assertEquals(1, calendar.getAllEvents().size());
   }
 
-  /**
-   * Tests adding a recurring event to the calendar.
-   * Verifies that the recurring event is correctly added and can be retrieved.
-   */
   @Test
   public void testAddRecurringEvent() throws ConflictingEventException {
     assertTrue(calendar.addRecurringEvent(recurringEvent, false));
@@ -149,9 +126,6 @@ public class CalendarTest {
     assertEquals(4, allEvents.size());
   }
 
-  /**
-   * Tests that adding a null recurring event throws IllegalArgumentException.
-   */
   @Test(expected = IllegalArgumentException.class)
   public void testAddNullRecurringEvent() throws ConflictingEventException {
     calendar.addRecurringEvent(null, false);
@@ -224,10 +198,6 @@ public class CalendarTest {
     }
   }
 
-  /**
-   * Tests finding an event by subject and date time.
-   * Verifies that the correct event is returned.
-   */
   @Test
   public void testFindEvent() throws ConflictingEventException {
     calendar.addEvent(singleEvent, false);
@@ -237,10 +207,6 @@ public class CalendarTest {
     assertEquals(singleEvent, found);
   }
 
-  /**
-   * Tests finding a non-existent event.
-   * Verifies that null is returned when the event doesn't exist.
-   */
   @Test
   public void testFindNonExistentEvent() throws ConflictingEventException {
     calendar.addEvent(singleEvent, false);
@@ -259,10 +225,6 @@ public class CalendarTest {
     calendar.findEvent("Team Meeting", null);
   }
 
-  /**
-   * Tests retrieving all events from the calendar.
-   * Verifies that all added events are returned in the list.
-   */
   @Test
   public void testGetAllEvents() throws ConflictingEventException {
     calendar.addEvent(singleEvent, false);
