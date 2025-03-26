@@ -19,7 +19,6 @@ public class CalendarNameValidatorTest {
   @After
   public void tearDown() {
     validator = null;
-    // Clear the static usedNames set to prevent test interference
     CalendarNameValidator.removeAllCalendarNames();
   }
 

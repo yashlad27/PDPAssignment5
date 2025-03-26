@@ -34,7 +34,7 @@ public class AllDayRecurringEventCreatorTest {
 
   @Test
   public void testConstructorWithInsufficientArgs() {
-    String[] args = {"allday-recurring", "Meeting", "2023-05-15", "MWF"}; // Missing occurrences and autoDecline
+    String[] args = {"allday-recurring", "Meeting", "2023-05-15", "MWF"};
     try {
       new AllDayRecurringEventCreator(args);
       fail("Should throw IllegalArgumentException for insufficient args");
@@ -147,9 +147,10 @@ public class AllDayRecurringEventCreatorTest {
 
     @Override
     public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-                                              int occurrences, boolean autoDecline, String description, String location,
-                                              boolean isPublic) throws InvalidEventException, ConflictingEventException {
-      // Store the parameters
+                                              int occurrences, boolean autoDecline,
+                                              String description, String location,
+                                              boolean isPublic)
+            throws InvalidEventException, ConflictingEventException {
       this.lastEventName = name;
       this.lastDate = date;
       this.lastWeekdays = weekdays;
@@ -174,15 +175,18 @@ public class AllDayRecurringEventCreatorTest {
 
     @Override
     public boolean createRecurringEventUntil(String name, LocalDateTime start, LocalDateTime end,
-                                             String weekdays, LocalDate untilDate, boolean autoDecline)
+                                             String weekdays, LocalDate untilDate,
+                                             boolean autoDecline)
             throws InvalidEventException, ConflictingEventException {
       return true;
     }
 
     @Override
     public boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
-                                                   LocalDate untilDate, boolean autoDecline, String description, String location,
-                                                   boolean isPublic) throws InvalidEventException, ConflictingEventException {
+                                                   LocalDate untilDate, boolean autoDecline,
+                                                   String description, String location,
+                                                   boolean isPublic) throws InvalidEventException,
+            ConflictingEventException {
       return true;
     }
 
@@ -212,17 +216,22 @@ public class AllDayRecurringEventCreatorTest {
     }
 
     @Override
-    public boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property, String newValue) throws EventNotFoundException, InvalidEventException, ConflictingEventException {
+    public boolean editSingleEvent(String subject, LocalDateTime startDateTime,
+                                   String property, String newValue) throws EventNotFoundException,
+            InvalidEventException, ConflictingEventException {
       return false;
     }
 
     @Override
-    public int editEventsFromDate(String subject, LocalDateTime startDateTime, String property, String newValue) throws InvalidEventException, ConflictingEventException {
+    public int editEventsFromDate(String subject, LocalDateTime startDateTime,
+                                  String property, String newValue) throws InvalidEventException,
+            ConflictingEventException {
       return 0;
     }
 
     @Override
-    public int editAllEvents(String subject, String property, String newValue) throws InvalidEventException, ConflictingEventException {
+    public int editAllEvents(String subject, String property, String newValue)
+            throws InvalidEventException, ConflictingEventException {
       return 0;
     }
 

@@ -34,18 +34,20 @@ public class AllDayRecurringUntilEventCreatorTest {
 
   @Test
   public void testConstructorWithInsufficientArgs() {
-    String[] args = {"allday-recurring-until", "Meeting", "2023-05-15", "MWF"}; // Missing untilDate and autoDecline
+    String[] args = {"allday-recurring-until", "Meeting", "2023-05-15", "MWF"};
     try {
       new AllDayRecurringUntilEventCreator(args);
       fail("Should throw IllegalArgumentException for insufficient args");
     } catch (IllegalArgumentException e) {
-      assertEquals("Insufficient arguments for all-day recurring event until date", e.getMessage());
+      assertEquals("Insufficient arguments for all-day recurring event until date",
+              e.getMessage());
     }
   }
 
   @Test
   public void testConstructorWithInvalidDate() {
-    String[] args = {"allday-recurring-until", "Meeting", "invalid-date", "MWF", "2023-06-15", "false"};
+    String[] args = {"allday-recurring-until", "Meeting", "invalid-date", "MWF", "2023-06-15",
+            "false"};
     try {
       new AllDayRecurringUntilEventCreator(args);
       fail("Should throw IllegalArgumentException for invalid date");
@@ -56,7 +58,8 @@ public class AllDayRecurringUntilEventCreatorTest {
 
   @Test
   public void testConstructorWithInvalidUntilDate() {
-    String[] args = {"allday-recurring-until", "Meeting", "2023-05-15", "MWF", "invalid-date", "false"};
+    String[] args = {"allday-recurring-until", "Meeting", "2023-05-15", "MWF", "invalid-date",
+            "false"};
     try {
       new AllDayRecurringUntilEventCreator(args);
       fail("Should throw IllegalArgumentException for invalid until date");
@@ -116,7 +119,6 @@ public class AllDayRecurringUntilEventCreatorTest {
             "Team meeting", "Conference Room", "true"};
     AllDayRecurringUntilEventCreator creator = new AllDayRecurringUntilEventCreator(args);
 
-    // Create a mock calendar that tracks method calls
     MockCalendar calendar = new MockCalendar();
 
     String result = creator.executeCreation(calendar);
@@ -124,7 +126,6 @@ public class AllDayRecurringUntilEventCreatorTest {
     assertTrue(result.contains("created successfully"));
     assertTrue(result.contains("until 2023-06-15"));
 
-    // Verify the method was called with correct parameters
     assertEquals("Meeting", calendar.lastEventName);
     assertEquals(LocalDate.of(2023, 5, 15), calendar.lastDate);
     assertEquals("MWF", calendar.lastWeekdays);
@@ -135,9 +136,7 @@ public class AllDayRecurringUntilEventCreatorTest {
     assertTrue(calendar.lastIsPublic);
   }
 
-  // Inner mock class to track method calls
   private static class MockCalendar implements ICalendar {
-    // Fields to store the last parameters passed to createAllDayRecurringEventUntil
     String lastEventName;
     LocalDate lastDate;
     String lastWeekdays;
@@ -149,8 +148,10 @@ public class AllDayRecurringUntilEventCreatorTest {
 
     @Override
     public boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
-                                                   LocalDate untilDate, boolean autoDecline, String description, String location,
-                                                   boolean isPublic) throws InvalidEventException, ConflictingEventException {
+                                                   LocalDate untilDate, boolean autoDecline,
+                                                   String description, String location,
+                                                   boolean isPublic) throws InvalidEventException,
+            ConflictingEventException {
       // Store the parameters
       this.lastEventName = name;
       this.lastDate = date;
@@ -163,7 +164,6 @@ public class AllDayRecurringUntilEventCreatorTest {
       return true;
     }
 
-    // Implement other required methods from ICalendar interface with minimal implementation
     @Override
     public boolean addEvent(Event event, boolean autoDecline) throws ConflictingEventException {
       return true;
@@ -177,15 +177,18 @@ public class AllDayRecurringUntilEventCreatorTest {
 
     @Override
     public boolean createRecurringEventUntil(String name, LocalDateTime start, LocalDateTime end,
-                                             String weekdays, LocalDate untilDate, boolean autoDecline)
+                                             String weekdays, LocalDate untilDate,
+                                             boolean autoDecline)
             throws InvalidEventException, ConflictingEventException {
       return true;
     }
 
     @Override
     public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-                                              int occurrences, boolean autoDecline, String description, String location,
-                                              boolean isPublic) throws InvalidEventException, ConflictingEventException {
+                                              int occurrences, boolean autoDecline,
+                                              String description, String location,
+                                              boolean isPublic) throws InvalidEventException,
+            ConflictingEventException {
       return true;
     }
 
@@ -215,17 +218,22 @@ public class AllDayRecurringUntilEventCreatorTest {
     }
 
     @Override
-    public boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property, String newValue) throws EventNotFoundException, InvalidEventException, ConflictingEventException {
+    public boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property,
+                                   String newValue) throws EventNotFoundException,
+            InvalidEventException, ConflictingEventException {
       return false;
     }
 
     @Override
-    public int editEventsFromDate(String subject, LocalDateTime startDateTime, String property, String newValue) throws InvalidEventException, ConflictingEventException {
+    public int editEventsFromDate(String subject, LocalDateTime startDateTime, String property,
+                                  String newValue) throws InvalidEventException,
+            ConflictingEventException {
       return 0;
     }
 
     @Override
-    public int editAllEvents(String subject, String property, String newValue) throws InvalidEventException, ConflictingEventException {
+    public int editAllEvents(String subject, String property, String newValue) throws
+            InvalidEventException, ConflictingEventException {
       return 0;
     }
 

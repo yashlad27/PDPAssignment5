@@ -25,7 +25,7 @@ public class AllDayEventCreatorTest {
 
   @Test
   public void testConstructorWithInsufficientArgs() {
-    String[] args = {"allday", "Meeting", "2023-05-15"}; // Missing autoDecline
+    String[] args = {"allday", "Meeting", "2023-05-15"};
     try {
       new AllDayEventCreator(args);
       fail("Should throw IllegalArgumentException for insufficient args");
@@ -82,13 +82,17 @@ public class AllDayEventCreatorTest {
 
   @Test
   public void testCreateEventSuccess() throws InvalidEventException {
-    String[] args = {"allday", "Meeting", "2023-05-15", "false", "Team meeting", "Conference Room", "true"};
+    String[] args = {"allday", "Meeting", "2023-05-15", "false", "Team meeting",
+            "Conference Room", "true"};
     AllDayEventCreator creator = new AllDayEventCreator(args);
     Event event = creator.createEvent();
 
     assertEquals("Meeting", event.getSubject());
-    assertEquals(LocalDateTime.of(2023, 5, 15, 0, 0), event.getStartDateTime());
-    assertEquals(LocalDateTime.of(2023, 5, 15, 23, 59, 59), event.getEndDateTime());
+    assertEquals(LocalDateTime.of(2023, 5, 15, 0, 0),
+            event.getStartDateTime());
+    assertEquals(
+            LocalDateTime.of(2023, 5, 15, 23, 59, 59)
+            , event.getEndDateTime());
     assertEquals("Team meeting", event.getDescription());
     assertEquals("Conference Room", event.getLocation());
     assertTrue(event.isPublic());

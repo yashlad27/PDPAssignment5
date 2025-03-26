@@ -54,16 +54,11 @@ public class CalendarTest {
             "Weekly sync-up", "Conference Room A", true);
     repeatDays = EnumSet.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY);
 
-    recurringEvent = new RecurringEvent.Builder(
-            "Recurring Meeting",
+    recurringEvent = new RecurringEvent.Builder("Recurring Meeting",
             LocalDateTime.of(2023, 5, 8, 14, 0),
             LocalDateTime.of(2023, 5, 8, 15, 0),
-            repeatDays)
-            .description("Recurring sync-up")
-            .location("Conference Room B")
-            .isPublic(true)
-            .occurrences(4)
-            .build();
+            repeatDays).description("Recurring sync-up").location("Conference Room B")
+            .isPublic(true).occurrences(4).build();
   }
 
   @Test
@@ -84,8 +79,9 @@ public class CalendarTest {
   public void testAddEventWithAutoDeclineNoConflict() throws ConflictingEventException {
     assertTrue(calendar.addEvent(singleEvent, true));
 
-    Event noConflictEvent = new Event("Another Meeting", startDateTime.plusHours(2),
-            endDateTime.plusHours(2), "Description", "Location", true);
+    Event noConflictEvent = new Event("Another Meeting",
+            startDateTime.plusHours(2), endDateTime.plusHours(2),
+            "Description", "Location", true);
 
     assertTrue(calendar.addEvent(noConflictEvent, true));
     assertEquals(2, calendar.getAllEvents().size());
@@ -95,10 +91,10 @@ public class CalendarTest {
   public void testAddEventWithAutoDeclineWithConflict() throws ConflictingEventException {
     assertTrue(calendar.addEvent(singleEvent, true));
 
-    Event conflictingEvent = new Event("Conflicting Meeting", startDateTime.plusMinutes(30),
-            endDateTime.plusHours(1), "Description", "Location", true);
+    Event conflictingEvent = new Event("Conflicting Meeting",
+            startDateTime.plusMinutes(30), endDateTime.plusHours(1), "Description",
+            "Location", true);
 
-    // Should throw ConflictingEventException with autoDecline=true
     calendar.addEvent(conflictingEvent, true);
   }
 
@@ -106,10 +102,10 @@ public class CalendarTest {
   public void testAddEventWithoutAutoDeclineWithConflict() throws ConflictingEventException {
     assertTrue(calendar.addEvent(singleEvent, false));
 
-    Event conflictingEvent = new Event("Conflicting Meeting", startDateTime.plusMinutes(30),
-            endDateTime.plusHours(1), "Description", "Location", true);
+    Event conflictingEvent = new Event("Conflicting Meeting",
+            startDateTime.plusMinutes(30), endDateTime.plusHours(1), "Description",
+            "Location", true);
 
-    // With conflicts, this should now return false per the new requirements
     assertFalse(calendar.addEvent(conflictingEvent, false));
     assertEquals(1, calendar.getAllEvents().size());
   }
@@ -139,16 +135,11 @@ public class CalendarTest {
   public void testAddRecurringEventWithAutoDeclineNoConflict() throws ConflictingEventException {
     assertTrue(calendar.addRecurringEvent(recurringEvent, true));
 
-    RecurringEvent noConflictRecurringEvent = new RecurringEvent.Builder(
-            "Another Recurring Meeting",
+    RecurringEvent noConflictRecurringEvent = new RecurringEvent
+            .Builder("Another Recurring Meeting",
             LocalDateTime.of(2023, 5, 8, 16, 0),
-            LocalDateTime.of(2023, 5, 8, 17, 0),
-            repeatDays)
-            .description("Description")
-            .location("Location")
-            .isPublic(true)
-            .occurrences(4)
-            .build();
+            LocalDateTime.of(2023, 5, 8, 17, 0), repeatDays)
+            .description("Description").location("Location").isPublic(true).occurrences(4).build();
 
     assertTrue(calendar.addRecurringEvent(noConflictRecurringEvent, true));
     assertEquals(2, calendar.getAllRecurringEvents().size());
@@ -161,18 +152,12 @@ public class CalendarTest {
 
     LocalDateTime conflictStart = recurringEvent.getAllOccurrences().get(0).getStartDateTime();
 
-    RecurringEvent conflictingRecurringEvent = new RecurringEvent.Builder(
-            "Conflicting Recurring Meeting",
-            conflictStart,
-            conflictStart.plusHours(1),
+    RecurringEvent conflictingRecurringEvent = new RecurringEvent
+            .Builder("Conflicting Recurring Meeting",
+            conflictStart, conflictStart.plusHours(1),
             EnumSet.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY))
-            .description("Description")
-            .location("Location")
-            .isPublic(true)
-            .occurrences(4)
-            .build();
+            .description("Description").location("Location").isPublic(true).occurrences(4).build();
 
-    // Should throw exception with autoDecline=true
     calendar.addRecurringEvent(conflictingRecurringEvent, true);
   }
 
@@ -181,10 +166,9 @@ public class CalendarTest {
           InvalidEventException {
     LocalDate start = LocalDate.of(2023, 5, 8);
 
-    assertTrue(
-            calendar.createAllDayRecurringEvent("All Day Recurring Event", start,
-                    "MWF", 3, true,
-                    "Description", "Location", true));
+    assertTrue(calendar.createAllDayRecurringEvent("All Day Recurring Event",
+            start, "MWF", 3, true, "Description",
+            "Location", true));
 
     assertEquals(1, calendar.getAllRecurringEvents().size());
     assertEquals(3, calendar.getAllEvents().size());
@@ -201,11 +185,9 @@ public class CalendarTest {
     LocalDate start = LocalDate.of(2023, 5, 8);
     LocalDate until = LocalDate.of(2023, 5, 19);
 
-    assertTrue(
-            calendar.createAllDayRecurringEventUntil("All Day Recurring Until Event",
-                    start, "MWF",
-                    until, true, "Description", "Location",
-                    true));
+    assertTrue(calendar.createAllDayRecurringEventUntil("All Day Recurring Until Event",
+            start, "MWF", until, true, "Description",
+            "Location", true));
 
     assertEquals(1, calendar.getAllRecurringEvents().size());
     assertEquals(6, calendar.getAllEvents().size());
@@ -257,8 +239,8 @@ public class CalendarTest {
   public void testEditSingleEvent() throws ConflictingEventException, InvalidEventException {
     calendar.addEvent(singleEvent, false);
 
-    assertTrue(calendar.editSingleEvent("Team Meeting", startDateTime,
-            "subject", "Updated Meeting"));
+    assertTrue(calendar.editSingleEvent("Team Meeting", startDateTime, "subject",
+            "Updated Meeting"));
 
     Event updated = calendar.findEvent("Updated Meeting", startDateTime);
     assertNotNull(updated);
@@ -276,12 +258,12 @@ public class CalendarTest {
     calendar.addEvent(singleEvent, false);
 
     Event anotherEvent = new Event("Team Meeting", startDateTime.plusDays(1),
-            endDateTime.plusDays(1), "Another meeting",
-            "Conference Room C", true);
+            endDateTime.plusDays(1), "Another meeting", "Conference Room C",
+            true);
     calendar.addEvent(anotherEvent, false);
 
-    int count = calendar.editAllEvents("Team Meeting",
-            "location", "New Location");
+    int count = calendar.editAllEvents("Team Meeting", "location",
+            "New Location");
 
     assertEquals(2, count);
     List<Event> allEvents = calendar.getAllEvents();
@@ -308,14 +290,10 @@ public class CalendarTest {
       @Override
       public String exportToCSV(String filePath) throws IOException {
         StringBuilder csv = new StringBuilder();
-        csv.append(
-                "Subject,Start Date,Start Time,End Date,End Time,All Day Event,"
-                        + "Description,Location,"
-                        + "Private\n");
-        csv.append(
-                "Team Meeting,05/10/2023,10:00 AM,05/10/2023,11:00 AM,False,"
-                        + "Weekly sync-up,Conference "
-                        + "Room A,False\n");
+        csv.append("Subject,Start Date,Start Time,End Date,End Time,All Day Event,"
+                + "Description,Location," + "Private\n");
+        csv.append("Team Meeting,05/10/2023,10:00 AM,05/10/2023,11:00 AM,False,"
+                + "Weekly sync-up,Conference " + "Room A,False\n");
         mockFileSystem.put(filePath, csv.toString());
 
         return filePath;
@@ -370,20 +348,20 @@ public class CalendarTest {
             "Annual conference", "Convention Center", true);
     calendar.addEvent(multiDayEvent, false);
 
-    List<Event> day1Events = calendar.getEventsOnDate(LocalDate.of(
-            2023, 5, 10));
+    List<Event> day1Events = calendar.getEventsOnDate(LocalDate.of(2023, 5,
+            10));
     assertEquals(1, day1Events.size());
 
-    List<Event> day2Events = calendar.getEventsOnDate(LocalDate.of(
-            2023, 5, 11));
+    List<Event> day2Events = calendar.getEventsOnDate(LocalDate.of(2023, 5,
+            11));
     assertEquals(1, day2Events.size());
 
-    List<Event> day3Events = calendar.getEventsOnDate(LocalDate.of(
-            2023, 5, 12));
+    List<Event> day3Events = calendar.getEventsOnDate(LocalDate.of(2023, 5,
+            12));
     assertEquals(1, day3Events.size());
 
-    List<Event> day4Events = calendar.getEventsOnDate(LocalDate.of(
-            2023, 5, 13));
+    List<Event> day4Events = calendar.getEventsOnDate(LocalDate.of(2023, 5,
+            13));
     assertTrue(day4Events.isEmpty());
   }
 
@@ -425,19 +403,18 @@ public class CalendarTest {
 
   @Test
   public void testIsBusyWithAllDayEvent() throws ConflictingEventException {
-    Event allDayEvent = Event.createAllDayEvent("All-day Event",
-            LocalDate.of(2023, 5, 15),
-            "Description", "Location", true);
+    Event allDayEvent = Event.createAllDayEvent("All-day Event", LocalDate.of(2023,
+            5, 15), "Description", "Location", true);
     calendar.addEvent(allDayEvent, false);
 
-    assertTrue(calendar.isBusy(LocalDateTime.of(
-            2023, 5, 15, 9, 0)));
+    assertTrue(calendar.isBusy(LocalDateTime.of(2023, 5, 15, 9,
+            0)));
 
-    assertTrue(calendar.isBusy(LocalDateTime.of(
-            2023, 5, 15, 15, 0)));
+    assertTrue(calendar.isBusy(LocalDateTime.of(2023, 5, 15, 15
+            , 0)));
 
-    assertFalse(calendar.isBusy(LocalDateTime.of(
-            2023, 5, 16, 9, 0)));
+    assertFalse(calendar.isBusy(LocalDateTime.of(2023, 5, 16, 9,
+            0)));
   }
 
   @Test
@@ -445,9 +422,8 @@ public class CalendarTest {
           InvalidEventException {
     calendar.addEvent(singleEvent, false);
 
-    assertFalse(
-            calendar.editSingleEvent("Team Meeting", startDateTime,
-                    "invalid_property", "value"));
+    assertFalse(calendar.editSingleEvent("Team Meeting", startDateTime,
+            "invalid_property", "value"));
   }
 
   @Test
@@ -466,133 +442,131 @@ public class CalendarTest {
 
   @Test
   public void testBoundaryConditionsForBusyTime() throws ConflictingEventException {
-    LocalDateTime eventStart = LocalDateTime.of(
-            2023, 5, 15, 10, 0);
-    LocalDateTime eventEnd = LocalDateTime.of(
-            2023, 5, 15, 11, 0);
+    LocalDateTime eventStart = LocalDateTime.of(2023, 5, 15,
+            10, 0);
+    LocalDateTime eventEnd = LocalDateTime.of(2023, 5, 15,
+            11, 0);
 
-    Event event = new Event("Test Event", eventStart,
-            eventEnd, null, null, true);
+    Event event = new Event("Test Event", eventStart, eventEnd,
+            null, null, true);
     calendar.addEvent(event, true);
 
-    // Test exactly at start time
     assertTrue(calendar.isBusy(eventStart));
-
-    // Test exactly at end time
     assertTrue(calendar.isBusy(eventEnd));
-
-    // Test one minute before
     assertFalse(calendar.isBusy(eventStart.minusMinutes(1)));
-
-    // Test one minute after
     assertFalse(calendar.isBusy(eventEnd.plusMinutes(1)));
   }
 
   @Test
   public void testBoundaryConditionsForEventOverlap() throws ConflictingEventException {
-    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10,
+            0);
 
     // Test events with exact overlap at start
-    Event event1 = new Event("Event 1", baseTime, baseTime.plusHours(1), null, null, true);
-    Event event2 = new Event("Event 2", baseTime, baseTime.plusMinutes(30), null, null, true);
+    Event event1 = new Event("Event 1", baseTime, baseTime.plusHours(1),
+            null, null, true);
+    Event event2 = new Event("Event 2", baseTime, baseTime.plusMinutes(30),
+            null, null, true);
 
     assertTrue(calendar.addEvent(event1, true));
-    assertFalse(calendar.addEvent(event2, false)); // Should detect conflict
+    assertFalse(calendar.addEvent(event2, false));
 
     // Test events with exact overlap at end
-    Event event3 = new Event("Event 3",
-            baseTime.plusHours(2), baseTime.plusHours(3), null, null, true);
-    Event event4 = new Event("Event 4",
-            baseTime.plusHours(2).plusMinutes(30), baseTime.plusHours(3), null, null, true);
+    Event event3 = new Event("Event 3", baseTime.plusHours(2),
+            baseTime.plusHours(3), null, null, true);
+    Event event4 = new Event("Event 4", baseTime.plusHours(2).plusMinutes(30),
+            baseTime.plusHours(3), null, null, true);
 
     assertTrue(calendar.addEvent(event3, true));
-    assertFalse(calendar.addEvent(event4, false)); // Should detect conflict
+    assertFalse(calendar.addEvent(event4, false));
 
     // Test events with exact overlap in middle
-    Event event5 = new Event("Event 5",
-            baseTime.plusHours(4), baseTime.plusHours(6), null, null, true);
-    Event event6 = new Event("Event 6",
-            baseTime.plusHours(4).plusMinutes(30), baseTime.plusHours(5).plusMinutes(30), null, null, true);
+    Event event5 = new Event("Event 5", baseTime.plusHours(4), baseTime.plusHours(6),
+            null, null, true);
+    Event event6 = new Event("Event 6", baseTime.plusHours(4).plusMinutes(30),
+            baseTime.plusHours(5).plusMinutes(30), null, null, true);
 
     assertTrue(calendar.addEvent(event5, true));
-    assertFalse(calendar.addEvent(event6, false)); // Should detect conflict
+    assertFalse(calendar.addEvent(event6, false));
   }
 
   @Test
   public void testBooleanReturnValues() throws ConflictingEventException {
-    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
-    Event event = new Event("Test Event", baseTime, baseTime.plusHours(1), null, null, true);
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15,
+            10, 0);
+    Event event = new Event("Test Event", baseTime, baseTime.plusHours(1),
+            null, null, true);
 
     // Test addEvent with various conditions
-    assertTrue("Should return true for first event add", calendar.addEvent(event, true));
-    assertFalse("Should return false for duplicate event", calendar.addEvent(event, false));
+    assertTrue("Should return true for first event add", calendar.addEvent(event,
+            true));
+    assertFalse("Should return false for duplicate event", calendar.addEvent(event,
+            false));
 
     // Test isBusy with exact boundaries
-    assertTrue("Should be busy at start time", calendar.isBusy(baseTime));
-    assertTrue("Should be busy at end time", calendar.isBusy(baseTime.plusHours(1)));
-    assertFalse("Should not be busy before start", calendar.isBusy(baseTime.minusSeconds(1)));
-    assertFalse("Should not be busy after end", calendar.isBusy(baseTime.plusHours(1).plusSeconds(1)));
+    assertTrue("Should be busy at start time",
+            calendar.isBusy(baseTime));
+    assertTrue("Should be busy at end time",
+            calendar.isBusy(baseTime.plusHours(1)));
+    assertFalse("Should not be busy before start",
+            calendar.isBusy(baseTime.minusSeconds(1)));
+    assertFalse("Should not be busy after end",
+            calendar.isBusy(baseTime.plusHours(1).plusSeconds(1)));
 
     // Test editSingleEvent with various fields
     assertTrue("Should return true for valid edit",
-            calendar.editSingleEvent(event.getSubject(), event.getStartDateTime(), "description", "New description"));
+            calendar.editSingleEvent(event.getSubject(), event.getStartDateTime(),
+                    "description", "New description"));
     assertTrue("Should return true for empty string edit",
-            calendar.editSingleEvent(event.getSubject(), event.getStartDateTime(), "description", ""));
+            calendar.editSingleEvent(event.getSubject(), event.getStartDateTime(),
+                    "description", ""));
     assertFalse("Should return false for non-existent event",
-            calendar.editSingleEvent("Non-existent", baseTime, "description", "New description"));
+            calendar.editSingleEvent("Non-existent", baseTime,
+                    "description", "New description"));
   }
 
   @Test
   public void testRecurringEventBoundaries() throws ConflictingEventException {
-    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10, 0);
+    LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 10,
+            0);
     Set<DayOfWeek> weekdays = Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY);
 
     // Test recurring event with exactly matching times
-    RecurringEvent event1 = new RecurringEvent.Builder("Event 1", baseTime, baseTime.plusHours(1), weekdays)
-            .occurrences(4)
-            .build();
+    RecurringEvent event1 = new RecurringEvent.Builder("Event 1", baseTime,
+            baseTime.plusHours(1), weekdays).occurrences(4).build();
     assertTrue(calendar.addRecurringEvent(event1, true));
 
     // Try to add single event at exact recurring event time
-    Event conflictEvent = new Event("Conflict Event",
-            baseTime.plusWeeks(1), // Next week at same time
-            baseTime.plusWeeks(1).plusHours(1),
-            null, null, true);
+    Event conflictEvent = new Event("Conflict Event", baseTime.plusWeeks(1),
+            baseTime.plusWeeks(1).plusHours(1), null, null, true);
     assertFalse(calendar.addEvent(conflictEvent, false));
 
     // Test recurring event with adjacent times
-    RecurringEvent event2 = new RecurringEvent.Builder("Event 2",
-            baseTime.plusHours(2), baseTime.plusHours(3), weekdays)
-            .occurrences(4)
-            .build();
+    RecurringEvent event2 = new RecurringEvent.Builder("Event 2", baseTime.plusHours(2),
+            baseTime.plusHours(3), weekdays).occurrences(4).build();
     assertTrue(calendar.addRecurringEvent(event2, true));
 
     // Try to add event between recurring events
-    Event betweenEvent = new Event("Between Event",
-            baseTime.plusHours(1).plusMinutes(1), // Just after first event
-            baseTime.plusHours(1).plusMinutes(59), // Just before second event
+    Event betweenEvent = new Event("Between Event", baseTime.plusHours(1).plusMinutes(1),
+            baseTime.plusHours(1).plusMinutes(59),
             null, null, true);
     assertTrue(calendar.addEvent(betweenEvent, true));
 
     // Test recurring event with exact conflict
     RecurringEvent conflictEvent2 = new RecurringEvent.Builder("Conflict",
-            baseTime.plusHours(4), baseTime.plusHours(5), weekdays)  // Changed time to avoid conflict
-            .occurrences(2)
-            .build();
+            baseTime.plusHours(4), baseTime.plusHours(5), weekdays)
+            .occurrences(2).build();
     assertTrue(calendar.addRecurringEvent(conflictEvent2, false));
 
     // Test recurring event with partial overlap
     RecurringEvent overlapEvent = new RecurringEvent.Builder("Overlap",
-            baseTime.plusHours(6), baseTime.plusHours(7), weekdays)  // Changed time to avoid conflict
-            .occurrences(2)
-            .build();
+            baseTime.plusHours(6), baseTime.plusHours(7), weekdays)
+            .occurrences(2).build();
     assertTrue(calendar.addRecurringEvent(overlapEvent, false));
 
     // Test recurring event with adjacent times (no overlap)
     RecurringEvent adjacentEvent = new RecurringEvent.Builder("Adjacent",
-            baseTime.plusHours(8), baseTime.plusHours(9), weekdays)
-            .occurrences(2)
-            .build();
+            baseTime.plusHours(8), baseTime.plusHours(9), weekdays).occurrences(2).build();
     assertTrue(calendar.addRecurringEvent(adjacentEvent, true));
   }
 
@@ -601,52 +575,57 @@ public class CalendarTest {
     LocalDateTime baseTime = LocalDateTime.of(2023, 5, 15, 0, 0);
 
     // Test day boundary events
-    Event dayStartEvent = new Event("Day Start",
-            baseTime, baseTime.plusHours(1), null, null, true);
-    Event dayEndEvent = new Event("Day End",
-            baseTime.plusHours(23), baseTime.plusDays(1), null, null, true);
+    Event dayStartEvent = new Event("Day Start", baseTime, baseTime.plusHours(1),
+            null, null, true);
+    Event dayEndEvent = new Event("Day End", baseTime.plusHours(23), baseTime.plusDays(1),
+            null, null, true);
 
     assertTrue(calendar.addEvent(dayStartEvent, true));
     assertTrue(calendar.addEvent(dayEndEvent, true));
 
     // Test month boundary events
-    LocalDateTime monthEnd = LocalDateTime.of(2023, 5, 31, 23, 0);
-    LocalDateTime nextMonthStart = LocalDateTime.of(2023, 6, 1, 0, 0);
+    LocalDateTime monthEnd = LocalDateTime.of(2023, 5, 31, 23,
+            0);
+    LocalDateTime nextMonthStart = LocalDateTime.of(2023, 6, 1, 0,
+            0);
 
-    Event monthEndEvent = new Event("Month End",
-            monthEnd, monthEnd.plusMinutes(15), null, null, true);
-    Event nextMonthEvent = new Event("Next Month Start",
-            nextMonthStart.plusHours(1), nextMonthStart.plusHours(2), null, null, true);
+    Event monthEndEvent = new Event("Month End", monthEnd, monthEnd.plusMinutes(15),
+            null, null, true);
+    Event nextMonthEvent = new Event("Next Month Start", nextMonthStart.plusHours(1),
+            nextMonthStart.plusHours(2), null, null, true);
 
     assertTrue(calendar.addEvent(monthEndEvent, true));
     assertTrue(calendar.addEvent(nextMonthEvent, true));
 
     // Test year boundary events
-    LocalDateTime yearEnd = LocalDateTime.of(2023, 12, 31, 23, 0);
-    LocalDateTime nextYearStart = LocalDateTime.of(2024, 1, 1, 0, 0);
+    LocalDateTime yearEnd = LocalDateTime.of(2023, 12, 31, 23,
+            0);
+    LocalDateTime nextYearStart = LocalDateTime.of(2024, 1, 1, 0,
+            0);
 
-    Event yearEndEvent = new Event("Year End",
-            yearEnd, yearEnd.plusMinutes(15), null, null, true);
-    Event nextYearEvent = new Event("Next Year Start",
-            nextYearStart.plusHours(1), nextYearStart.plusHours(2), null, null, true);
+    Event yearEndEvent = new Event("Year End", yearEnd, yearEnd.plusMinutes(15),
+            null, null, true);
+    Event nextYearEvent = new Event("Next Year Start", nextYearStart.plusHours(1),
+            nextYearStart.plusHours(2), null, null, true);
 
     assertTrue(calendar.addEvent(yearEndEvent, true));
     assertTrue(calendar.addEvent(nextYearEvent, true));
 
     // Verify events are found in correct ranges
-    assertTrue(calendar.getEventsInRange(baseTime.toLocalDate(), baseTime.toLocalDate())
-            .contains(dayStartEvent));
-    assertTrue(calendar.getEventsInRange(monthEnd.toLocalDate(), nextMonthStart.toLocalDate())
-            .containsAll(Arrays.asList(monthEndEvent, nextMonthEvent)));
-    assertTrue(calendar.getEventsInRange(yearEnd.toLocalDate(), nextYearStart.toLocalDate())
-            .containsAll(Arrays.asList(yearEndEvent, nextYearEvent)));
+    assertTrue(calendar.getEventsInRange(baseTime.toLocalDate(),
+            baseTime.toLocalDate()).contains(dayStartEvent));
+    assertTrue(calendar.getEventsInRange(monthEnd.toLocalDate(),
+            nextMonthStart.toLocalDate()).containsAll(Arrays.asList(monthEndEvent,
+            nextMonthEvent)));
+    assertTrue(calendar.getEventsInRange(yearEnd.toLocalDate(),
+            nextYearStart.toLocalDate()).containsAll(Arrays.asList(yearEndEvent, nextYearEvent)));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddEventWithInvalidDateTimeRange() throws ConflictingEventException {
     // Test adding event with end time before start time
-    Event invalidEvent = new Event("Invalid Meeting",
-            endDateTime, startDateTime, "Description", "Location", true);
+    Event invalidEvent = new Event("Invalid Meeting", endDateTime, startDateTime,
+            "Description", "Location", true);
     calendar.addEvent(invalidEvent, false);
   }
 
@@ -654,8 +633,8 @@ public class CalendarTest {
   public void testAddEventWithFutureDate() throws ConflictingEventException {
     // Test adding event with future date
     LocalDateTime futureDate = LocalDateTime.now().plusYears(1);
-    Event futureEvent = new Event("Future Meeting",
-            futureDate, futureDate.plusHours(1), "Description", "Location", true);
+    Event futureEvent = new Event("Future Meeting", futureDate, futureDate.plusHours(1),
+            "Description", "Location", true);
     assertTrue(calendar.addEvent(futureEvent, false));
   }
 
@@ -663,24 +642,24 @@ public class CalendarTest {
   public void testAddEventWithPastDate() throws ConflictingEventException {
     // Test adding event with past date
     LocalDateTime pastDate = LocalDateTime.now().minusYears(1);
-    Event pastEvent = new Event("Past Meeting",
-            pastDate, pastDate.plusHours(1), "Description", "Location", true);
+    Event pastEvent = new Event("Past Meeting", pastDate, pastDate.plusHours(1),
+            "Description", "Location", true);
     assertTrue(calendar.addEvent(pastEvent, false));
   }
 
   @Test
   public void testAddEventWithMaxDuration() throws ConflictingEventException {
     // Test adding event with maximum allowed duration
-    Event maxDurationEvent = new Event("Long Meeting",
-            startDateTime, startDateTime.plusDays(30), "Description", "Location", true);
+    Event maxDurationEvent = new Event("Long Meeting", startDateTime,
+            startDateTime.plusDays(30), "Description", "Location", true);
     assertTrue(calendar.addEvent(maxDurationEvent, false));
   }
 
   @Test
   public void testAddEventWithSpecialCharacters() throws ConflictingEventException {
     // Test adding event with special characters in name
-    Event specialCharEvent = new Event("Meeting@#$%",
-            startDateTime, endDateTime, "Description", "Location", true);
+    Event specialCharEvent = new Event("Meeting@#$%", startDateTime,
+            endDateTime, "Description", "Location", true);
     assertTrue(calendar.addEvent(specialCharEvent, false));
   }
 
@@ -690,18 +669,12 @@ public class CalendarTest {
   @Test
   public void testCreateRecurringEventUntilWithInvalidWeekdays() throws ConflictingEventException {
     String invalidWeekdays = "XYZ"; // Invalid weekday characters
-    boolean result = calendar.createRecurringEventUntil(
-            "Invalid Recurring Event",
+    boolean result = calendar.createRecurringEventUntil("Invalid Recurring Event",
             LocalDateTime.of(2023, 5, 8, 14, 0),
             LocalDateTime.of(2023, 5, 8, 15, 0),
-            invalidWeekdays,
-            LocalDate.of(2023, 5, 31),
-            false);
-    
-    // Method should return false when weekdays are invalid
+            invalidWeekdays, LocalDate.of(2023, 5, 31), false);
     assertFalse(result);
-    
-    // No events should be added
+
     assertEquals(0, calendar.getAllEvents().size());
     assertEquals(0, calendar.getAllRecurringEvents().size());
   }
@@ -710,20 +683,15 @@ public class CalendarTest {
    * Test recurring event with end date before start date.
    */
   @Test
-  public void testCreateRecurringEventUntilWithEndDateBeforeStartDate() throws ConflictingEventException {
+  public void testCreateRecurringEventUntilWithEndDateBeforeStartDate() throws
+          ConflictingEventException {
     LocalDateTime start = LocalDateTime.of(2023, 5, 15, 14, 0);
     LocalDateTime end = LocalDateTime.of(2023, 5, 15, 15, 0);
-    LocalDate untilDate = LocalDate.of(2023, 5, 1); // Before start date
-    
-    boolean result = calendar.createRecurringEventUntil(
-            "Invalid Recurring Event",
-            start,
-            end,
-            "MWF",
-            untilDate,
-            false);
-    
-    // Should return false due to invalid date range
+    LocalDate untilDate = LocalDate.of(2023, 5, 1);
+
+    boolean result = calendar.createRecurringEventUntil("Invalid Recurring Event",
+            start, end, "MWF", untilDate, false);
+
     assertFalse(result);
     assertEquals(0, calendar.getAllEvents().size());
   }
@@ -735,19 +703,14 @@ public class CalendarTest {
   public void testCreateRecurringEventUntilWithFarFutureDate() throws ConflictingEventException {
     LocalDateTime start = LocalDateTime.of(2023, 5, 15, 14, 0);
     LocalDateTime end = LocalDateTime.of(2023, 5, 15, 15, 0);
-    LocalDate untilDate = LocalDate.of(2033, 5, 15); // 10 years in the future
-    
-    boolean result = calendar.createRecurringEventUntil(
-            "Far Future Recurring Event",
-            start,
-            end,
-            "MWF",
-            untilDate,
-            false);
-    
+    LocalDate untilDate = LocalDate.of(2033, 5, 15);
+
+    boolean result = calendar.createRecurringEventUntil("Far Future Recurring Event",
+            start, end, "MWF", untilDate, false);
+
     // Should succeed
     assertTrue(result);
-    
+
     // Should create many occurrences
     List<Event> events = calendar.getAllEvents();
     assertTrue("Should have many occurrences", events.size() > 100);
@@ -759,26 +722,24 @@ public class CalendarTest {
   @Test
   public void testCreateAllDayRecurringEventWithNullParams() throws ConflictingEventException {
     LocalDate start = LocalDate.of(2023, 5, 8);
-    
+
     // Test with null event name
-    assertFalse(calendar.createAllDayRecurringEvent(null, start, "MWF", 3, false, 
-            "Description", "Location", true));
-    
+    assertFalse(calendar.createAllDayRecurringEvent(null, start, "MWF",
+            3, false, "Description", "Location",
+            true));
+
     // Test with null weekdays
-    assertFalse(calendar.createAllDayRecurringEvent("Event", start, null, 3, false,
-            "Description", "Location", true));
-    
+    assertFalse(calendar.createAllDayRecurringEvent("Event", start, null,
+            3, false, "Description", "Location", true));
+
     // Optional parameters should be allowed to be null
-    assertTrue(calendar.createAllDayRecurringEvent("Event", start, "MWF", 3, false,
-            null, null, true));
-    
-    // We can't directly test null date in the method call since it would cause NPE in the implementation
-    // Instead, we create a RecurringEvent directly and verify that adding with null date fails
+    assertTrue(calendar.createAllDayRecurringEvent("Event", start, "MWF",
+            3, false, null, null, true));
+
     try {
-      RecurringEvent recurringEvent = new RecurringEvent.Builder(
-              "Test Event", null, null, EnumSet.of(DayOfWeek.MONDAY))
-              .occurrences(3)
-              .build();
+      RecurringEvent recurringEvent = new RecurringEvent.Builder("Test Event",
+              null, null,
+              EnumSet.of(DayOfWeek.MONDAY)).occurrences(3).build();
       fail("Expected IllegalArgumentException but none was thrown");
     } catch (IllegalArgumentException e) {
       // Expected exception
@@ -792,24 +753,22 @@ public class CalendarTest {
   public void testCreateAllDayRecurringEventUntilWithNullParams() throws ConflictingEventException {
     LocalDate start = LocalDate.of(2023, 5, 8);
     LocalDate until = LocalDate.of(2023, 5, 22);
-    
+
     // Test with null event name
-    assertFalse(calendar.createAllDayRecurringEventUntil(null, start, "MWF", until, false,
-            "Description", "Location", true));
-    
+    assertFalse(calendar.createAllDayRecurringEventUntil(null, start,
+            "MWF", until, false, "Description",
+            "Location", true));
+
     // Test with null weekdays
-    assertFalse(calendar.createAllDayRecurringEventUntil("Event", start, null, until, false,
-            "Description", "Location", true));
-    
-    // We can't directly test null dates in the method call since it would cause NPE in the implementation
-    // Instead, we create a RecurringEvent directly and verify that adding with null date fails
+    assertFalse(calendar.createAllDayRecurringEventUntil("Event", start,
+            null, until, false, "Description",
+            "Location", true));
+
     try {
-      RecurringEvent recurringEvent = new RecurringEvent.Builder(
-              "Test Event", 
-              LocalDateTime.of(2023, 5, 8, 0, 0), 
+      RecurringEvent recurringEvent = new RecurringEvent.Builder("Test Event",
+              LocalDateTime.of(2023, 5, 8, 0, 0),
               LocalDateTime.of(2023, 5, 8, 23, 59),
-              EnumSet.of(DayOfWeek.MONDAY))
-              .endDate(null)  // Testing null end date 
+              EnumSet.of(DayOfWeek.MONDAY)).endDate(null)
               .build();
       fail("Expected IllegalArgumentException but none was thrown for null end date");
     } catch (IllegalArgumentException e) {
@@ -823,35 +782,31 @@ public class CalendarTest {
   @Test
   public void testRecurringEventComplexConflictScenarios() throws ConflictingEventException {
     // First, create a recurring event on Mondays and Wednesdays
-    LocalDateTime start1 = LocalDateTime.of(2023, 5, 8, 10, 0); // Monday
+    LocalDateTime start1 = LocalDateTime.of(2023, 5, 8, 10, 0);
     LocalDateTime end1 = LocalDateTime.of(2023, 5, 8, 11, 0);
     Set<DayOfWeek> days1 = EnumSet.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY);
-    
-    RecurringEvent event1 = new RecurringEvent.Builder("Recurring Event 1", start1, end1, days1)
-            .occurrences(4)
-            .build();
-    
+
+    RecurringEvent event1 = new RecurringEvent
+            .Builder("Recurring Event 1", start1, end1, days1).occurrences(4).build();
+
     assertTrue(calendar.addRecurringEvent(event1, false));
-    
-    // Now try to add an overlapping recurring event on Wednesdays and Fridays
-    LocalDateTime start2 = LocalDateTime.of(2023, 5, 10, 10, 30); // Wednesday
+
+    LocalDateTime start2 = LocalDateTime.of(2023, 5, 10, 10,
+            30);
     LocalDateTime end2 = LocalDateTime.of(2023, 5, 10, 11, 30);
     Set<DayOfWeek> days2 = EnumSet.of(DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY);
-    
-    RecurringEvent event2 = new RecurringEvent.Builder("Recurring Event 2", start2, end2, days2)
-            .occurrences(4)
-            .build();
-    
+
+    RecurringEvent event2 = new RecurringEvent.Builder("Recurring Event 2",
+            start2, end2, days2).occurrences(4).build();
+
     assertFalse(calendar.addRecurringEvent(event2, false));
-    
-    // Try with auto-decline to see the exception
+
     Exception exception = assertThrows(ConflictingEventException.class, () -> {
       calendar.addRecurringEvent(event2, true);
     });
-    
+
     assertTrue(exception.getMessage().contains("conflict"));
-    
-    // Verify only the first event was added
+
     assertEquals(1, calendar.getAllRecurringEvents().size());
     assertEquals(4, calendar.getAllEvents().size());
   }
@@ -861,23 +816,21 @@ public class CalendarTest {
    */
   @Test
   public void testEditRecurringEventProperties() throws ConflictingEventException {
-    // Create a recurring event
     calendar.addRecurringEvent(recurringEvent, false);
-    
-    // Edit all occurrences of the event
-    int count = calendar.editAllEvents("Recurring Meeting", "subject", "Updated Meeting");
-    assertEquals(4, count); // Should update all 4 occurrences
-    
-    // Verify the subject was updated for all events
+
+    int count = calendar.editAllEvents("Recurring Meeting", "subject",
+            "Updated Meeting");
+    assertEquals(4, count);
+
     List<Event> events = calendar.getAllEvents();
     for (Event event : events) {
       assertEquals("Updated Meeting", event.getSubject());
     }
-    
-    // Test editing other properties
-    count = calendar.editAllEvents("Updated Meeting", "location", "New Location");
+
+    count = calendar.editAllEvents("Updated Meeting", "location",
+            "New Location");
     assertEquals(4, count);
-    
+
     events = calendar.getAllEvents();
     for (Event event : events) {
       assertEquals("New Location", event.getLocation());
@@ -889,32 +842,28 @@ public class CalendarTest {
    */
   @Test
   public void testEditEventsFromDate() throws ConflictingEventException {
-    // Create a recurring event
     calendar.addRecurringEvent(recurringEvent, false);
-    
+
     List<Event> allEvents = calendar.getAllEvents();
     assertEquals(4, allEvents.size());
-    
-    // Get the start date of the second occurrence
+
     Event secondOccurrence = allEvents.get(1);
-    
-    // Edit events from the second occurrence
-    int count = calendar.editEventsFromDate(
-            "Recurring Meeting", 
-            secondOccurrence.getStartDateTime(), 
-            "subject", 
+
+    int count = calendar.editEventsFromDate("Recurring Meeting",
+            secondOccurrence.getStartDateTime(), "subject",
             "Updated from Second");
-    
-    assertEquals(3, count); // Should update 3 events (second through fourth)
-    
-    // Verify first occurrence not updated
-    Event firstOccurrence = calendar.findEvent("Recurring Meeting", allEvents.get(0).getStartDateTime());
+
+    assertEquals(3, count);
+
+    Event firstOccurrence = calendar.findEvent("Recurring Meeting",
+            allEvents.get(0).getStartDateTime());
     assertNotNull(firstOccurrence);
     assertEquals("Recurring Meeting", firstOccurrence.getSubject());
-    
+
     // Verify other occurrences were updated
     for (int i = 1; i < allEvents.size(); i++) {
-      Event occurrence = calendar.findEvent("Updated from Second", allEvents.get(i).getStartDateTime());
+      Event occurrence = calendar.findEvent("Updated from Second",
+              allEvents.get(i).getStartDateTime());
       assertNotNull(occurrence);
       assertEquals("Updated from Second", occurrence.getSubject());
     }
@@ -924,17 +873,20 @@ public class CalendarTest {
    * Test that createAllDayRecurringEvent handles zero or negative occurrences.
    */
   @Test
-  public void testCreateAllDayRecurringEventWithInvalidOccurrences() throws ConflictingEventException {
+  public void testCreateAllDayRecurringEventWithInvalidOccurrences()
+          throws ConflictingEventException {
     LocalDate start = LocalDate.of(2023, 5, 8);
-    
+
     // Test with zero occurrences
-    assertFalse(calendar.createAllDayRecurringEvent("Zero Occurrences", start, "MWF", 0, false,
+    assertFalse(calendar.createAllDayRecurringEvent("Zero Occurrences",
+            start, "MWF", 0, false,
             "Description", "Location", true));
-    
+
     // Test with negative occurrences
-    assertFalse(calendar.createAllDayRecurringEvent("Negative Occurrences", start, "MWF", -5, false,
-            "Description", "Location", true));
-    
+    assertFalse(calendar.createAllDayRecurringEvent("Negative Occurrences", start,
+            "MWF", -5, false, "Description",
+            "Location", true));
+
     // Verify no events were added
     assertEquals(0, calendar.getAllEvents().size());
     assertEquals(0, calendar.getAllRecurringEvents().size());
