@@ -140,6 +140,8 @@ public class CSVExporter {
       String location = event.getLocation();
       if (location != null && !location.trim().isEmpty()) {
         display.append("\n  Location: ").append(location);
+      } else {
+        display.append("\n  Location: N/A");
       }
       if (!event.isPublic()) {
         display.append("\n  Private");
