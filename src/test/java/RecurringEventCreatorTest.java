@@ -203,6 +203,126 @@ public class RecurringEventCreatorTest {
     assertEquals("Leap Year Test", event.getSubject());
   }
 
+  /**
+   * Test that the constructor correctly catches InvalidEventException from DateTimeUtil.
+   */
+  @Test
+  public void testConstructorWithInvalidWeekdays() {
+    String[] args = {"recurring", "Meeting", "2024-03-26T10:00", "2024-03-26T11:00", "XYZ", "5", "false"};
+    try {
+      new RecurringEventCreator(args);
+      fail("Should throw InvalidEventException for invalid weekdays");
+    } catch (InvalidEventException e) {
+      assertEquals("Invalid weekday combination", e.getMessage());
+    }
+  }
+
+  /**
+   * Test that getAutoDecline returns the expected value.
+   */
+  @Test
+  public void testGetAutoDecline() throws InvalidEventException {
+    // Test with autoDecline = true
+    String[] argsTrue = {"recurring", "Meeting", "2024-03-26T10:00", "2024-03-26T11:00", "MWF", "5", "true"};
+    RecurringEventCreator creatorTrue = new RecurringEventCreator(argsTrue);
+    
+    // Access the protected method via reflection
+    boolean result = false;
+    try {
+      java.lang.reflect.Method method = RecurringEventCreator.class.getDeclaredMethod("getAutoDecline");
+      method.setAccessible(true);
+      result = (boolean) method.invoke(creatorTrue);
+    } catch (Exception e) {
+      fail("Failed to invoke getAutoDecline via reflection: " + e.getMessage());
+    }
+    
+    assertTrue("getAutoDecline should return true", result);
+    
+    // Test with autoDecline = false
+    String[] argsFalse = {"recurring", "Meeting", "2024-03-26T10:00", "2024-03-26T11:00", "MWF", "5", "false"};
+    RecurringEventCreator creatorFalse = new RecurringEventCreator(argsFalse);
+    
+    try {
+      java.lang.reflect.Method method = RecurringEventCreator.class.getDeclaredMethod("getAutoDecline");
+      method.setAccessible(true);
+      result = (boolean) method.invoke(creatorFalse);
+    } catch (Exception e) {
+      fail("Failed to invoke getAutoDecline via reflection: " + e.getMessage());
+    }
+    
+    assertFalse("getAutoDecline should return false", result);
+  }
+
+  /**
+   * Test boundary conditions for occurrences.
+   */
+  @Test
+  public void testOccurrencesBoundaryConditions() throws InvalidEventException {
+    // Test with 1 occurrence (boundary case at lower bound)
+    String[] args1 = {"recurring", "Meeting", "2024-03-26T10:00", "2024-03-26T11:00", "MWF", "1", "false"};
+    RecurringEventCreator creator1 = new RecurringEventCreator(args1);
+    Event event1 = creator1.createEvent();
+    assertTrue(event1 instanceof RecurringEvent);
+    assertEquals(1, ((RecurringEvent) event1).getOccurrences());
+    
+    // Test with 999 occurrences (boundary case at upper bound)
+    String[] args999 = {"recurring", "Meeting", "2024-03-26T10:00", "2024-03-26T11:00", "MWF", "999", "false"};
+    RecurringEventCreator creator999 = new RecurringEventCreator(args999);
+    Event event999 = creator999.createEvent();
+    assertTrue(event999 instanceof RecurringEvent);
+    assertEquals(999, ((RecurringEvent) event999).getOccurrences());
+  }
+
+  /**
+   * Test invalid boundary conditions for occurrences.
+   */
+  @Test
+  public void testOccurrencesInvalidBoundaryConditions() {
+    // Test with 0 occurrences (boundary case below lower bound)
+    String[] args0 = {"recurring", "Meeting", "2024-03-26T10:00", "2024-03-26T11:00", "MWF", "0", "false"};
+    assertThrows(InvalidEventException.class, () -> {
+      new RecurringEventCreator(args0);
+    });
+    
+    // Test with -1 occurrences (well below lower bound)
+    String[] argsNeg = {"recurring", "Meeting", "2024-03-26T10:00", "2024-03-26T11:00", "MWF", "-1", "false"};
+    assertThrows(InvalidEventException.class, () -> {
+      new RecurringEventCreator(argsNeg);
+    });
+    
+    // Test with 1000 occurrences (boundary case above upper bound)
+    String[] args1000 = {"recurring", "Meeting", "2024-03-26T10:00", "2024-03-26T11:00", "MWF", "1000", "false"};
+    assertThrows(InvalidEventException.class, () -> {
+      new RecurringEventCreator(args1000);
+    });
+  }
+
+  /**
+   * Test minimum required number of arguments.
+   */
+  @Test
+  public void testMinimumRequiredArguments() {
+    // Test with exactly 7 arguments (minimum required)
+    String[] argsMin = {"recurring", "Meeting", "2024-03-26T10:00", "2024-03-26T11:00", "MWF", "5", "false"};
+    try {
+      new RecurringEventCreator(argsMin);
+      // If we get here, no exception was thrown, which is what we expect
+    } catch (Exception e) {
+      fail("Should not throw exception for minimum required arguments: " + e.getMessage());
+    }
+    
+    // Test with 6 arguments (insufficient)
+    String[] argsInsufficient = {"recurring", "Meeting", "2024-03-26T10:00", "2024-03-26T11:00", "MWF", "5"};
+    try {
+      new RecurringEventCreator(argsInsufficient);
+      fail("Should throw IllegalArgumentException for insufficient arguments");
+    } catch (IllegalArgumentException e) {
+      assertEquals("Insufficient arguments for creating a recurring event", e.getMessage());
+    } catch (Exception e) {
+      fail("Unexpected exception type: " + e.getClass().getName());
+    }
+  }
+
   private static class MockCalendar implements ICalendar {
     RecurringEvent lastRecurringEvent;
     boolean lastAutoDecline;

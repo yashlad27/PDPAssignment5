@@ -55,7 +55,7 @@ public class CommandParser {
 
     // Create recurring event pattern
     registerPattern("create_recurring_event",
-            Pattern.compile("create event ([\"']?[^\"']+[\"']?|[^\\s]+) "
+            Pattern.compile("create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
                     + "from (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
                     + "to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
                     + "repeats ([MTWRFSU]+) for (\\d+) times"
@@ -259,16 +259,17 @@ public class CommandParser {
    * Parse create recurring event command.
    */
   private CommandWithArgs parseCreateRecurringEventCommand(Matcher matcher) {
-    String eventName = matcher.group(1);
+    boolean autoDecline = matcher.group(1) != null;
+    String eventName = matcher.group(2);
     if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
       eventName = eventName.substring(1, eventName.length() - 1);
     }
-    String startTime = matcher.group(2);
-    String endTime = matcher.group(3);
-    String weekdays = matcher.group(4);
-    String occurrences = matcher.group(5);
-    String description = matcher.group(6);
-    String location = matcher.group(7);
+    String startTime = matcher.group(3);
+    String endTime = matcher.group(4);
+    String weekdays = matcher.group(5);
+    String occurrences = matcher.group(6);
+    String description = matcher.group(7);
+    String location = matcher.group(8);
 
     String[] args = {
             "recurring",
@@ -277,10 +278,10 @@ public class CommandParser {
             endTime,
             weekdays,
             occurrences,
+            String.valueOf(autoDecline),  // autoDecline flag
             description != null ? description : "",
             location != null ? location : "",
-            "true",  // isPublic
-            "false"  // autoDecline
+            "true"  // isPublic
     };
     return new CommandWithArgs(
             commandFactory.getCommand("create"),

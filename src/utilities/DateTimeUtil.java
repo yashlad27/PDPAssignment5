@@ -59,7 +59,7 @@ public class DateTimeUtil {
   }
 
   /**
-   * Parses a date and time string in the format "YYYY-MM-DDThh:mm".
+   * Parses a date and time string in the format "YYYY-MM-DDThh:mm" or "YYYY-MM-DDThh:mm:ss".
    *
    * @param dateTimeStr the date and time string to parse
    * @return the parsed LocalDateTime
@@ -67,10 +67,17 @@ public class DateTimeUtil {
    */
   public static LocalDateTime parseDateTime(String dateTimeStr) {
     try {
+      // Try to parse with the standard formatter (no seconds)
       return LocalDateTime.parse(dateTimeStr, DATE_TIME_FORMATTER);
     } catch (DateTimeParseException e) {
-      throw new IllegalArgumentException("Invalid date time format: " + dateTimeStr +
-          ". Expected format: YYYY-MM-DDThh:mm", e);
+      try {
+        // If that fails, try to parse with seconds included
+        DateTimeFormatter withSecondsFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        return LocalDateTime.parse(dateTimeStr, withSecondsFormatter);
+      } catch (DateTimeParseException e2) {
+        throw new IllegalArgumentException("Invalid date time format: " + dateTimeStr +
+            ". Expected format: YYYY-MM-DDThh:mm or YYYY-MM-DDThh:mm:ss", e2);
+      }
     }
   }
 

@@ -6,12 +6,14 @@ import model.calendar.ICalendar;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
+import java.util.function.Predicate;
 
 /**
  * Command for editing calendar events using the Strategy pattern.
  */
 public class EditEventCommand implements ICommand {
 
+  private static final int MIN_REQUIRED_ARGS = 3;
   private final ICalendar calendar;
 
   /**
@@ -21,10 +23,20 @@ public class EditEventCommand implements ICommand {
    * @throws IllegalArgumentException if calendar is null
    */
   public EditEventCommand(ICalendar calendar) {
+    validateCalendar(calendar);
+    this.calendar = calendar;
+  }
+  
+  /**
+   * Validates that the calendar is not null.
+   *
+   * @param calendar the calendar to validate
+   * @throws IllegalArgumentException if calendar is null
+   */
+  private void validateCalendar(ICalendar calendar) {
     if (calendar == null) {
       throw new IllegalArgumentException("Calendar cannot be null");
     }
-    this.calendar = calendar;
   }
 
   /**
@@ -36,7 +48,7 @@ public class EditEventCommand implements ICommand {
    */
   @Override
   public String execute(String[] args) {
-    if (args.length < 3) {
+    if (!hasMinimumArgs(args, MIN_REQUIRED_ARGS)) {
       return "Error: Insufficient arguments for edit command";
     }
 
@@ -50,16 +62,38 @@ public class EditEventCommand implements ICommand {
       return editor.executeEdit(calendar);
 
     } catch (EventNotFoundException e) {
-      return "Failed to edit event: Event not found - " + e.getMessage();
+      return formatExceptionMessage("Event not found", e);
     } catch (InvalidEventException e) {
-      return "Failed to edit event: Invalid property or value - " + e.getMessage();
+      return formatExceptionMessage("Invalid property or value", e);
     } catch (ConflictingEventException e) {
-      return "Failed to edit event: Would create a conflict - " + e.getMessage();
+      return formatExceptionMessage("Would create a conflict", e);
     } catch (IllegalArgumentException e) {
       return "Error in command arguments: " + e.getMessage();
     } catch (Exception e) {
       return "Unexpected error: " + e.getMessage();
     }
+  }
+  
+  /**
+   * Checks if the args array has at least the minimum required arguments.
+   *
+   * @param args the arguments array to check
+   * @param minArgs the minimum number of required arguments
+   * @return true if args has at least minArgs elements
+   */
+  private boolean hasMinimumArgs(String[] args, int minArgs) {
+    return args != null && args.length >= minArgs;
+  }
+  
+  /**
+   * Formats an exception message with a consistent pattern.
+   *
+   * @param context the context of the failure
+   * @param e the exception that was thrown
+   * @return a formatted error message
+   */
+  private String formatExceptionMessage(String context, Exception e) {
+    return String.format("Failed to edit event: %s - %s", context, e.getMessage());
   }
 
   /**

@@ -447,4 +447,33 @@ public class ConsolidatedCommandTest {
     result = controller.processCommand("create event \"Invalid Time Event\" from 2023-12-01T25:00 to 2023-12-01T26:00");
     assertTrue(result.contains("Error") || result.contains("invalid"));
   }
+
+  @Test
+  public void testCreateRecurringEventWithInvalidWeekdays() {
+    String result = controller.processCommand(
+            "create event \"Invalid Meeting\" from 2024-03-26T10:00 to 2024-03-26T11:00 repeats XYZ for 5 times");
+
+    assertTrue(result.contains("Error") || result.contains("Invalid weekday"));
+  }
+
+  @Test
+  public void testCreateRecurringEventWithAutoDecline() throws ConflictingEventException, InvalidEventException {
+    // Create first recurring event
+    controller.processCommand(
+            "create event \"First Meeting\" from 2024-03-26T10:00 to 2024-03-26T11:00 repeats MWF for 5 times");
+
+    // Try to create conflicting recurring event with auto-decline
+    String result = controller.processCommand(
+            "create event --autoDecline \"Conflicting Meeting\" from 2024-03-26T10:30 to 2024-03-26T11:30 repeats MWF for 5 times");
+
+    assertTrue(result.contains("conflicts") || result.contains("Error"));
+  }
+
+  @Test
+  public void testCreateRecurringEventWithMaxOccurrences() {
+    String result = controller.processCommand(
+            "create event \"Weekly Meeting\" from 2024-03-26T10:00 to 2024-03-26T11:00 repeats MWF for 1000 times");
+
+    assertTrue(result.contains("Maximum occurrences exceeded"));
+  }
 } 

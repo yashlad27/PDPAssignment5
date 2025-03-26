@@ -2,7 +2,9 @@ package controller.command.create.strategy;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import model.event.Event;
 import model.event.RecurringEvent;
@@ -14,6 +16,9 @@ import utilities.DateTimeUtil;
  * Extends AbstractEventCreator to inherit common functionality.
  */
 public class RecurringEventCreator extends AbstractEventCreator {
+
+  private static final int MIN_REQUIRED_ARGS = 7;
+  private static final int MAX_OCCURRENCES = 999;
 
   private String eventName;
   private LocalDateTime startDateTime;
@@ -46,9 +51,20 @@ public class RecurringEventCreator extends AbstractEventCreator {
     if (args == null) {
       throw new IllegalArgumentException("Arguments array cannot be null");
     }
-    if (args.length < 7) {
+    if (!hasMinimumLength(args, MIN_REQUIRED_ARGS)) {
       throw new IllegalArgumentException("Insufficient arguments for creating a recurring event");
     }
+  }
+
+  /**
+   * Checks if an array has at least the minimum required length.
+   *
+   * @param array     the array to check
+   * @param minLength the minimum required length
+   * @return true if the array has at least the minimum length
+   */
+  private static boolean hasMinimumLength(Object[] array, int minLength) {
+    return array != null && array.length >= minLength;
   }
 
   /**
@@ -80,13 +96,13 @@ public class RecurringEventCreator extends AbstractEventCreator {
     this.endDateTime = DateTimeUtil.parseDateTime(args[3]);
 
     String weekdays = args[4];
-    if (weekdays == null || weekdays.trim().isEmpty()) {
+    if (isNullOrEmpty(weekdays)) {
       throw new InvalidEventException("Repeat days cannot be empty");
     }
 
     try {
       this.repeatDays = DateTimeUtil.parseWeekdays(weekdays);
-      if (this.repeatDays.isEmpty()) {
+      if (isCollectionEmpty(this.repeatDays)) {
         throw new InvalidEventException("Invalid weekday combination");
       }
     } catch (IllegalArgumentException e) {
@@ -94,14 +110,62 @@ public class RecurringEventCreator extends AbstractEventCreator {
     }
 
     this.occurrences = Integer.parseInt(args[5]);
-    if (this.occurrences <= 0) {
-      throw new InvalidEventException("Occurrences must be positive");
-    }
-    if (this.occurrences > 999) {
-      throw new InvalidEventException("Maximum occurrences exceeded");
-    }
-    
+    validateOccurrences(this.occurrences);
+
     this.autoDecline = Boolean.parseBoolean(args[6]);
+  }
+
+  /**
+   * Checks if a string is null or empty.
+   *
+   * @param str the string to check
+   * @return true if the string is null or empty
+   */
+  private static boolean isNullOrEmpty(String str) {
+    return str == null || str.trim().isEmpty();
+  }
+
+  /**
+   * Checks if a collection is empty.
+   *
+   * @param collection the collection to check
+   * @return true if the collection is empty
+   */
+  private static boolean isCollectionEmpty(Collection<?> collection) {
+    return collection == null || collection.isEmpty();
+  }
+
+  /**
+   * Validates that occurrences is within acceptable bounds.
+   *
+   * @param occurrences the number of occurrences to validate
+   * @throws InvalidEventException if occurrences is not within acceptable bounds
+   */
+  private void validateOccurrences(int occurrences) throws InvalidEventException {
+    validateWithPredicate(
+            occurrences,
+            value -> value <= 0,
+            "Occurrences must be positive");
+
+    validateWithPredicate(
+            occurrences,
+            value -> value > MAX_OCCURRENCES,
+            "Maximum occurrences exceeded");
+  }
+
+  /**
+   * Validates a value using a predicate.
+   *
+   * @param value            the value to validate
+   * @param invalidCondition predicate that returns true if the condition is invalid
+   * @param errorMessage     the error message to throw if the condition is invalid
+   * @throws InvalidEventException if the invalidCondition returns true
+   */
+  private <T> void validateWithPredicate(T value, Predicate<T> invalidCondition, String errorMessage)
+          throws InvalidEventException {
+    if (invalidCondition.test(value)) {
+      throw new InvalidEventException(errorMessage);
+    }
   }
 
   /**
@@ -130,25 +194,40 @@ public class RecurringEventCreator extends AbstractEventCreator {
     validateEventParameters(eventName);
 
     // Validate date/time parameters
-    if (startDateTime == null) {
-      throw new InvalidEventException("Start date/time cannot be null");
-    }
-    if (endDateTime == null) {
-      throw new InvalidEventException("End date/time cannot be null");
-    }
-    if (endDateTime.isBefore(startDateTime)) {
-      throw new InvalidEventException("End date/time cannot be before start date/time");
-    }
+    validateWithPredicate(
+            startDateTime,
+            dateTime -> dateTime == null,
+            "Start date/time cannot be null");
+
+    validateWithPredicate(
+            endDateTime,
+            dateTime -> dateTime == null,
+            "End date/time cannot be null");
+
+    validateWithPredicate(
+            new DateTimePair(startDateTime, endDateTime),
+            pair -> pair.second.isBefore(pair.first),
+            "End date/time cannot be before start date/time");
 
     // Validate recurrence parameters
-    if (repeatDays == null || repeatDays.isEmpty()) {
-      throw new InvalidEventException("Repeat days cannot be empty");
-    }
-    if (occurrences <= 0) {
-      throw new InvalidEventException("Occurrences must be positive");
-    }
-    if (occurrences > 999) {
-      throw new InvalidEventException("Maximum occurrences exceeded");
+    validateWithPredicate(
+            repeatDays,
+            collection -> isCollectionEmpty(collection),
+            "Repeat days cannot be empty");
+
+    validateOccurrences(occurrences);
+  }
+
+  /**
+   * Simple pair class for date time validation.
+   */
+  private static class DateTimePair {
+    final LocalDateTime first;
+    final LocalDateTime second;
+
+    DateTimePair(LocalDateTime first, LocalDateTime second) {
+      this.first = first;
+      this.second = second;
     }
   }
 

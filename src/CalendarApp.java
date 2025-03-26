@@ -31,11 +31,7 @@ public class CalendarApp {
     ICommandFactory eventCommandFactory = factory.createEventCommandFactory(calendar, view);
     ICommandFactory calendarCommandFactory = factory.createCalendarCommandFactory(calendarManager, view);
 
-    CalendarController controller = factory.createController(
-            eventCommandFactory,
-            calendarCommandFactory,
-            calendarManager,
-            view);
+    CalendarController controller = factory.createController(eventCommandFactory, calendarCommandFactory, calendarManager, view);
 
     try {
       // Process command line arguments

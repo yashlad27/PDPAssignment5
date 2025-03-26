@@ -1,9 +1,9 @@
 package model.calendar;
 
-import model.event.Event;
-import java.time.LocalDate;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import model.event.Event;
 
 /**
  * Functional interface for filtering events based on specified criteria.
@@ -29,17 +29,6 @@ public interface EventFilter {
    */
   default EventFilter and(EventFilter other) {
     return event -> matches(event) && other.matches(event);
-  }
-
-  /**
-   * Returns a composed filter that represents a logical OR of this filter and another.
-   * This is a default method allowing filters to be chained together.
-   *
-   * @param other another EventFilter
-   * @return a composed filter that represents the logical OR of this filter and the other
-   */
-  default EventFilter or(EventFilter other) {
-    return event -> matches(event) || other.matches(event);
   }
 
   /**
