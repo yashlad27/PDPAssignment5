@@ -1,6 +1,7 @@
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -49,22 +50,29 @@ public class CommandFactoryTest {
 
     @Override
     public boolean createRecurringEventUntil(String name, LocalDateTime start,
-                                             LocalDateTime end, String weekdays, LocalDate untilDate,
-                                             boolean autoDecline) throws InvalidEventException, ConflictingEventException {
+                                             LocalDateTime end, String weekdays,
+                                             LocalDate untilDate,
+                                             boolean autoDecline)
+            throws InvalidEventException, ConflictingEventException {
       return false;
     }
 
     @Override
     public boolean createAllDayRecurringEvent(String name, LocalDate date,
-                                              String weekdays, int occurrences, boolean autoDecline, String description, String location,
-                                              boolean isPublic) throws InvalidEventException, ConflictingEventException {
+                                              String weekdays, int occurrences,
+                                              boolean autoDecline, String description,
+                                              String location,
+                                              boolean isPublic)
+            throws InvalidEventException, ConflictingEventException {
       return false;
     }
 
     @Override
     public boolean createAllDayRecurringEventUntil(String name, LocalDate date,
-                                                   String weekdays, LocalDate untilDate, boolean autoDecline, String description,
-                                                   String location, boolean isPublic) throws InvalidEventException, ConflictingEventException {
+                                                   String weekdays, LocalDate untilDate,
+                                                   boolean autoDecline, String description,
+                                                   String location, boolean isPublic)
+            throws InvalidEventException, ConflictingEventException {
       return false;
     }
 
@@ -85,7 +93,8 @@ public class CommandFactoryTest {
     }
 
     @Override
-    public model.event.Event findEvent(String subject, LocalDateTime startDateTime) throws EventNotFoundException {
+    public model.event.Event findEvent(String subject, LocalDateTime startDateTime)
+            throws EventNotFoundException {
       return null;
     }
 
@@ -96,18 +105,21 @@ public class CommandFactoryTest {
 
     @Override
     public boolean editSingleEvent(String subject, LocalDateTime startDateTime,
-                                   String property, String newValue) throws EventNotFoundException, InvalidEventException, ConflictingEventException {
+                                   String property, String newValue) throws EventNotFoundException,
+            InvalidEventException, ConflictingEventException {
       return false;
     }
 
     @Override
     public int editEventsFromDate(String subject, LocalDateTime startDateTime,
-                                  String property, String newValue) throws InvalidEventException, ConflictingEventException {
+                                  String property, String newValue) throws InvalidEventException,
+            ConflictingEventException {
       return 0;
     }
 
     @Override
-    public int editAllEvents(String subject, String property, String newValue) throws InvalidEventException, ConflictingEventException {
+    public int editAllEvents(String subject, String property, String newValue)
+            throws InvalidEventException, ConflictingEventException {
       return 0;
     }
 
@@ -117,7 +129,7 @@ public class CommandFactoryTest {
     }
 
     @Override
-    public String exportToCSV(String filePath) throws java.io.IOException {
+    public String exportToCSV(String filePath) throws IOException {
       return null;
     }
   }
@@ -259,13 +271,12 @@ public class CommandFactoryTest {
   }
 
   @Test
-  public void testCalendarCommandForwarding() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
-    // Create and use commands should be forwarded to CalendarCommandFactory
+  public void testCalendarCommandForwarding() throws ConflictingEventException,
+          InvalidEventException, EventNotFoundException {
     ICommand useCommand = factory.getCommand("use");
     String result = useCommand.execute(new String[]{"test"});
     assertEquals("Command forwarded to CalendarCommandFactory", result);
 
-    // Copy command should also be forwarded
     ICommand copyCommand = factory.getCommand("copy");
     result = copyCommand.execute(new String[]{"test"});
     assertEquals("Command forwarded to CalendarCommandFactory", result);
@@ -298,15 +309,13 @@ public class CommandFactoryTest {
   }
 
   @Test
-  public void testRegisterCustomCommand() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+  public void testRegisterCustomCommand() throws ConflictingEventException, InvalidEventException,
+          EventNotFoundException {
     CommandFactory factoryImpl = (CommandFactory) factory;
-    // Register a custom command
     factoryImpl.registerCommand("custom", args -> "Custom command executed");
 
-    // Verify the command was registered
     assertTrue(factoryImpl.hasCommand("custom"));
 
-    // Execute the command
     ICommand customCommand = factoryImpl.getCommand("custom");
     assertEquals("Custom command executed", customCommand.execute(new String[]{}));
   }

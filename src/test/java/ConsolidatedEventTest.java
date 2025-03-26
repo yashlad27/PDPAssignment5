@@ -60,6 +60,10 @@ public class ConsolidatedEventTest {
 
   // ===== Event Tests =====
 
+  /**
+   * Tests basic event creation with valid parameters.
+   * Verifies that all event properties are correctly set.
+   */
   @Test
   public void testEventCreation() {
     assertEquals("Team Meeting", event.getSubject());
@@ -70,6 +74,10 @@ public class ConsolidatedEventTest {
     assertTrue(event.isPublic());
   }
 
+  /**
+   * Tests event creation with null values for optional fields.
+   * Verifies that null values are handled correctly.
+   */
   @Test
   public void testEventCreationWithNullValues() {
     // Create an event with null description and location
@@ -85,6 +93,10 @@ public class ConsolidatedEventTest {
     assertEquals("", nullEvent.getLocation());     // Implementation uses empty string, not null
   }
 
+  /**
+   * Tests event creation with invalid date ranges.
+   * Verifies that appropriate exceptions are thrown.
+   */
   @Test
   public void testEventWithInvalidDates() {
     try {
@@ -110,6 +122,10 @@ public class ConsolidatedEventTest {
     }
   }
 
+  /**
+   * Tests event conflict detection between two events.
+   * Verifies that overlapping events are correctly identified.
+   */
   @Test
   public void testEventConflicts() {
     Event overlappingEvent = new Event(
@@ -128,6 +144,10 @@ public class ConsolidatedEventTest {
     assertFalse(event.conflictsWith(nonOverlappingEvent));
   }
 
+  /**
+   * Tests edge cases for event overlap detection.
+   * Verifies that boundary conditions are handled correctly.
+   */
   @Test
   public void testEventOverlapEdgeCases() {
     // Event that ends exactly when our main event starts
@@ -191,6 +211,10 @@ public class ConsolidatedEventTest {
             event.conflictsWith(nearlyEndsAtStart));
   }
 
+  /**
+   * Tests event duration calculation.
+   * Verifies that duration is correctly computed in various units.
+   */
   @Test
   public void testEventDuration() {
     // Test regular event duration using ChronoUnit
@@ -222,6 +246,10 @@ public class ConsolidatedEventTest {
     assertEquals(24 * 60, allDayMinutes);
   }
 
+  /**
+   * Tests string representation of events.
+   * Verifies that toString() method provides correct event information.
+   */
   @Test
   public void testEventToString() {
     String eventString = event.toString();
@@ -232,6 +260,10 @@ public class ConsolidatedEventTest {
             eventString.contains("2023") || eventString.contains("1"));
   }
 
+  /**
+   * Tests creation and handling of all-day events.
+   * Verifies that all-day flag is correctly set and handled.
+   */
   @Test
   public void testAllDayEvent() {
     Event allDayEvent = Event.createAllDayEvent(
@@ -248,6 +280,10 @@ public class ConsolidatedEventTest {
 
   // ===== RecurringEvent Tests =====
 
+  /**
+   * Tests creation of recurring events.
+   * Verifies that recurring event properties are correctly set.
+   */
   @Test
   public void testRecurringEventCreation() {
     assertEquals("Recurring Meeting", recurringEvent.getSubject());
@@ -256,6 +292,10 @@ public class ConsolidatedEventTest {
             recurringEvent.getRepeatDays());
   }
 
+  /**
+   * Tests recurring events with all days of the week.
+   * Verifies that daily recurrence is handled correctly.
+   */
   @Test
   public void testRecurringEventWithAllDays() {
     // Create recurring event that repeats every day
