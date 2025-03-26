@@ -8,13 +8,13 @@ import java.util.List;
  * This interface provides a flexible way to define and compose event modifications
  * through a chain of operations.
  *
- * <p> The interface includes:
+ * <p>The interface includes:
  * <ul>
  *   <li>A single abstract method {@code apply(Event event)} for executing the action</li>
  *   <li>A default method {@code andThen(EventAction after)} for composing multiple actions</li>
  *   <li>Static factory methods for common event modifications</li>
  * </ul>
- * <p>
+ * </p>
  */
 @FunctionalInterface
 public interface EventAction {

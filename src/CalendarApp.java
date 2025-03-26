@@ -9,17 +9,17 @@ import view.ConsoleView;
 import view.ICalendarView;
 
 /**
- * Main entry point for the Calendar Application.
- * This class handles both interactive and headless modes of operation.
+ * Main entry point for the Calendar Application. This class handles both interactive and headless
+ * modes of operation.
  */
 public class CalendarApp {
 
   /**
    * Main method that serves as the entry point for the application.
    *
-   * @param args Command line arguments:
-   *             --mode interactive    : Starts the application in interactive mode
-   *             --mode headless file : Starts the application in headless mode with the specified command file
+   * @param args Command line arguments: --mode interactive    : Starts the application in
+   *             interactive mode --mode headless file : Starts the application in headless mode
+   *             with the specified command file
    */
   public static void main(String[] args) {
     CalendarFactory factory = new CalendarFactory();
@@ -29,13 +29,11 @@ public class CalendarApp {
 
     ICalendar calendar = new Calendar();
     ICommandFactory eventCommandFactory = factory.createEventCommandFactory(calendar, view);
-    ICommandFactory calendarCommandFactory = factory.createCalendarCommandFactory(calendarManager, view);
+    ICommandFactory calendarCommandFactory = factory.createCalendarCommandFactory(calendarManager,
+        view);
 
-    CalendarController controller = factory.createController(
-            eventCommandFactory,
-            calendarCommandFactory,
-            calendarManager,
-            view);
+    CalendarController controller = factory.createController(eventCommandFactory,
+        calendarCommandFactory, calendarManager, view);
 
     try {
       // Process command line arguments
