@@ -1,10 +1,10 @@
-import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import model.calendar.EventFilter;
@@ -31,30 +31,25 @@ public class EventFilterTest {
   public void setUp() {
     events = new ArrayList<>();
 
-    // Regular event
     regularEvent = new Event("Team Meeting",
             LocalDateTime.of(2023, 5, 15, 9, 0),
             LocalDateTime.of(2023, 5, 15, 10, 30),
             "Weekly team sync", "Conference Room A", true);
 
-    // All-day event
     allDayEvent = Event.createAllDayEvent("Company Holiday",
             LocalDate.of(2023, 5, 29),
             "Memorial Day", null, true);
 
-    // Multi-day event
     multiDayEvent = new Event("Conference",
             LocalDateTime.of(2023, 6, 1, 9, 0),
             LocalDateTime.of(2023, 6, 3, 17, 0),
             "Annual tech conference", "Convention Center", true);
 
-    // Event starting at midnight
     midnightEvent = new Event("Midnight Meeting",
             LocalDateTime.of(2023, 5, 15, 0, 0),
             LocalDateTime.of(2023, 5, 15, 1, 0),
             "Early morning meeting", "Virtual", true);
 
-    // Event ending at end of day
     endOfDayEvent = new Event("End of Day Meeting",
             LocalDateTime.of(2023, 5, 15, 23, 0),
             LocalDateTime.of(2023, 5, 15, 23, 59),
@@ -136,20 +131,25 @@ public class EventFilterTest {
 
   @Test
   public void testTimeRangeFilter() {
-    LocalDateTime startTime = LocalDateTime.of(2023, 5, 15, 8, 0);
-    LocalDateTime endTime = LocalDateTime.of(2023, 5, 15, 17, 0);
+    LocalDateTime startTime = LocalDateTime.of(2023, 5, 15,
+            8, 0);
+    LocalDateTime endTime = LocalDateTime.of(2023, 5, 15,
+            17, 0);
 
     EventFilter timeRangeFilter = event -> {
       if (event == null || event.getStartDateTime() == null || event.getEndDateTime() == null) {
         return false;
       }
-      return !event.getStartDateTime().isBefore(startTime) && !event.getEndDateTime().isAfter(endTime);
+      return !event.getStartDateTime().isBefore(startTime)
+              && !event.getEndDateTime().isAfter(endTime);
     };
 
     List<Event> filteredEvents = timeRangeFilter.filterEvents(events);
     assertTrue("Should include regular event", filteredEvents.contains(regularEvent));
-    assertFalse("Should not include midnight event", filteredEvents.contains(midnightEvent));
-    assertFalse("Should not include end of day event", filteredEvents.contains(endOfDayEvent));
+    assertFalse("Should not include midnight event",
+            filteredEvents.contains(midnightEvent));
+    assertFalse("Should not include end of day event",
+            filteredEvents.contains(endOfDayEvent));
   }
 
   @Test
@@ -198,7 +198,8 @@ public class EventFilterTest {
             event != null && event.getLocation().isEmpty();
 
     List<Event> filteredEvents = nullLocationFilter.filterEvents(events);
-    assertTrue("Should include null location event", filteredEvents.contains(nullLocationEvent));
+    assertTrue("Should include null location event",
+            filteredEvents.contains(nullLocationEvent));
     assertFalse("Should not include regular event", filteredEvents.contains(regularEvent));
   }
 
@@ -215,7 +216,8 @@ public class EventFilterTest {
             event != null && event.getDescription() != null && event.getDescription().isEmpty();
 
     List<Event> filteredEvents = emptyDescriptionFilter.filterEvents(events);
-    assertTrue("Should include empty description event", filteredEvents.contains(emptyDescriptionEvent));
+    assertTrue("Should include empty description event",
+            filteredEvents.contains(emptyDescriptionEvent));
     assertFalse("Should not include regular event", filteredEvents.contains(regularEvent));
   }
 
@@ -240,16 +242,16 @@ public class EventFilterTest {
   @Test
   public void testFilterWithInvalidDateRange() {
     LocalDate startDate = LocalDate.of(2024, 3, 26);
-    LocalDate endDate = LocalDate.of(2024, 3, 25); // End before start
+    LocalDate endDate = LocalDate.of(2024, 3, 25);
     EventFilter dateRangeFilter = event -> {
-        if (event == null || event.getStartDateTime() == null || event.getEndDateTime() == null) {
-            return false;
-        }
-        LocalDateTime start = event.getStartDateTime();
-        LocalDateTime end = event.getEndDateTime();
-        LocalDate eventStartDate = start.toLocalDate();
-        LocalDate eventEndDate = end.toLocalDate();
-        return !startDate.isBefore(eventStartDate) && !endDate.isAfter(eventEndDate);
+      if (event == null || event.getStartDateTime() == null || event.getEndDateTime() == null) {
+        return false;
+      }
+      LocalDateTime start = event.getStartDateTime();
+      LocalDateTime end = event.getEndDateTime();
+      LocalDate eventStartDate = start.toLocalDate();
+      LocalDate eventEndDate = end.toLocalDate();
+      return !startDate.isBefore(eventStartDate) && !endDate.isAfter(eventEndDate);
     };
     List<Event> filteredEvents = dateRangeFilter.filterEvents(events);
     assertTrue("Should return empty list for invalid date range", filteredEvents.isEmpty());
@@ -260,14 +262,14 @@ public class EventFilterTest {
     LocalDate futureStart = LocalDate.now().plusYears(1);
     LocalDate futureEnd = futureStart.plusMonths(1);
     EventFilter futureDateFilter = event -> {
-        if (event == null || event.getStartDateTime() == null || event.getEndDateTime() == null) {
-            return false;
-        }
-        LocalDateTime start = event.getStartDateTime();
-        LocalDateTime end = event.getEndDateTime();
-        LocalDate eventStartDate = start.toLocalDate();
-        LocalDate eventEndDate = end.toLocalDate();
-        return !futureStart.isBefore(eventStartDate) && !futureEnd.isAfter(eventEndDate);
+      if (event == null || event.getStartDateTime() == null || event.getEndDateTime() == null) {
+        return false;
+      }
+      LocalDateTime start = event.getStartDateTime();
+      LocalDateTime end = event.getEndDateTime();
+      LocalDate eventStartDate = start.toLocalDate();
+      LocalDate eventEndDate = end.toLocalDate();
+      return !futureStart.isBefore(eventStartDate) && !futureEnd.isAfter(eventEndDate);
     };
     List<Event> filteredEvents = futureDateFilter.filterEvents(events);
     assertTrue("Should return empty list for future dates", filteredEvents.isEmpty());
@@ -278,14 +280,14 @@ public class EventFilterTest {
     LocalDate pastStart = LocalDate.now().minusYears(1);
     LocalDate pastEnd = pastStart.plusMonths(1);
     EventFilter pastDateFilter = event -> {
-        if (event == null || event.getStartDateTime() == null || event.getEndDateTime() == null) {
-            return false;
-        }
-        LocalDateTime start = event.getStartDateTime();
-        LocalDateTime end = event.getEndDateTime();
-        LocalDate eventStartDate = start.toLocalDate();
-        LocalDate eventEndDate = end.toLocalDate();
-        return !pastStart.isBefore(eventStartDate) && !pastEnd.isAfter(eventEndDate);
+      if (event == null || event.getStartDateTime() == null || event.getEndDateTime() == null) {
+        return false;
+      }
+      LocalDateTime start = event.getStartDateTime();
+      LocalDateTime end = event.getEndDateTime();
+      LocalDate eventStartDate = start.toLocalDate();
+      LocalDate eventEndDate = end.toLocalDate();
+      return !pastStart.isBefore(eventStartDate) && !pastEnd.isAfter(eventEndDate);
     };
     List<Event> filteredEvents = pastDateFilter.filterEvents(events);
     assertTrue("Should return empty list for past dates", filteredEvents.isEmpty());
@@ -295,14 +297,14 @@ public class EventFilterTest {
   public void testFilterWithSameStartEndDate() {
     LocalDate date = LocalDate.now();
     EventFilter sameDateFilter = event -> {
-        if (event == null || event.getStartDateTime() == null || event.getEndDateTime() == null) {
-            return false;
-        }
-        LocalDateTime start = event.getStartDateTime();
-        LocalDateTime end = event.getEndDateTime();
-        LocalDate eventStartDate = start.toLocalDate();
-        LocalDate eventEndDate = end.toLocalDate();
-        return date.equals(eventStartDate) && date.equals(eventEndDate);
+      if (event == null || event.getStartDateTime() == null || event.getEndDateTime() == null) {
+        return false;
+      }
+      LocalDateTime start = event.getStartDateTime();
+      LocalDateTime end = event.getEndDateTime();
+      LocalDate eventStartDate = start.toLocalDate();
+      LocalDate eventEndDate = end.toLocalDate();
+      return date.equals(eventStartDate) && date.equals(eventEndDate);
     };
     List<Event> filteredEvents = sameDateFilter.filterEvents(events);
     assertNotNull("Filtered events list should not be null", filteredEvents);
@@ -310,8 +312,14 @@ public class EventFilterTest {
 
   @Test
   public void testMatches() {
-    Event event1 = new Event("Meeting", LocalDateTime.of(2025, 3, 26, 10, 0), LocalDateTime.of(2025, 3, 26, 11, 0), "Project discussion", "Room 101", true);
-    Event event2 = new Event("Workshop", LocalDateTime.of(2025, 3, 27, 14, 0), LocalDateTime.of(2025, 3, 27, 16, 0), "Tech workshop", "Hall A", false);
+    Event event1 = new Event("Meeting", LocalDateTime.of(2025,
+            3, 26, 10, 0),
+            LocalDateTime.of(2025, 3, 26, 11, 0),
+            "Project discussion", "Room 101", true);
+    Event event2 = new Event("Workshop", LocalDateTime.of(2025,
+            3, 27, 14, 0),
+            LocalDateTime.of(2025, 3, 27, 16, 0),
+            "Tech workshop", "Hall A", false);
 
     EventFilter meetingFilter = event -> "Meeting".equals(event.getSubject());
     assertTrue(meetingFilter.matches(event1));
@@ -320,11 +328,18 @@ public class EventFilterTest {
 
   @Test
   public void testAnd() {
-    Event event1 = new Event("Meeting", LocalDateTime.of(2025, 3, 26, 10, 0), LocalDateTime.of(2025, 3, 26, 11, 0), "Project discussion", "Room 101", true);
-    Event event2 = new Event("Workshop", LocalDateTime.of(2025, 3, 27, 14, 0), LocalDateTime.of(2025, 3, 27, 16, 0), "Tech workshop", "Hall A", false);
+    Event event1 = new Event("Meeting", LocalDateTime.of(2025, 3,
+            26, 10, 0), LocalDateTime.of(2025, 3,
+            26, 11, 0), "Project discussion",
+            "Room 101", true);
+    Event event2 = new Event("Workshop", LocalDateTime.of(2025, 3,
+            27, 14, 0), LocalDateTime.of(2025, 3,
+            27, 16, 0), "Tech workshop", "Hall A",
+            false);
 
     EventFilter meetingFilter = event -> "Meeting".equals(event.getSubject());
-    EventFilter dateFilter = event -> event.getStartDateTime().toLocalDate().toString().equals("2025-03-26");
+    EventFilter dateFilter = event -> event
+            .getStartDateTime().toLocalDate().toString().equals("2025-03-26");
 
     EventFilter combinedFilter = meetingFilter.and(dateFilter);
     assertTrue(combinedFilter.matches(event1));
@@ -333,8 +348,14 @@ public class EventFilterTest {
 
   @Test
   public void testNegate() {
-    Event event1 = new Event("Meeting", LocalDateTime.of(2025, 3, 26, 10, 0), LocalDateTime.of(2025, 3, 26, 11, 0), "Project discussion", "Room 101", true);
-    Event event2 = new Event("Workshop", LocalDateTime.of(2025, 3, 27, 14, 0), LocalDateTime.of(2025, 3, 27, 16, 0), "Tech workshop", "Hall A", false);
+    Event event1 = new Event("Meeting", LocalDateTime.of(2025, 3,
+            26, 10, 0), LocalDateTime.of(2025, 3,
+            26, 11, 0), "Project discussion",
+            "Room 101", true);
+    Event event2 = new Event("Workshop", LocalDateTime.of(2025, 3,
+            27, 14, 0), LocalDateTime.of(2025, 3,
+            27, 16, 0), "Tech workshop",
+            "Hall A", false);
 
     EventFilter meetingFilter = event -> "Meeting".equals(event.getSubject());
     EventFilter notMeetingFilter = meetingFilter.negate();
@@ -345,9 +366,18 @@ public class EventFilterTest {
 
   @Test
   public void testFilterEvents() {
-    Event event1 = new Event("Meeting", LocalDateTime.of(2025, 3, 26, 10, 0), LocalDateTime.of(2025, 3, 26, 11, 0), "Project discussion", "Room 101", true);
-    Event event2 = new Event("Workshop", LocalDateTime.of(2025, 3, 27, 14, 0), LocalDateTime.of(2025, 3, 27, 16, 0), "Tech workshop", "Hall A", false);
-    Event event3 = new Event("Conference", LocalDateTime.of(2025, 3, 28, 9, 0), LocalDateTime.of(2025, 3, 28, 17, 0), "Annual conference", "Conference Hall", true);
+    Event event1 = new Event("Meeting", LocalDateTime.of(2025, 3,
+            26, 10, 0), LocalDateTime.of(2025, 3,
+            26, 11, 0), "Project discussion",
+            "Room 101", true);
+    Event event2 = new Event("Workshop", LocalDateTime.of(2025, 3,
+            27, 14, 0), LocalDateTime.of(2025, 3,
+            27, 16, 0), "Tech workshop",
+            "Hall A", false);
+    Event event3 = new Event("Conference", LocalDateTime.of(2025, 3,
+            28, 9, 0), LocalDateTime.of(2025,
+            3, 28, 17, 0),
+            "Annual conference", "Conference Hall", true);
     List<Event> events = Arrays.asList(event1, event2, event3);
 
     EventFilter workshopFilter = event -> "Workshop".equals(event.getSubject());

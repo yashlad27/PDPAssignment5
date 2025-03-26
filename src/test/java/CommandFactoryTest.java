@@ -1,4 +1,3 @@
-import controller.command.ExitCommand;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import controller.ICommandFactory;
+import controller.command.ExitCommand;
 import controller.command.ICommand;
 import controller.command.event.CommandFactory;
 import model.calendar.ICalendar;
@@ -173,7 +173,6 @@ public class CommandFactoryTest {
     ICommand editCommand = factory.getCommand("edit");
     ICommand exitCommand = factory.getCommand("exit");
 
-    // Check if commands are not null (the command types have changed)
     assertNotNull(createCommand);
     assertNotNull(printCommand);
     assertNotNull(showCommand);
@@ -181,7 +180,6 @@ public class CommandFactoryTest {
     assertNotNull(editCommand);
     assertNotNull(exitCommand);
 
-    // Check command names
     assertEquals("create", createCommand.getName());
     assertEquals("print", printCommand.getName());
     assertEquals("show", showCommand.getName());
@@ -228,11 +226,9 @@ public class CommandFactoryTest {
     assertTrue(nameSet.contains("export"));
     assertTrue(nameSet.contains("edit"));
     assertTrue(nameSet.contains("exit"));
-    // Check for calendar-related commands that should be forwarded
     assertTrue(nameSet.contains("use"));
     assertTrue(nameSet.contains("copy"));
 
-    // Should now have 8 commands (added "use" and "copy" to the original 6)
     assertEquals(8, nameSet.size());
   }
 

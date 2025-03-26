@@ -211,7 +211,8 @@ public class AllDayRecurringEventCreatorTest {
 
     @Override
     public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-                                              int occurrences, boolean autoDecline, String description,
+                                              int occurrences, boolean autoDecline,
+                                              String description,
                                               String location, boolean isPublic)
             throws InvalidEventException, ConflictingEventException {
       if (shouldThrowConflict) {
@@ -254,7 +255,8 @@ public class AllDayRecurringEventCreatorTest {
     @Override
     public boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
                                                    LocalDate untilDate, boolean autoDecline,
-                                                   String description, String location, boolean isPublic) {
+                                                   String description, String location,
+                                                   boolean isPublic) {
       return true;
     }
 

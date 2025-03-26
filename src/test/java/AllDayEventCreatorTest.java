@@ -1,4 +1,3 @@
-import model.event.EventAction;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
@@ -6,6 +5,7 @@ import java.time.LocalDateTime;
 import controller.command.create.strategy.AllDayEventCreator;
 import controller.command.create.strategy.AllDayRecurringUntilEventCreator;
 import model.event.Event;
+import model.event.EventAction;
 import model.exceptions.InvalidEventException;
 
 import static org.junit.Assert.assertEquals;
@@ -106,9 +106,12 @@ public class AllDayEventCreatorTest {
 
   @Test
   public void testApplyEventAction() {
-    LocalDateTime eventTime = LocalDateTime.of(2025, 3, 26, 10, 0);
-    LocalDateTime eventEndTime = LocalDateTime.of(2025, 3, 26, 10, 10);
-    Event event = new Event("Meeting", eventTime, eventEndTime, "Conference Room", "Discuss project updates", true);
+    LocalDateTime eventTime = LocalDateTime.of(2025, 3, 26,
+            10, 0);
+    LocalDateTime eventEndTime = LocalDateTime.of(2025, 3,
+            26, 10, 10);
+    Event event = new Event("Meeting", eventTime, eventEndTime,
+            "Conference Room", "Discuss project updates", true);
 
     EventAction updateSubject = e -> e.setSubject("Updated Subject");
     EventAction updateLocation = e -> e.setLocation("New Location");

@@ -120,7 +120,8 @@ public class DateTimeUtilTest {
 
   @Test
   public void testFormatDateTimeValid() {
-    LocalDateTime dateTime = LocalDateTime.of(2023, 5, 15, 14, 30);
+    LocalDateTime dateTime = LocalDateTime.of(2023, 5, 15,
+            14, 30);
     String formattedDateTime = DateTimeUtil.formatDateTime(dateTime);
     assertEquals("2023-05-15T14:30", formattedDateTime);
   }
@@ -265,7 +266,7 @@ public class DateTimeUtilTest {
   @Test
   public void testParseWeekdaysDuplicateCharacters() {
     Set<DayOfWeek> weekdays = DateTimeUtil.parseWeekdays("MMWFF");
-    
+
     // Should still have 3 unique days
     assertEquals(3, weekdays.size());
     assertTrue(weekdays.contains(DayOfWeek.MONDAY));
@@ -279,7 +280,7 @@ public class DateTimeUtilTest {
   @Test
   public void testParseWeekdaysMixedCase() {
     Set<DayOfWeek> weekdays = DateTimeUtil.parseWeekdays("MwF");
-    
+
     assertEquals(3, weekdays.size());
     assertTrue(weekdays.contains(DayOfWeek.MONDAY));
     assertTrue(weekdays.contains(DayOfWeek.WEDNESDAY));
@@ -298,7 +299,7 @@ public class DateTimeUtilTest {
     } catch (IllegalArgumentException e) {
       // Expected exception
     }
-    
+
     // Whitespace at the start/end should also throw an exception
     try {
       DateTimeUtil.parseWeekdays(" MWF");
@@ -318,7 +319,7 @@ public class DateTimeUtilTest {
     assertEquals(1, minDate.getYear());
     assertEquals(1, minDate.getMonthValue());
     assertEquals(1, minDate.getDayOfMonth());
-    
+
     // Test maximum date that's reasonably supported
     LocalDate maxDate = DateTimeUtil.parseDate("9999-12-31");
     assertEquals(9999, maxDate.getYear());
@@ -335,7 +336,7 @@ public class DateTimeUtilTest {
     LocalTime minTime = DateTimeUtil.parseTime("00:00");
     assertEquals(0, minTime.getHour());
     assertEquals(0, minTime.getMinute());
-    
+
     // Test maximum time
     LocalTime maxTime = DateTimeUtil.parseTime("23:59");
     assertEquals(23, maxTime.getHour());
@@ -351,11 +352,11 @@ public class DateTimeUtilTest {
     Set<DayOfWeek> weekdays1 = EnumSet.of(DayOfWeek.FRIDAY, DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY);
     String result1 = DateTimeUtil.formatWeekdays(weekdays1);
     assertEquals("MWF", result1);
-    
+
     Set<DayOfWeek> weekdays2 = EnumSet.of(DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY, DayOfWeek.MONDAY);
     String result2 = DateTimeUtil.formatWeekdays(weekdays2);
     assertEquals("MWF", result2);
-    
+
     // Verify results are consistent
     assertEquals(result1, result2);
   }
@@ -377,7 +378,7 @@ public class DateTimeUtilTest {
   public void testParseDateTimeEquivalence() {
     LocalDateTime dateTime1 = DateTimeUtil.parseDateTime("2023-05-15T14:30");
     LocalDateTime dateTime2 = DateTimeUtil.combineDateAndTime("2023-05-15", "14:30");
-    
+
     assertEquals(dateTime1, dateTime2);
   }
 
@@ -390,27 +391,27 @@ public class DateTimeUtilTest {
     Set<DayOfWeek> monday = DateTimeUtil.parseWeekdays("M");
     assertEquals(1, monday.size());
     assertTrue(monday.contains(DayOfWeek.MONDAY));
-    
+
     Set<DayOfWeek> tuesday = DateTimeUtil.parseWeekdays("T");
     assertEquals(1, tuesday.size());
     assertTrue(tuesday.contains(DayOfWeek.TUESDAY));
-    
+
     Set<DayOfWeek> wednesday = DateTimeUtil.parseWeekdays("W");
     assertEquals(1, wednesday.size());
     assertTrue(wednesday.contains(DayOfWeek.WEDNESDAY));
-    
+
     Set<DayOfWeek> thursday = DateTimeUtil.parseWeekdays("R");
     assertEquals(1, thursday.size());
     assertTrue(thursday.contains(DayOfWeek.THURSDAY));
-    
+
     Set<DayOfWeek> friday = DateTimeUtil.parseWeekdays("F");
     assertEquals(1, friday.size());
     assertTrue(friday.contains(DayOfWeek.FRIDAY));
-    
+
     Set<DayOfWeek> saturday = DateTimeUtil.parseWeekdays("S");
     assertEquals(1, saturday.size());
     assertTrue(saturday.contains(DayOfWeek.SATURDAY));
-    
+
     Set<DayOfWeek> sunday = DateTimeUtil.parseWeekdays("U");
     assertEquals(1, sunday.size());
     assertTrue(sunday.contains(DayOfWeek.SUNDAY));

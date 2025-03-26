@@ -7,6 +7,7 @@ import model.exceptions.InvalidTimezoneException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Test class for CalendarCommandHandler.
@@ -134,5 +135,154 @@ public class CalendarCommandHandlerTest {
 
     String result = wrapped.execute(new String[]{});
     assertEquals("✓ Success @", result);
+  }
+  
+  @Test
+  public void testExceptionHandlingWrapperWithEmptyStringArgs()
+          throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
+    CalendarCommandHandler handler = args -> {
+      if (args.length > 0 && args[0].isEmpty()) {
+        throw new IllegalArgumentException("Empty argument not allowed");
+      }
+      return "Valid args";
+    };
+
+    CalendarCommandHandler wrapped = handler.withExceptionHandling();
+
+    String result = wrapped.execute(new String[]{""});
+    assertTrue(result.contains("Unexpected error: Empty argument not allowed"));
+  }
+  
+  @Test
+  public void testNestedExceptionHandling()
+          throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
+    CalendarCommandHandler innerHandler = args -> {
+      throw new RuntimeException("Inner exception", 
+              new CalendarNotFoundException("Nested calendar not found"));
+    };
+
+    CalendarCommandHandler wrapped = innerHandler.withExceptionHandling();
+
+    String result = wrapped.execute(new String[]{});
+    assertTrue(result.contains("Unexpected error: Inner exception"));
+    // Note: In a real implementation, you might want to check if the cause is included in the message
+  }
+  
+  @Test
+  public void testChainedHandlerWrapping()
+          throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
+    CalendarCommandHandler baseHandler = args -> "Base result";
+    
+    // Create a chain of wrapped handlers
+    CalendarCommandHandler wrapped1 = baseHandler.withExceptionHandling();
+    CalendarCommandHandler wrapped2 = wrapped1.withExceptionHandling();
+    CalendarCommandHandler wrapped3 = wrapped2.withExceptionHandling();
+    
+    // The result should still be the same with multiple wrappers
+    String result = wrapped3.execute(new String[]{});
+    assertEquals("Base result", result);
+  }
+  
+  @Test
+  public void testHandlerWithMalformedArguments()
+          throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
+    CalendarCommandHandler handler = args -> {
+      if (args.length > 0 && args[0].contains("invalid")) {
+        throw new IllegalArgumentException("Malformed argument detected");
+      }
+      return "Valid arguments";
+    };
+    
+    CalendarCommandHandler wrapped = handler.withExceptionHandling();
+    
+    String result = wrapped.execute(new String[]{"invalid-format"});
+    assertTrue(result.contains("Unexpected error: Malformed argument detected"));
+    
+    String successResult = wrapped.execute(new String[]{"valid-format"});
+    assertEquals("Valid arguments", successResult);
+  }
+  
+  @Test
+  public void testExceptionMessageFormatConsistency()
+          throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
+    // Test that different exceptions follow the same error format pattern
+    
+    CalendarCommandHandler notFoundHandler = args -> {
+      throw new CalendarNotFoundException("Calendar missing");
+    };
+    
+    CalendarCommandHandler duplicateHandler = args -> {
+      throw new DuplicateCalendarException("Calendar exists");
+    };
+    
+    CalendarCommandHandler timezoneHandler = args -> {
+      throw new InvalidTimezoneException("Bad timezone");
+    };
+    
+    String result1 = notFoundHandler.withExceptionHandling().execute(new String[]{});
+    String result2 = duplicateHandler.withExceptionHandling().execute(new String[]{});
+    String result3 = timezoneHandler.withExceptionHandling().execute(new String[]{});
+    
+    // Check message content rather than just format
+    assertEquals("Error: Calendar missing", result1);
+    assertEquals("Error: Calendar exists", result2);
+    assertEquals("Error: Bad timezone", result3);
+  }
+  
+  @Test
+  public void testExceptionHandlingWithEmptyArray()
+          throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
+    CalendarCommandHandler handler = args -> {
+      if (args.length == 0) {
+        return "No arguments provided";
+      }
+      return "Arguments provided: " + args.length;
+    };
+    
+    CalendarCommandHandler wrapped = handler.withExceptionHandling();
+    
+    String result = wrapped.execute(new String[]{});
+    assertEquals("No arguments provided", result);
+    
+    String resultWithArgs = wrapped.execute(new String[]{"arg1", "arg2"});
+    assertEquals("Arguments provided: 2", resultWithArgs);
+  }
+  
+  @Test
+  public void testHandlerRetainsOriginalFunctionality() 
+          throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
+    // Test that wrapping doesn't affect normal operation
+    StringBuilder operationLog = new StringBuilder();
+    
+    CalendarCommandHandler handler = args -> {
+      operationLog.append("Handler executed with ").append(args.length).append(" args");
+      return "Operation completed";
+    };
+    
+    CalendarCommandHandler wrapped = handler.withExceptionHandling();
+    
+    String result = wrapped.execute(new String[]{"test-arg"});
+    assertEquals("Operation completed", result);
+    assertEquals("Handler executed with 1 args", operationLog.toString());
+  }
+  
+  @Test
+  public void testExceptionHandlerWithNullReturn()
+          throws CalendarNotFoundException, InvalidTimezoneException, DuplicateCalendarException {
+    // Test that null return values from the handler are preserved
+    boolean[] handlerCalled = new boolean[1];
+    
+    CalendarCommandHandler handler = args -> {
+      handlerCalled[0] = true;
+      return null;
+    };
+    
+    CalendarCommandHandler wrapped = handler.withExceptionHandling();
+    
+    String result = wrapped.execute(new String[]{"test"});
+    assertFalse("Result should not contain error message", 
+            result != null && result.contains("error"));
+    assertEquals(null, result);
+    assertTrue("Handler should have been called", handlerCalled[0]);
   }
 } 

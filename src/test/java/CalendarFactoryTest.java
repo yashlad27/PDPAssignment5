@@ -50,7 +50,8 @@ public class CalendarFactoryTest {
   public void testCreateTimeZoneHandler() {
     TimeZoneHandler handler = factory.createTimeZoneHandler();
     assertNotNull("TimeZoneHandler should not be null", handler);
-    assertTrue("Handler should be an instance of TimeZoneHandler", true);
+    assertTrue("Handler should be an instance of TimeZoneHandler",
+            handler instanceof TimeZoneHandler);
   }
 
   @Test
@@ -59,9 +60,9 @@ public class CalendarFactoryTest {
     CalendarManager manager = factory.createCalendarManager(handler);
 
     assertNotNull("CalendarManager should not be null", manager);
-    assertTrue("Manager should be an instance of CalendarManager", true);
+    assertTrue("Manager should be an instance of CalendarManager",
+            manager instanceof CalendarManager);
 
-    // Verify the timezone handler was properly set
     assertEquals("CalendarManager should have the provided timezone handler",
             handler, manager.getTimezoneHandler());
   }
@@ -100,7 +101,6 @@ public class CalendarFactoryTest {
     ICommandFactory eventFactory = factory.createEventCommandFactory(calendar, view);
     ICommandFactory calendarFactory = factory.createCalendarCommandFactory(manager, view);
 
-    // Create the controller
     CalendarController controller = factory.createController(
             eventFactory,
             calendarFactory,
