@@ -16,8 +16,9 @@ import utilities.TimeZoneHandler;
 import utilities.TimezoneConverter;
 
 /**
- * Strategy for copying events within a date range from one calendar to another.
- * Format: copy events between <dateString> and <dateString> --target <calendarName> to <dateString>
+ * Strategy for copying events within a date range from one calendar to another. Format: copy events
+ * between {@code dateString} and {@code dateString} --target {@code calendarName} to
+ * {@code dateString}
  */
 public class RangeEventsCopyStrategy implements CopyStrategy {
 
@@ -40,8 +41,8 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
     // Validate format: copy events between <dateString> and <dateString> --target <calendarName>
     // to <dateString>
     if (args.length < 10) {
-      throw new InvalidEventException("Insufficient arguments for copy events between "
-              + "dates command");
+      throw new InvalidEventException(
+          "Insufficient arguments for copy events between " + "dates command");
     }
 
     if (!args[0].equals("copy") || !args[1].equals("events") || !args[2].equals("between")) {
@@ -70,7 +71,7 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
 
     try {
       return copyEventsBetweenDates(sourceStartDate, sourceEndDate, targetCalendar,
-              targetStartDate);
+          targetStartDate);
     } catch (Exception e) {
       throw new InvalidEventException("Error copying events: " + e.getMessage());
     }
@@ -78,7 +79,9 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
 
   @Override
   public boolean canHandle(String[] args) {
-    if (args.length < 3) return false;
+    if (args.length < 3) {
+      return false;
+    }
 
     return (args[0].equals("copy") && args[1].equals("events") && args[2].equals("between"));
   }
@@ -87,8 +90,7 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
    * Copies events within a date range from the active calendar to a target calendar.
    */
   private String copyEventsBetweenDates(String startDateStr, String endDateStr,
-                                        String targetCalendarName,
-                                        String targetStartDateStr) throws Exception {
+      String targetCalendarName, String targetStartDateStr) throws Exception {
     // Parse the dates
     LocalDate sourceStartDate = DateTimeUtil.parseDate(startDateStr);
     LocalDate sourceEndDate = DateTimeUtil.parseDate(endDateStr);
@@ -96,8 +98,8 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
 
     // Validate target calendar exists
     if (!calendarManager.hasCalendar(targetCalendarName)) {
-      throw new CalendarNotFoundException("Target calendar '" + targetCalendarName
-              + "' does not exist");
+      throw new CalendarNotFoundException(
+          "Target calendar '" + targetCalendarName + "' does not exist");
     }
 
     // Get source calendar (active calendar)
@@ -113,7 +115,7 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
     // Get the source and target timezones
     String sourceTimezone = ((Calendar) sourceCalendar).getTimezone();
     String targetTimezone = calendarManager.executeOnCalendar(targetCalendarName,
-            calendar -> ((model.calendar.Calendar) calendar).getTimezone());
+        calendar -> ((model.calendar.Calendar) calendar).getTimezone());
 
     // Create timezone converter
     TimezoneConverter converter = timezoneHandler.getConverter(sourceTimezone, targetTimezone);
@@ -140,31 +142,21 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
           // Calculate the adjusted date
           LocalDate adjustedDate = eventDate.plusDays(daysDifference);
 
-          newEvent = Event.createAllDayEvent(
-                  sourceEvent.getSubject(),
-                  adjustedDate,
-                  sourceEvent.getDescription(),
-                  sourceEvent.getLocation(),
-                  sourceEvent.isPublic()
-          );
+          newEvent = Event.createAllDayEvent(sourceEvent.getSubject(), adjustedDate,
+              sourceEvent.getDescription(), sourceEvent.getLocation(), sourceEvent.isPublic());
         } else {
           // Regular event - adjust date and convert timezone
           LocalDateTime adjustedStart = sourceEvent.getStartDateTime().plusDays(daysDifference);
           LocalDateTime adjustedEnd = sourceEvent.getEndDateTime().plusDays(daysDifference);
 
-          newEvent = new Event(
-                  sourceEvent.getSubject(),
-                  converter.convert(adjustedStart),
-                  converter.convert(adjustedEnd),
-                  sourceEvent.getDescription(),
-                  sourceEvent.getLocation(),
-                  sourceEvent.isPublic()
-          );
+          newEvent = new Event(sourceEvent.getSubject(), converter.convert(adjustedStart),
+              converter.convert(adjustedEnd), sourceEvent.getDescription(),
+              sourceEvent.getLocation(), sourceEvent.isPublic());
         }
 
         // Add the event to the target calendar
         calendarManager.executeOnCalendar(targetCalendarName,
-                calendar -> calendar.addEvent(newEvent, true));
+            calendar -> calendar.addEvent(newEvent, true));
 
         successCount++;
       } catch (ConflictingEventException e) {
@@ -175,12 +167,11 @@ public class RangeEventsCopyStrategy implements CopyStrategy {
     }
 
     if (failCount == 0) {
-      return "Successfully copied " + successCount + " events from date range " +
-              sourceStartDate + " to " + sourceEndDate + " in calendar '" + targetCalendarName
-              + "'.";
+      return "Successfully copied " + successCount + " events from date range " + sourceStartDate
+          + " to " + sourceEndDate + " in calendar '" + targetCalendarName + "'.";
     } else {
-      return "Copied " + successCount + " events, but " + failCount +
-              " events could not be copied due to conflicts.";
+      return "Copied " + successCount + " events, but " + failCount
+          + " events could not be copied due to conflicts.";
     }
   }
 }
