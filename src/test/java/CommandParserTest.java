@@ -46,20 +46,23 @@ public class CommandParserTest {
 
     @Override
     public boolean createRecurringEventUntil(String name, LocalDateTime start, LocalDateTime end,
-                                             String weekdays, LocalDate untilDate, boolean autoDecline) {
+                                             String weekdays, LocalDate untilDate,
+                                             boolean autoDecline) {
       return false;
     }
 
     @Override
     public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-                                              int occurrences, boolean autoDecline, String description, String location,
+                                              int occurrences, boolean autoDecline,
+                                              String description, String location,
                                               boolean isPublic) {
       return false;
     }
 
     @Override
     public boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
-                                                   LocalDate untilDate, boolean autoDecline, String description, String location,
+                                                   LocalDate untilDate, boolean autoDecline,
+                                                   String description, String location,
                                                    boolean isPublic) {
       return false;
     }
@@ -761,5 +764,80 @@ public class CommandParserTest {
   public void testParseCreateEventWithExtraFields() {
     String command = "create event \"Meeting\" from \"2024-03-26T10:00\" to \"2024-03-26T11:00\" extra \"field\"";
     assertThrows(IllegalArgumentException.class, () -> parser.parseCommand(command));
+  }
+
+  @Test
+  public void testParseEditRecurringFromDate() {
+    String command = "edit event subject \"Team Meeting\" from 2024-04-01T10:00 with \"Updated Team Meeting\"";
+    CommandParser.CommandWithArgs result = parser.parseCommand(command);
+    assertNotNull(result);
+    assertEquals("single", result.getArgs()[0]); // ensure it follows edit_single_event pattern
+    assertEquals("subject", result.getArgs()[1]);
+    assertEquals("Team Meeting", result.getArgs()[2]);
+    assertEquals("2024-04-01T10:00", result.getArgs()[3]);
+    assertEquals("Updated Team Meeting", result.getArgs()[4]);
+  }
+
+  @Test
+  public void testParseCommandWithExtraSpaces() {
+    String command = "   create    event   \"Meeting\"  from 2023-04-10T10:00   to   2023-04-10T11:00   ";
+    CommandParser.CommandWithArgs result = parser.parseCommand(command);
+    assertNotNull(result);
+    assertEquals("Meeting", result.getArgs()[1]);
+  }
+
+  @Test
+  public void testParseCreateCalendarWithQuotes() {
+    String command = "create calendar --name \"Work Calendar\" --timezone America/New_York";
+    CommandParser.CommandWithArgs result = parser.parseCommand(command);
+    assertNotNull(result);
+    assertEquals("calendar", result.getArgs()[0]);
+    assertEquals("--name", result.getArgs()[1]);
+    assertEquals("Work Calendar", result.getArgs()[2]);
+    assertEquals("--timezone", result.getArgs()[3]);
+    assertEquals("America/New_York", result.getArgs()[4]);
+  }
+
+  @Test
+  public void testParseUseCalendarWithSingleQuotes() {
+    String command = "use calendar --name 'Personal'";
+    CommandParser.CommandWithArgs result = parser.parseCommand(command);
+    assertNotNull(result);
+    assertEquals("calendar", result.getArgs()[0]);
+    assertEquals("--name", result.getArgs()[1]);
+    assertEquals("Personal", result.getArgs()[2]);
+  }
+
+  @Test
+  public void testParseCopySingleEventQuoted() {
+    String command = "copy event \"Important Meeting\" on 2024-03-10T14:00 --target WorkCal to 2024-03-11T14:00";
+    CommandParser.CommandWithArgs result = parser.parseCommand(command);
+    assertNotNull(result);
+    assertEquals("copy", result.getArgs()[0]);
+    assertEquals("event", result.getArgs()[1]);
+    assertEquals("Important Meeting", result.getArgs()[2]);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testParseCreateEventMissingToKeyword() {
+    String command = "create event \"Meeting\" from 2024-03-26T10:00 2024-03-26T11:00";
+    parser.parseCommand(command);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testParseCommandWithoutKeyword() {
+    String command = "\"Meeting\" from 2024-03-26T10:00 to 2024-03-26T11:00";
+    parser.parseCommand(command);
+  }
+
+  @Test
+  public void testParseFullCreateEventCommand() {
+    String command = "create event \"Sprint Planning\" from 2024-03-26T10:00 to 2024-03-26T11:00 desc \"Planning for sprint\" at \"Board Room\" private";
+    CommandParser.CommandWithArgs result = parser.parseCommand(command);
+    assertNotNull(result);
+    String[] args = result.getArgs();
+    assertEquals("Planning for sprint", args[4]);
+    assertEquals("Board Room", args[5]);
+    assertEquals("false", args[6]); // isPublic = false
   }
 }

@@ -159,8 +159,11 @@ public class CommandParser {
     if (commandString == null || commandString.trim().isEmpty()) {
       throw new IllegalArgumentException("Command cannot be empty");
     }
+    
+    // Normalize whitespace by replacing multiple spaces with a single space
+    commandString = commandString.trim().replaceAll("\\s+", " ");
 
-    String[] parts = commandString.trim().split("\\s+");
+    String[] parts = commandString.split("\\s+", 2); // Split into command and the rest
     if (parts.length == 0) {
       throw new IllegalArgumentException("Invalid command format");
     }
@@ -186,14 +189,30 @@ public class CommandParser {
   }
 
   /**
+   * Helper method to remove surrounding quotes (both single and double) from a string.
+   *
+   * @param value the string that might have quotes
+   * @return the string with quotes removed, or the original string if no quotes
+   */
+  private String removeQuotes(String value) {
+    if (value == null) {
+      return null;
+    }
+    
+    if ((value.startsWith("\"") && value.endsWith("\"")) || 
+        (value.startsWith("'") && value.endsWith("'"))) {
+      return value.substring(1, value.length() - 1);
+    }
+    
+    return value;
+  }
+
+  /**
    * Parse create event command.
    */
   private CommandWithArgs parseCreateEventCommand(Matcher matcher) {
     boolean autoDecline = matcher.group(1) != null;
-    String eventName = matcher.group(2);
-    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
-      eventName = eventName.substring(1, eventName.length() - 1);
-    }
+    String eventName = removeQuotes(matcher.group(2));
     String startTime = matcher.group(3);
     String endTime = matcher.group(4);
     String description = matcher.group(5);
@@ -212,10 +231,7 @@ public class CommandParser {
    */
   private CommandWithArgs parseCreateAllDayEventCommand(Matcher matcher) {
     boolean autoDecline = matcher.group(1) != null;
-    String eventName = matcher.group(2);
-    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
-      eventName = eventName.substring(1, eventName.length() - 1);
-    }
+    String eventName = removeQuotes(matcher.group(2));
     String date = matcher.group(3);
     String description = matcher.group(4);
     String location = matcher.group(5);
@@ -232,10 +248,7 @@ public class CommandParser {
    * Parse create recurring event command.
    */
   private CommandWithArgs parseCreateRecurringEventCommand(Matcher matcher) {
-    String eventName = matcher.group(1);
-    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
-      eventName = eventName.substring(1, eventName.length() - 1);
-    }
+    String eventName = removeQuotes(matcher.group(1));
     String startTime = matcher.group(2);
     String endTime = matcher.group(3);
     String weekdays = matcher.group(4);
@@ -259,10 +272,7 @@ public class CommandParser {
 
     boolean autoDecline = matcher.group(1) != null;
 
-    String eventName = matcher.group(2);
-    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
-      eventName = eventName.substring(1, eventName.length() - 1);
-    }
+    String eventName = removeQuotes(matcher.group(2));
 
     String[] args = {"recurring-until", eventName, matcher.group(3), matcher.group(4),
         matcher.group(5), matcher.group(6), String.valueOf(autoDecline), matcher.group(7),
@@ -278,10 +288,7 @@ public class CommandParser {
 
     boolean autoDecline = matcher.group(1) != null;
 
-    String eventName = matcher.group(2);
-    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
-      eventName = eventName.substring(1, eventName.length() - 1);
-    }
+    String eventName = removeQuotes(matcher.group(2));
 
     String[] args = {"allday-recurring", eventName, matcher.group(3), matcher.group(4),
         matcher.group(5), String.valueOf(autoDecline), matcher.group(6), matcher.group(7),
@@ -297,10 +304,7 @@ public class CommandParser {
 
     boolean autoDecline = matcher.group(1) != null;
 
-    String eventName = matcher.group(2);
-    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
-      eventName = eventName.substring(1, eventName.length() - 1);
-    }
+    String eventName = removeQuotes(matcher.group(2));
 
     String[] args = {"allday-recurring-until", eventName, matcher.group(3), matcher.group(4),
         matcher.group(5), String.valueOf(autoDecline), matcher.group(6), matcher.group(7),
@@ -344,10 +348,7 @@ public class CommandParser {
   }
 
   private CommandWithArgs parseCreateCalendarCommand(Matcher matcher) {
-    String calendarName = matcher.group(1);
-    if (calendarName.startsWith("\"") && calendarName.endsWith("\"")) {
-      calendarName = calendarName.substring(1, calendarName.length() - 1);
-    }
+    String calendarName = removeQuotes(matcher.group(1));
     String timezone = matcher.group(2);
     return new CommandWithArgs(commandFactory.getCommand("create"),
         new String[]{"calendar", "--name", calendarName, "--timezone", timezone});
@@ -368,6 +369,8 @@ public class CommandParser {
     if (calendarName == null || calendarName.equals("null")) {
       throw new IllegalArgumentException("Calendar name cannot be null");
     }
+    
+    calendarName = removeQuotes(calendarName);
 
     String[] args = {"calendar", "--name", calendarName};
     return new CommandWithArgs(calendarCommand, args);
@@ -376,10 +379,7 @@ public class CommandParser {
   private CommandWithArgs parseCopyEventCommand(Matcher matcher) {
     ICommand copyCommand = commandFactory.getCommand("copy");
 
-    String eventName = matcher.group(1);
-    if (eventName.startsWith("\"") && eventName.endsWith("\"")) {
-      eventName = eventName.substring(1, eventName.length() - 1);
-    }
+    String eventName = removeQuotes(matcher.group(1));
 
     String[] args = {"copy", "event", eventName, "on", matcher.group(2), "--target",
         matcher.group(3), "to", matcher.group(4)};

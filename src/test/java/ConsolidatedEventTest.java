@@ -611,6 +611,101 @@ public class ConsolidatedEventTest {
     }
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testRecurringEventWithoutEndDateOrOccurrences() {
+    new RecurringEvent.Builder(
+            "Infinite Loop Meeting",
+            LocalDateTime.of(2023, 5, 1, 10, 0),
+            LocalDateTime.of(2023, 5, 1, 11, 0),
+            EnumSet.of(DayOfWeek.MONDAY))
+            .build();
+  }
+
+  @Test
+  public void testConflictingRecurringEventsWithAutoDeclineFalse() throws Exception {
+    RecurringEvent firstEvent = new RecurringEvent.Builder(
+            "Weekly Sync",
+            LocalDateTime.of(2023, 6, 5, 10, 0),
+            LocalDateTime.of(2023, 6, 5, 11, 0),
+            EnumSet.of(DayOfWeek.MONDAY))
+            .occurrences(3)
+            .build();
+
+    RecurringEvent secondEvent = new RecurringEvent.Builder(
+            "Weekly Conflict",
+            LocalDateTime.of(2023, 6, 5, 10, 30),
+            LocalDateTime.of(2023, 6, 5, 11, 30),
+            EnumSet.of(DayOfWeek.MONDAY))
+            .occurrences(3)
+            .build();
+
+    calendar.addRecurringEvent(firstEvent, false);
+
+    // When autoDecline is false, it should return false, not throw an exception
+    boolean result = calendar.addRecurringEvent(secondEvent, false);
+    assertFalse("Should return false when there's a conflict and autoDecline is false", result);
+  }
+
+  @Test
+  public void testConflictingRecurringEventsWithAutoDeclineTrue() throws Exception {
+    RecurringEvent firstEvent = new RecurringEvent.Builder(
+            "Weekly Sync",
+            LocalDateTime.of(2023, 6, 5, 10, 0),
+            LocalDateTime.of(2023, 6, 5, 11, 0),
+            EnumSet.of(DayOfWeek.MONDAY))
+            .occurrences(3)
+            .build();
+
+    RecurringEvent secondEvent = new RecurringEvent.Builder(
+            "Weekly Conflict",
+            LocalDateTime.of(2023, 6, 5, 10, 30),
+            LocalDateTime.of(2023, 6, 5, 11, 30),
+            EnumSet.of(DayOfWeek.MONDAY))
+            .occurrences(3)
+            .build();
+
+    calendar.addRecurringEvent(firstEvent, false);
+
+    // When autoDecline is true, it should throw an exception
+    try {
+      calendar.addRecurringEvent(secondEvent, true);
+      fail("Should throw conflict exception when autoDecline is true");
+    } catch (ConflictingEventException e) {
+      assertTrue(e.getMessage().toLowerCase().contains("conflict"));
+    }
+  }
+
+  @Test
+  public void testEventActionOnNullFields() {
+    Event nullFieldEvent = new Event("Null Event",
+            LocalDateTime.of(2023, 9, 1, 10, 0),
+            LocalDateTime.of(2023, 9, 1, 11, 0),
+            null, null, true);
+
+    EventAction safeAction = e -> {
+      if (e.getDescription() == null || e.getDescription().isEmpty()) {
+        e.setDescription("Default Description");
+      }
+    };
+
+    safeAction.execute(nullFieldEvent);
+    assertEquals("Default Description", nullFieldEvent.getDescription());
+  }
+
+  @Test
+  public void testEventDurationWithMilliseconds() {
+    Event preciseEvent = new Event(
+            "Precise Event",
+            LocalDateTime.of(2023, 8, 1, 10, 0, 0, 123000000),
+            LocalDateTime.of(2023, 8, 1, 10, 0, 1, 456000000),
+            "", "", true);
+
+    long durationMillis = ChronoUnit.MILLIS.between(
+            preciseEvent.getStartDateTime(), preciseEvent.getEndDateTime());
+
+    assertTrue("Duration should be greater than 1000ms", durationMillis > 1000);
+  }
+
   @Test
   public void testComposedActionsExceptionHandling() {
     // First action succeeds

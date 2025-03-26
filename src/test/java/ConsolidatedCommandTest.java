@@ -476,4 +476,36 @@ public class ConsolidatedCommandTest {
 
     assertTrue(result.contains("Maximum occurrences exceeded"));
   }
+
+  /**
+   * Test that the exit command returns the expected message.
+   */
+  @Test
+  public void testExitCommand() {
+    String result = controller.processCommand("exit");
+    assertEquals("Exiting application.", result);
+  }
+
+  /**
+   * Test that the exit command with additional arguments is treated as invalid.
+   */
+  @Test
+  public void testExitCommandWithArguments() {
+    String result = controller.processCommand("exit additional arguments");
+    assertTrue(result.contains("Error") || result.contains("Invalid"));
+  }
+
+  /**
+   * Test that the exit command is case-sensitive.
+   */
+  @Test
+  public void testExitCommandCaseSensitive() {
+    // Exit with uppercase should be treated as invalid
+    String result = controller.processCommand("EXIT");
+    assertTrue(result.contains("Error") || result.contains("Invalid"));
+    
+    // Proper case might or might not work depending on the parser implementation
+    result = controller.processCommand("exit");
+    assertEquals("Exiting application.", result);
+  }
 } 

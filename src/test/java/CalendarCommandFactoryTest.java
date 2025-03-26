@@ -254,6 +254,53 @@ public class CalendarCommandFactoryTest {
     assertTrue("Error should be displayed in view", mockView.hasError(result));
   }
 
+  @Test
+  public void testEditCalendarWithMissingProperty() throws Exception {
+    String[] createArgs = {"calendar", "--name", "EditMissingProp", "--timezone", "America/New_York"};
+    factory.getCommand("create").execute(createArgs);
+    mockView.clear();
+
+    String[] editArgs = {"calendar", "--name", "EditMissingProp", "--property"};
+    String result = factory.getCommand("edit").execute(editArgs);
+    assertTrue(result.startsWith("Error:"));
+  }
+
+  @Test
+  public void testEditCalendarWithMissingValue() throws Exception {
+    String[] createArgs = {"calendar", "--name", "EditMissingValue", "--timezone", "America/New_York"};
+    factory.getCommand("create").execute(createArgs);
+    mockView.clear();
+
+    String[] editArgs = {"calendar", "--name", "EditMissingValue", "--property", "timezone"};
+    String result = factory.getCommand("edit").execute(editArgs);
+    assertTrue(result.startsWith("Error:"));
+  }
+
+  @Test
+  public void testExecuteWithEmptyArgs() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+    String result = factory.getCommand("create").execute(new String[] {});
+    assertTrue("Should return error on insufficient arguments", result.startsWith("Error:"));
+  }
+
+  @Test
+  public void testCommandCaseSensitivity() {
+    assertFalse("Command lookup should be case-sensitive", factory.hasCommand("Create"));
+  }
+
+  @Test
+  public void testUseCommandWithMissingName() throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+    String[] args = {"calendar", "--name"};
+    String result = factory.getCommand("use").execute(args);
+    assertTrue(result.startsWith("Error:"));
+  }
+
+  @Test
+  public void testCreateCalendarWithNonStandardTimezone() throws Exception {
+    String[] args = {"calendar", "--name", "KolkataCalendar", "--timezone", "Asia/Kolkata"};
+    String result = factory.getCommand("create").execute(args);
+    assertTrue(result.contains("Calendar 'KolkataCalendar' created successfully"));
+  }
+
   /**
    * Mock implementation of ICalendarView for testing purposes.
    * Tracks displayed messages and errors for verification.

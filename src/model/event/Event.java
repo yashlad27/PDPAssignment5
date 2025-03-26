@@ -92,8 +92,8 @@ public class Event {
       return false;
     }
 
-    return !this.endDateTime.isBefore(other.startDateTime) && !other.endDateTime.isBefore(
-            this.startDateTime);
+    return !this.endDateTime.isBefore(other.startDateTime) && 
+           !other.endDateTime.isBefore(this.startDateTime);
   }
 
   /**

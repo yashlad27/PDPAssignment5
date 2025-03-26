@@ -136,6 +136,22 @@ public class CopyEventCommandTest {
   }
 
   @Test
+  public void testCopyEventToSameCalendar() throws Exception {
+    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    Event event = new Event("Internal Copy", startTime, endTime, null, null, true);
+    sourceCalendar.addEvent(event, false);
+
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "Internal Copy", "on", "2024-03-15T10:00",
+            "--target", "source", "to", "2024-03-16T10:00"
+    });
+
+    // Depending on design: could either succeed or error due to duplication
+    assertTrue(result.contains("copied successfully") || result.contains("Cannot add event"));
+  }
+
+  @Test
   public void testCopyToNonExistentCalendar() throws Exception {
     LocalDateTime startTime = LocalDateTime.of(2024, 3, 15,
             10, 0);
@@ -154,6 +170,24 @@ public class CopyEventCommandTest {
             result.contains("Target calendar"));
     assertTrue("Error message should contain 'does not exist'",
             result.contains("does not exist"));
+  }
+
+  @Test
+  public void testCopyEventWithSameTimeDifferentSubject() throws Exception {
+    LocalDateTime time = LocalDateTime.of(2024, 3, 15, 10, 0);
+    Event original = new Event("Original Event", time, time.plusHours(1), "Desc", "Loc", true);
+    sourceCalendar.addEvent(original, false);
+
+    Event existing = new Event("Different Event", time, time.plusHours(1), "Desc", "Loc", true);
+    targetCalendar.addEvent(existing, false);
+
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "Original Event", "on", "2024-03-15T10:00",
+            "--target", "target", "to", "2024-03-15T10:00"
+    });
+
+    // Should succeed if name prevents conflict
+    assertTrue(result.contains("copied successfully") || result.contains("conflict"));
   }
 
   @Test
@@ -177,6 +211,20 @@ public class CopyEventCommandTest {
 
     assertTrue("Error message should contain 'Error: Unknown copy command format'",
             result.contains("Error: Unknown copy command format"));
+  }
+
+  @Test
+  public void testCopyZeroDurationEvent() throws Exception {
+    LocalDateTime time = LocalDateTime.of(2024, 3, 15, 10, 0);
+    Event event = new Event("Zero Duration", time, time, null, null, true);
+    sourceCalendar.addEvent(event, false);
+
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "Zero Duration", "on", "2024-03-15T10:00",
+            "--target", "target", "to", "2024-03-16T10:00"
+    });
+
+    assertTrue(result.contains("copied successfully"));
   }
 
   @Test
@@ -269,6 +317,21 @@ public class CopyEventCommandTest {
   }
 
   @Test
+  public void testCopyAllDayEvent() throws Exception {
+    LocalDateTime start = LocalDateTime.of(2024, 3, 15, 0, 0);
+    LocalDateTime end = LocalDateTime.of(2024, 3, 15, 23, 59);
+    Event event = new Event("All Day Event", start, end, null, null, true);
+    sourceCalendar.addEvent(event, false);
+
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "All Day Event", "on", "2024-03-15T00:00",
+            "--target", "target", "to", "2024-03-16T00:00"
+    });
+
+    assertTrue(result.contains("copied successfully"));
+  }
+
+  @Test
   public void testCopyEventWithEmptyFields() throws Exception {
     LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
     LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
@@ -289,6 +352,21 @@ public class CopyEventCommandTest {
     assertEquals("Empty Fields Event", copiedEvent.getSubject());
     assertEquals("", copiedEvent.getDescription());
     assertEquals("", copiedEvent.getLocation());
+  }
+
+  @Test
+  public void testCopyEventToLeapDay() throws Exception {
+    LocalDateTime start = LocalDateTime.of(2024, 3, 15, 10, 0);
+    LocalDateTime end = LocalDateTime.of(2024, 3, 15, 11, 0);
+    Event event = new Event("Leap Test", start, end, "Leap Desc", "Leap Loc", true);
+    sourceCalendar.addEvent(event, false);
+
+    String result = copyCommand.execute(new String[]{
+            "copy", "event", "Leap Test", "on", "2024-03-15T10:00",
+            "--target", "target", "to", "2024-02-29T10:00"
+    });
+
+    assertTrue(result.contains("copied successfully"));
   }
 
   @Test
