@@ -1,3 +1,4 @@
+import model.event.EventAction;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
@@ -93,6 +94,28 @@ public class AllDayEventCreatorTest {
     assertEquals("Conference Room", event.getLocation());
     assertTrue(event.isPublic());
     assertTrue(event.isAllDay());
+  }
+
+  @Test
+  public void testApplyEventAction() {
+    LocalDateTime eventTime = LocalDateTime.of(2025, 3, 26, 10, 0);
+    LocalDateTime eventEndTime = LocalDateTime.of(2025, 3, 26, 10, 10);
+    Event event = new Event("Meeting", eventTime, eventEndTime, "Conference Room", "Discuss project updates", true);
+
+    EventAction updateSubject = e -> e.setSubject("Updated Subject");
+    EventAction updateLocation = e -> e.setLocation("New Location");
+
+    updateSubject.execute(event);
+    assertEquals("Updated Subject", event.getSubject());
+
+    updateLocation.execute(event);
+    assertEquals("New Location", event.getLocation());
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testNullEventThrowsException() {
+    EventAction updateSubject = e -> e.setSubject("Updated");
+    updateSubject.execute(null);
   }
 
 }

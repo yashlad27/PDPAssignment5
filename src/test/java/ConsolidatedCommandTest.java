@@ -1,3 +1,4 @@
+import controller.command.create.CreateEventCommand;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -368,12 +369,9 @@ public class ConsolidatedCommandTest {
     List<Event> events = calendar.getEventsOnDate(LocalDate.of(2023, 7, 5));
     assertEquals("Should still have one event", 1, events.size());
 
-    // Either the event was updated or a proper error message was returned
     if (events.get(0).getSubject().equals("Updated Meeting")) {
-      // Event was successfully updated
       assertEquals("Event subject should be updated", "Updated Meeting", events.get(0).getSubject());
     } else {
-      // Edit failed, but we should have gotten a reasonable error message
       assertTrue("Should provide meaningful error if edit failed",
               result.toLowerCase().contains("error") ||
                       result.toLowerCase().contains("failed") ||
@@ -383,28 +381,23 @@ public class ConsolidatedCommandTest {
 
   @Test
   public void testEditNonExistentEvent() {
-    // Try to edit non-existent event
     String fakeId = UUID.randomUUID().toString();
     String result = controller.processCommand("edit event " + fakeId + " subject \"Fake Meeting\"");
 
-    // Verify error message
     assertTrue("Should indicate event not found",
             result.contains("Error") || result.contains("not found") || result.contains("doesn't exist"));
   }
 
   @Test
   public void testCreateAndExportEvent() throws ConflictingEventException, InvalidEventException {
-    // Create an event
     Event event = new Event("Export Test",
             LocalDateTime.of(2023, 8, 10, 9, 0),
             LocalDateTime.of(2023, 8, 10, 10, 0),
             "Testing export", "Test Location", true);
     calendar.addEvent(event, false);
 
-    // Export events (if implementation supports it)
     String result = controller.processCommand("export events on 2023-08-10");
 
-    // Just verify command doesn't error and returns something
     assertNotNull("Export command should return a result", result);
     assertFalse("Export result should not be empty", result.isEmpty());
   }
@@ -414,36 +407,28 @@ public class ConsolidatedCommandTest {
    */
   @Test
   public void testControllerWithQuotedStrings() {
-    // This test is skipped since quote handling can vary by implementation
-    // and isn't critical for core functionality tests
   }
 
   @Test
   public void testCreateEventWithExtremeTimes() {
-    // Test event creation at midnight
     String result = controller.processCommand("create event \"Midnight Event\" from 2023-05-01T00:00 to 2023-05-01T01:00");
     assertTrue(result.contains("created successfully"));
 
-    // Test event spanning midnight
     result = controller.processCommand("create event \"Overnight Event\" from 2023-05-02T23:30 to 2023-05-03T00:30");
     assertTrue(result.contains("created successfully"));
 
-    // Test event spanning multiple days
     result = controller.processCommand("create event \"Multi-day Event\" from 2023-05-10T10:00 to 2023-05-12T16:00");
     assertTrue(result.contains("created successfully"));
   }
 
   @Test
   public void testAdvancedErrorHandling() {
-    // Test invalid date formats
     String result = controller.processCommand("create event \"Bad Date Event\" from 2023/12/01T10:00 to 2023/12/01T11:00");
     assertTrue(result.contains("Error") || result.contains("format"));
 
-    // Test invalid time formats
     result = controller.processCommand("create event \"Bad Time Event\" from 2023-12-01 10:00 to 2023-12-01 11:00");
     assertTrue(result.contains("Error") || result.contains("format"));
 
-    // Test out-of-bounds values
     result = controller.processCommand("create event \"Invalid Time Event\" from 2023-12-01T25:00 to 2023-12-01T26:00");
     assertTrue(result.contains("Error") || result.contains("invalid"));
   }
@@ -507,5 +492,42 @@ public class ConsolidatedCommandTest {
     // Proper case might or might not work depending on the parser implementation
     result = controller.processCommand("exit");
     assertEquals("Exiting application.", result);
+  }
+
+  @Test
+  public void testGetName() {
+    CreateEventCommand command = new CreateEventCommand(calendar);
+    assertEquals("create", command.getName());
+  }
+
+  @Test
+  public void testExecuteWithNoArgs() {
+    CreateEventCommand command = new CreateEventCommand(calendar);
+    String result = command.execute(new String[]{});
+    assertEquals("Error: Insufficient arguments for create command", result);
+  }
+
+  @Test
+  public void testExecuteWithInvalidEventType() {
+    CreateEventCommand command = new CreateEventCommand(calendar);
+    String result = command.execute(new String[]{"InvalidType"});
+    assertTrue(result.startsWith("Error"));
+  }
+
+  @Test
+  public void testExecuteWithValidEvent() {
+    CreateEventCommand command = new CreateEventCommand(calendar);
+    String result = command.execute(new String[]{"Meeting", "2025-03-27", "10:00", "11:00"});
+    assertFalse(result.startsWith("Unexpected error:"));
+  }
+
+  @Test
+  public void testExecuteWithConflictingEvent() {
+    CreateEventCommand command = new CreateEventCommand(calendar);
+
+    command.execute(new String[]{"Meeting", "2025-03-27", "10:00", "11:00"});
+
+    String result = command.execute(new String[]{"Meeting", "2025-03-27", "10:30", "11:30"});
+    assertTrue(result.startsWith("Error in command arguments:"));
   }
 } 

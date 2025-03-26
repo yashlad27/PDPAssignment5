@@ -1,3 +1,4 @@
+import controller.command.ExitCommand;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -309,5 +310,18 @@ public class CommandFactoryTest {
     // Execute the command
     ICommand customCommand = factoryImpl.getCommand("custom");
     assertEquals("Custom command executed", customCommand.execute(new String[]{}));
+  }
+
+  @Test
+  public void testExecute() {
+    ExitCommand exitCommand = new ExitCommand();
+    String result = exitCommand.execute(new String[]{});
+    assertEquals("Exiting application.", result);
+  }
+
+  @Test
+  public void testGetName() {
+    ExitCommand exitCommand = new ExitCommand();
+    assertEquals("exit", exitCommand.getName());
   }
 }
