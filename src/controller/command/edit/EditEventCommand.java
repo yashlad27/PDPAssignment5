@@ -6,7 +6,6 @@ import model.calendar.ICalendar;
 import model.exceptions.ConflictingEventException;
 import model.exceptions.EventNotFoundException;
 import model.exceptions.InvalidEventException;
-import java.util.function.Predicate;
 
 /**
  * Command for editing calendar events using the Strategy pattern.
@@ -26,7 +25,7 @@ public class EditEventCommand implements ICommand {
     validateCalendar(calendar);
     this.calendar = calendar;
   }
-  
+
   /**
    * Validates that the calendar is not null.
    *
@@ -73,23 +72,23 @@ public class EditEventCommand implements ICommand {
       return "Unexpected error: " + e.getMessage();
     }
   }
-  
+
   /**
    * Checks if the args array has at least the minimum required arguments.
    *
-   * @param args the arguments array to check
+   * @param args    the arguments array to check
    * @param minArgs the minimum number of required arguments
    * @return true if args has at least minArgs elements
    */
   private boolean hasMinimumArgs(String[] args, int minArgs) {
     return args != null && args.length >= minArgs;
   }
-  
+
   /**
    * Formats an exception message with a consistent pattern.
    *
    * @param context the context of the failure
-   * @param e the exception that was thrown
+   * @param e       the exception that was thrown
    * @return a formatted error message
    */
   private String formatExceptionMessage(String context, Exception e) {

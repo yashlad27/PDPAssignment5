@@ -5,86 +5,86 @@ create calendar --name Family --timezone Europe/Paris
 create calendar --name Health --timezone America/Los_Angeles
 
 use calendar --name Work
-create event "Team Meeting" from 2025-03-25T10:00 to 2025-03-25T11:00 desc "Weekly team sync" at "Conference Room A"
-create event "Project Deadline" from 2025-03-28T09:00 to 2025-03-28T17:00 desc "Final deliverable due" at "Office"
-create event "Daily Standup" from 2025-03-25T08:00 to 2025-03-25T08:30 repeats MWF for 10 times desc "Quick team sync" at "Zoom"
-create event "Team Football Match" from 2025-03-23T09:00 to 2025-03-23T11:00 repeats SU for 5 times desc "Weekly game" at "City Park"
-create event "Client Presentation" from 2025-03-26T14:00 to 2025-03-26T15:30 desc "Q2 Results" at "Board Room"
-create event "Training Session" from 2025-03-27T13:00 to 2025-03-27T16:00 desc "New Tool Training" at "Training Room"
-create event "Team Building" from 2025-03-29T09:00 to 2025-03-29T17:00 desc "Annual Event" at "Resort"
-create event "Project Review" from 2025-03-30T10:00 to 2025-03-30T12:00 desc "Monthly Review" at "Meeting Room"
+create event "Team Meeting" from 2024-03-25T10:00 to 2024-03-25T11:00 desc "Weekly team sync" at "Conference Room A"
+create event "Project Deadline" from 2024-03-28T09:00 to 2024-03-28T17:00 desc "Final deliverable due" at "Office"
+create event "Daily Standup" from 2024-03-25T08:00 to 2024-03-25T08:30 repeats MWF for 10 times desc "Quick team sync" at "Zoom"
+create event "Team Football Match" from 2024-03-23T09:00 to 2024-03-23T11:00 repeats SU for 5 times desc "Weekly game" at "City Park"
+create event "Client Presentation" from 2024-03-26T14:00 to 2024-03-26T15:30 desc "Q2 Results" at "Board Room"
+create event "Training Session" from 2024-03-27T13:00 to 2024-03-27T16:00 desc "New Tool Training" at "Training Room"
+create event "Team Building" from 2024-03-29T09:00 to 2024-03-29T17:00 desc "Annual Event" at "Resort"
+create event "Project Review" from 2024-03-30T10:00 to 2024-03-30T12:00 desc "Monthly Review" at "Meeting Room"
 
 use calendar --name Personal
-create event "Gym" from 2025-03-26T18:00 to 2025-03-26T19:30 desc "Workout session" at "Fitness Center"
-create event "Dinner with Friends" from 2025-03-27T19:00 to 2025-03-27T21:00 desc "Catch up" at "Italian Restaurant"
-create event "Yoga Class" from 2025-03-20T17:00 to 2025-03-20T18:00 repeats TRS for 8 times desc "Weekly yoga" at "Wellness Center"
-create event "Book Club" from 2025-03-24T19:00 to 2025-03-24T21:00 desc "Monthly Meeting" at "Library"
-create event "Doctor Appointment" from 2025-03-28T15:00 to 2025-03-28T16:00 desc "Annual Checkup" at "Medical Center"
-create event "Shopping" from 2025-03-29T10:00 to 2025-03-29T12:00 desc "Grocery Shopping" at "Supermarket"
-create event "Movie Night" from 2025-03-30T20:00 to 2025-03-30T23:00 desc "New Release" at "Cinema"
+create event "Gym" from 2024-03-26T18:00 to 2024-03-26T19:30 desc "Workout session" at "Fitness Center"
+create event "Dinner with Friends" from 2024-03-27T19:00 to 2024-03-27T21:00 desc "Catch up" at "Italian Restaurant"
+create event "Yoga Class" from 2024-03-20T17:00 to 2024-03-20T18:00 repeats TRS for 8 times desc "Weekly yoga" at "Wellness Center"
+create event "Book Club" from 2024-03-24T19:00 to 2024-03-24T21:00 desc "Monthly Meeting" at "Library"
+create event "Doctor Appointment" from 2024-03-28T15:00 to 2024-03-28T16:00 desc "Annual Checkup" at "Medical Center"
+create event "Shopping" from 2024-03-29T10:00 to 2024-03-29T12:00 desc "Grocery Shopping" at "Supermarket"
+create event "Movie Night" from 2024-03-30T20:00 to 2024-03-30T23:00 desc "New Release" at "Cinema"
 
 use calendar --name Travel
-create event "Flight to Paris" from 2025-04-15T08:00 to 2025-04-15T10:30 desc "Flight AA123" at "Airport"
-create event "Hotel Check-in" from 2025-04-15T14:00 to 2025-04-15T15:00 desc "Reservation #12345" at "Hotel Paris"
-create event "Museum Visit" from 2025-04-16T10:00 to 2025-04-16T13:00 desc "Louvre Museum" at "Paris"
-create event "Eiffel Tower" from 2025-04-16T15:00 to 2025-04-16T17:00 desc "Evening Visit" at "Eiffel Tower"
-create event "Seine River Cruise" from 2025-04-17T19:00 to 2025-04-17T21:00 desc "Dinner Cruise" at "Seine River"
-create event "Versailles Tour" from 2025-04-18T09:00 to 2025-04-18T17:00 desc "Day Trip" at "Versailles"
-create event "Flight Back" from 2025-04-19T16:00 to 2025-04-19T18:30 desc "Flight AA124" at "Airport"
+create event "Flight to Paris" from 2024-04-15T08:00 to 2024-04-15T10:30 desc "Flight AA123" at "Airport"
+create event "Hotel Check-in" from 2024-04-15T14:00 to 2024-04-15T15:00 desc "Reservation #12345" at "Hotel Paris"
+create event "Museum Visit" from 2024-04-16T10:00 to 2024-04-16T13:00 desc "Louvre Museum" at "Paris"
+create event "Eiffel Tower" from 2024-04-16T15:00 to 2024-04-16T17:00 desc "Evening Visit" at "Eiffel Tower"
+create event "Seine River Cruise" from 2024-04-17T19:00 to 2024-04-17T21:00 desc "Dinner Cruise" at "Seine River"
+create event "Versailles Tour" from 2024-04-18T09:00 to 2024-04-18T17:00 desc "Day Trip" at "Versailles"
+create event "Flight Back" from 2024-04-19T16:00 to 2024-04-19T18:30 desc "Flight AA124" at "Airport"
 
 use calendar --name Family
-create event "Family Dinner" from 2025-03-25T18:00 to 2025-03-25T20:00 desc "Monthly Gathering" at "Home"
-create event "Parent-Teacher Meeting" from 2025-03-26T15:00 to 2025-03-26T16:00 desc "School Meeting" at "School"
-create event "Soccer Practice" from 2025-03-27T16:00 to 2025-03-27T17:30 repeats TR for 8 times desc "Kids Practice" at "Field"
-create event "Family Movie Night" from 2025-03-28T19:00 to 2025-03-28T21:00 desc "Movie Night" at "Home"
-create event "Weekend Trip" from 2025-03-29T09:00 to 2025-03-30T17:00 desc "Beach Trip" at "Beach Resort"
-create event "Birthday Party" from 2025-03-31T14:00 to 2025-03-31T18:00 desc "Grandma's Birthday" at "Home"
+create event "Family Dinner" from 2024-03-25T18:00 to 2024-03-25T20:00 desc "Monthly Gathering" at "Home"
+create event "Parent-Teacher Meeting" from 2024-03-26T15:00 to 2024-03-26T16:00 desc "School Meeting" at "School"
+create event "Soccer Practice" from 2024-03-27T16:00 to 2024-03-27T17:30 repeats TR for 8 times desc "Kids Practice" at "Field"
+create event "Family Movie Night" from 2024-03-28T19:00 to 2024-03-28T21:00 desc "Movie Night" at "Home"
+create event "Weekend Trip" from 2024-03-29T09:00 to 2024-03-30T17:00 desc "Beach Trip" at "Beach Resort"
+create event "Birthday Party" from 2024-03-31T14:00 to 2024-03-31T18:00 desc "Grandma's Birthday" at "Home"
 
 use calendar --name Health
-create event "Morning Run" from 2025-03-25T06:00 to 2025-03-25T07:00 repeats MWF for 12 times desc "5K Run" at "Park"
-create event "Swimming" from 2025-03-26T17:00 to 2025-03-26T18:00 repeats TR for 8 times desc "Swim Practice" at "Pool"
-create event "Dental Checkup" from 2025-03-27T11:00 to 2025-03-27T12:00 desc "Regular Checkup" at "Dental Clinic"
-create event "Meditation" from 2025-03-28T07:00 to 2025-03-28T07:30 repeats MTWRF for 10 times desc "Morning Meditation" at "Home"
-create event "Physical Therapy" from 2025-03-29T15:00 to 2025-03-29T16:00 repeats MWF for 6 times desc "Knee Therapy" at "Clinic"
-create event "Nutritionist" from 2025-03-30T13:00 to 2025-03-30T14:00 desc "Diet Plan Review" at "Clinic"
+create event "Morning Run" from 2024-03-25T06:00 to 2024-03-25T07:00 repeats MWF for 12 times desc "5K Run" at "Park"
+create event "Swimming" from 2024-03-26T17:00 to 2024-03-26T18:00 repeats TR for 8 times desc "Swim Practice" at "Pool"
+create event "Dental Checkup" from 2024-03-27T11:00 to 2024-03-27T12:00 desc "Regular Checkup" at "Dental Clinic"
+create event "Meditation" from 2024-03-28T07:00 to 2024-03-28T07:30 repeats MTWRF for 10 times desc "Morning Meditation" at "Home"
+create event "Physical Therapy" from 2024-03-29T15:00 to 2024-03-29T16:00 repeats MWF for 6 times desc "Knee Therapy" at "Clinic"
+create event "Nutritionist" from 2024-03-30T13:00 to 2024-03-30T14:00 desc "Diet Plan Review" at "Clinic"
 
 use calendar --name Work
-print events on 2025-03-25
-print events from 2025-03-23 to 2025-03-30
-show status on 2025-03-26T14:30
+print events on 2024-03-25
+print events from 2024-03-23 to 2024-03-30
+show status on 2024-03-26T14:30
 
-copy event "Team Meeting" on 2025-03-25T10:00 --target Personal to 2025-04-01T10:00
-copy events on 2025-03-28 --target Personal to 2025-04-05
-copy events between 2025-03-23 and 2025-03-28 --target Travel to 2025-04-16
-copy events on 2025-03-25 --target Family to 2025-04-01
+copy event "Team Meeting" on 2024-03-25T10:00 --target Personal to 2024-04-01T10:00
+copy events on 2024-03-28 --target Personal to 2024-04-05
+copy events between 2024-03-23 and 2024-03-28 --target Travel to 2024-04-16
+copy events on 2024-03-25 --target Family to 2024-04-01
 
 use calendar --name Personal
-edit event subject "Gym" from 2025-03-26T18:00 with "Weightlifting Session"
-edit event location "Dinner with Friends" from 2025-03-27T19:00 with "Mexican Restaurant"
-edit event description "Yoga Class" from 2025-03-20T17:00 with "Advanced Yoga Class"
-edit event start "Doctor Appointment" from 2025-03-28T15:00 with "2025-03-28T16:00"
-edit event end "Movie Night" from 2025-03-30T20:00 with "2025-03-30T22:30"
+edit event subject "Gym" from 2024-03-26T18:00 with "Weightlifting Session"
+edit event location "Dinner with Friends" from 2024-03-27T19:00 with "Mexican Restaurant"
+edit event description "Yoga Class" from 2024-03-20T17:00 with "Advanced Yoga Class"
+edit event start "Doctor Appointment" from 2024-03-28T15:00 with "2024-03-28T16:00"
+edit event end "Movie Night" from 2024-03-30T20:00 with "2024-03-30T22:30"
 
 edit calendar --name Personal --property timezone "Europe/Paris"
 edit calendar --name Work --property timezone "America/Chicago"
 edit calendar --name Family --property timezone "Europe/London"
 
 use calendar --name Personal
-print events on 2025-04-01
-print events from 2025-04-01 to 2025-04-07
-show status on 2025-03-26T18:30
+print events on 2024-04-01
+print events from 2024-04-01 to 2024-04-07
+show status on 2024-03-26T18:30
 
 use calendar --name Travel
-print events from 2025-04-15 to 2025-04-20
-show status on 2025-04-16T11:30
+print events from 2024-04-15 to 2024-04-20
+show status on 2024-04-16T11:30
 
 use calendar --name Family
-print events on 2025-04-01
-print events from 2025-03-29 to 2025-03-31
+print events on 2024-04-01
+print events from 2024-03-29 to 2024-03-31
 
 use calendar --name Health
-print events on 2025-03-25
-print events from 2025-03-25 to 2025-03-31
+print events on 2024-03-25
+print events from 2024-03-25 to 2024-03-31
 
 export cal work_events.csv
 export cal personal_events.csv
@@ -93,6 +93,6 @@ export cal family_events.csv
 export cal health_events.csv
 
 use calendar --name Work
-print events on 2025-03-25
-show status on 2025-03-26T14:30
+print events on 2024-03-25
+show status on 2024-03-26T14:30
 exit

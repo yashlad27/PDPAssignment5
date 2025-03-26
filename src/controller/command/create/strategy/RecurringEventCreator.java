@@ -161,7 +161,8 @@ public class RecurringEventCreator extends AbstractEventCreator {
    * @param errorMessage     the error message to throw if the condition is invalid
    * @throws InvalidEventException if the invalidCondition returns true
    */
-  private <T> void validateWithPredicate(T value, Predicate<T> invalidCondition, String errorMessage)
+  private <T> void validateWithPredicate(T value, Predicate<T> invalidCondition,
+                                         String errorMessage)
           throws InvalidEventException {
     if (invalidCondition.test(value)) {
       throw new InvalidEventException(errorMessage);

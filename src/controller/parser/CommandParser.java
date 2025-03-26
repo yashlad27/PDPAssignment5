@@ -21,7 +21,7 @@ public class CommandParser {
   private final ICommandFactory commandFactory;
   private final Map<String, CommandPattern> commandPatterns;
   private static final List<String> VALID_COMMANDS = Arrays.asList("create", "use", "show", "edit",
-      "copy", "exit", "print", "export");
+          "copy", "exit", "print", "export");
   private static final Set<String> VALID_COMMANDS_SET = new HashSet<>(VALID_COMMANDS);
 
   /**
@@ -41,98 +41,115 @@ public class CommandParser {
   private void initializePatterns() {
     // Create calendar pattern
     registerPattern("create_calendar", Pattern.compile(
-            "create calendar --name ([\"']?[^\"']+[\"']?|[^\\s]+) --timezone ([\\w/]+)"),
-        this::parseCreateCalendarCommand);
+                    "create calendar --name ([\"']?[^\"']+[\"']?|[^\\s]+) "
+                            + "--timezone ([\\w/]+)"),
+            this::parseCreateCalendarCommand);
 
     // Create event pattern
     registerPattern("create_event", Pattern.compile(
-            "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
-                + "from (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
-                + "to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"
-                + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
-        this::parseCreateEventCommand);
+                    "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
+                            + "from (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+                            + "to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"
+                            + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")"
+                            + "?(?:\\s+(private))?"),
+            this::parseCreateEventCommand);
 
     // Create recurring event pattern
     registerPattern("create_recurring_event", Pattern.compile(
-            "create event ([\"']?[^\"']+[\"']?|[^\\s]+) " + "from (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
-                + "to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) " + "repeats ([MTWRFSU]+) for (\\d+) times"
-                + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?"),
-        this::parseCreateRecurringEventCommand);
+                    "create event ([\"']?[^\"']+[\"']?|[^\\s]+) "
+                            + "from (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+                            + "to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+                            + "repeats ([MTWRFSU]+) for (\\d+) times"
+                            + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?"),
+            this::parseCreateRecurringEventCommand);
 
     // Create all-day event pattern
     registerPattern("create_all_day_event", Pattern.compile(
-            "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) on" + " (\\d{4}-\\d{2}-\\d{2})"
-                + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
-        this::parseCreateAllDayEventCommand);
+                    "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) on"
+                            + " (\\d{4}-\\d{2}-\\d{2})"
+                            + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")"
+                            + "?(?:\\s+(private))?"),
+            this::parseCreateAllDayEventCommand);
 
     // Create event patterns
     registerPattern("create_recurring_until_event", Pattern.compile(
-            "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) from "
-                + "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
-                + "repeats ([MTWRFSU]+) until (\\d{4}-\\d{2}-\\d{2})"
-                + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
-        this::parseCreateRecurringUntilEventCommand);
+                    "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) from "
+                            + "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) to "
+                            + "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+                            + "repeats ([MTWRFSU]+) until (\\d{4}-\\d{2}-\\d{2})"
+                            + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s"
+                            + "+\"([^\"]+)\")?(?:\\s+(private))?"),
+            this::parseCreateRecurringUntilEventCommand);
 
     registerPattern("create_all_day_recurring_event", Pattern.compile(
-            "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
-                + "on (\\d{4}-\\d{2}-\\d{2}) repeats ([MTWRFSU]+) for (\\d+) times"
-                + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
-        this::parseCreateAllDayRecurringEventCommand);
+                    "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
+                            + "on (\\d{4}-\\d{2}-\\d{2}) repeats ([MTWRFSU]+) for (\\d+) times"
+                            + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s"
+                            + "+\"([^\"]+)\")?(?:\\s+(private))?"),
+            this::parseCreateAllDayRecurringEventCommand);
 
     registerPattern("create_all_day_recurring_until_event", Pattern.compile(
-            "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
-                + "on (\\d{4}-\\d{2}-\\d{2}) repeats ([MTWRFSU]+) until (\\d{4}-\\d{2}-\\d{2})"
-                + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s+\"([^\"]+)\")?(?:\\s+(private))?"),
-        this::parseCreateAllDayRecurringUntilEventCommand);
+                    "create event (--autoDecline )?([\"']?[^\"']+[\"']?|[^\\s]+) "
+                            + "on (\\d{4}-\\d{2}-\\d{2}) repeats ([MTWRFSU]+)"
+                            + " until (\\d{4}-\\d{2}-\\d{2})"
+                            + "(?:\\s+desc\\s+\"([^\"]+)\")?(?:\\s+at\\s"
+                            + "+\"([^\"]+)\")?(?:\\s+(private))?"),
+            this::parseCreateAllDayRecurringUntilEventCommand);
 
     registerPattern("edit_single_event",
-        Pattern.compile("edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) " + "with \"?([^\"]+)\"?"),
-        this::parseEditSingleEventCommand);
+            Pattern.compile("edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) "
+                    + "with \"?([^\"]+)\"?"),
+            this::parseEditSingleEventCommand);
 
     registerPattern("edit_event_time", Pattern.compile(
-            "edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) " + "to (\\S+T\\S+) with \"?([^\"]+)\"?"),
-        this::parseEditEventTimeCommand);
+                    "edit event (\\w+) \"([^\"]+)\" from (\\S+T\\S+) "
+                            + "to (\\S+T\\S+) with \"?([^\"]+)\"?"),
+            this::parseEditEventTimeCommand);
 
-    registerPattern("print_events_date", Pattern.compile("print events on (\\d{4}-\\d{2}-\\d{2})"),
-        this::parsePrintEventsDateCommand);
+    registerPattern("print_events_date", Pattern.compile("print events "
+                    + "on (\\d{4}-\\d{2}-\\d{2})"),
+            this::parsePrintEventsDateCommand);
 
     registerPattern("print_events_range",
-        Pattern.compile("print events from (\\d{4}-\\d{2}-\\d{2}) " + "to (\\d{4}-\\d{2}-\\d{2})"),
-        this::parsePrintEventsRangeCommand);
+            Pattern.compile("print events from (\\d{4}-\\d{2}-\\d{2}) "
+                    + "to (\\d{4}-\\d{2}-\\d{2})"),
+            this::parsePrintEventsRangeCommand);
 
     // Edit calendar pattern
     registerPattern("edit_calendar",
-        Pattern.compile("edit calendar --name ([\\w-]+) --property (\\w+) ([\\w/]+)"),
-        this::parseEditCalendarCommand);
+            Pattern.compile("edit calendar --name ([\\w-]+) --property (\\w+) ([\\w/]+)"),
+            this::parseEditCalendarCommand);
 
     // Use calendar pattern
     registerPattern("use_calendar",
-        Pattern.compile("use calendar --name ([\"']?[^\"']+[\"']?|[^\\s]+)"),
-        this::parseUseCalendarCommand);
+            Pattern.compile("use calendar --name ([\"']?[^\"']+[\"']?|[^\\s]+)"),
+            this::parseUseCalendarCommand);
 
     // Copy single event pattern
     registerPattern("copy_event", Pattern.compile(
-            "copy event \"?([^\"]*)\"? " + "on (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
-                + "--target ([\\w-]+) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"),
-        this::parseCopyEventCommand);
+                    "copy event \"?([^\"]*)\"? " + "on (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}) "
+                            + "--target ([\\w-]+) to (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"),
+            this::parseCopyEventCommand);
 
     // Copy events on date pattern
     registerPattern("copy_events_on_date", Pattern.compile(
-            "copy events on (\\d{4}-\\d{2}-\\d{2}) --target ([\\w-]+) " + "to (\\d{4}-\\d{2}-\\d{2})"),
-        this::parseCopyEventsOnDateCommand);
+                    "copy events on (\\d{4}-\\d{2}-\\d{2}) --target ([\\w-]+) "
+                            + "to (\\d{4}-\\d{2}-\\d{2})"),
+            this::parseCopyEventsOnDateCommand);
 
     // Copy events between dates pattern
     registerPattern("copy_events_between_dates", Pattern.compile(
-            "copy events between (\\d{4}-\\d{2}-\\d{2}) " + "and (\\d{4}-\\d{2}-\\d{2}) "
-                + "--target ([\\w-]+) to (\\d{4}-\\d{2}-\\d{2})"),
-        this::parseCopyEventsBetweenDatesCommand);
+                    "copy events between (\\d{4}-\\d{2}-\\d{2}) "
+                            + "and (\\d{4}-\\d{2}-\\d{2}) "
+                            + "--target ([\\w-]+) to (\\d{4}-\\d{2}-\\d{2})"),
+            this::parseCopyEventsBetweenDatesCommand);
 
     registerPattern("show_status",
-        Pattern.compile("show status on (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"),
-        this::parseShowStatusCommand);
+            Pattern.compile("show status on (\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2})"),
+            this::parseShowStatusCommand);
 
     registerPattern("export_calendar", Pattern.compile("export cal (.+)"),
-        this::parseExportCommand);
+            this::parseExportCommand);
 
     registerPattern("exit", Pattern.compile("exit"), this::parseExitCommand);
   }
@@ -159,25 +176,22 @@ public class CommandParser {
     if (commandString == null || commandString.trim().isEmpty()) {
       throw new IllegalArgumentException("Command cannot be empty");
     }
-    
-    // Normalize whitespace by replacing multiple spaces with a single space
+
     commandString = commandString.trim().replaceAll("\\s+", " ");
 
-    String[] parts = commandString.split("\\s+", 2); // Split into command and the rest
+    String[] parts = commandString.split("\\s+", 2);
     if (parts.length == 0) {
       throw new IllegalArgumentException("Invalid command format");
     }
 
     String command = parts[0].toLowerCase();
 
-    // Check if the command is valid
     if (!VALID_COMMANDS_SET.contains(command)) {
       throw new IllegalArgumentException(
-          "Invalid command: " + command + ". Valid commands are: " + String.join(", ",
-              VALID_COMMANDS));
+              "Invalid command: " + command + ". Valid commands are: " + String.join(", ",
+                      VALID_COMMANDS));
     }
 
-    // Try to match with registered patterns
     for (Map.Entry<String, CommandPattern> entry : commandPatterns.entrySet()) {
       Matcher matcher = entry.getValue().getPattern().matcher(commandString);
       if (matcher.matches()) {
@@ -198,12 +212,12 @@ public class CommandParser {
     if (value == null) {
       return null;
     }
-    
-    if ((value.startsWith("\"") && value.endsWith("\"")) || 
-        (value.startsWith("'") && value.endsWith("'"))) {
+
+    if ((value.startsWith("\"") && value.endsWith("\"")) ||
+            (value.startsWith("'") && value.endsWith("'"))) {
       return value.substring(1, value.length() - 1);
     }
-    
+
     return value;
   }
 
@@ -220,8 +234,8 @@ public class CommandParser {
     boolean isPrivate = matcher.group(7) != null;
 
     String[] args = {"single", eventName, startTime, endTime, description, location,
-        String.valueOf(!isPrivate),  // isPublic is opposite of isPrivate
-        String.valueOf(autoDecline)   // autoDecline flag
+            String.valueOf(!isPrivate),
+            String.valueOf(autoDecline)
     };
     return new CommandWithArgs(commandFactory.getCommand("create"), args);
   }
@@ -238,8 +252,7 @@ public class CommandParser {
     boolean isPrivate = matcher.group(6) != null;
 
     String[] args = {"allday", eventName, date, description, location, String.valueOf(!isPrivate),
-        // isPublic is opposite of isPrivate
-        String.valueOf(autoDecline)   // autoDecline flag
+            String.valueOf(autoDecline)
     };
     return new CommandWithArgs(commandFactory.getCommand("create"), args);
   }
@@ -257,9 +270,8 @@ public class CommandParser {
     String location = matcher.group(7);
 
     String[] args = {"recurring", eventName, startTime, endTime, weekdays, occurrences,
-        description != null ? description : "", location != null ? location : "", "true",
-        // isPublic
-        "false"  // autoDecline
+            description != null ? description : "", location != null ? location : "", "true",
+            "false"
     };
     return new CommandWithArgs(commandFactory.getCommand("create"), args);
   }
@@ -275,8 +287,8 @@ public class CommandParser {
     String eventName = removeQuotes(matcher.group(2));
 
     String[] args = {"recurring-until", eventName, matcher.group(3), matcher.group(4),
-        matcher.group(5), matcher.group(6), String.valueOf(autoDecline), matcher.group(7),
-        matcher.group(8), matcher.group(9) != null ? "false" : "true"};
+            matcher.group(5), matcher.group(6), String.valueOf(autoDecline), matcher.group(7),
+            matcher.group(8), matcher.group(9) != null ? "false" : "true"};
     return new CommandWithArgs(createCommand, args);
   }
 
@@ -291,8 +303,8 @@ public class CommandParser {
     String eventName = removeQuotes(matcher.group(2));
 
     String[] args = {"allday-recurring", eventName, matcher.group(3), matcher.group(4),
-        matcher.group(5), String.valueOf(autoDecline), matcher.group(6), matcher.group(7),
-        matcher.group(8) != null ? "false" : "true"};
+            matcher.group(5), String.valueOf(autoDecline), matcher.group(6), matcher.group(7),
+            matcher.group(8) != null ? "false" : "true"};
     return new CommandWithArgs(createCommand, args);
   }
 
@@ -307,8 +319,8 @@ public class CommandParser {
     String eventName = removeQuotes(matcher.group(2));
 
     String[] args = {"allday-recurring-until", eventName, matcher.group(3), matcher.group(4),
-        matcher.group(5), String.valueOf(autoDecline), matcher.group(6), matcher.group(7),
-        matcher.group(8) != null ? "false" : "true"};
+            matcher.group(5), String.valueOf(autoDecline), matcher.group(6), matcher.group(7),
+            matcher.group(8) != null ? "false" : "true"};
     return new CommandWithArgs(createCommand, args);
   }
 
@@ -351,14 +363,14 @@ public class CommandParser {
     String calendarName = removeQuotes(matcher.group(1));
     String timezone = matcher.group(2);
     return new CommandWithArgs(commandFactory.getCommand("create"),
-        new String[]{"calendar", "--name", calendarName, "--timezone", timezone});
+            new String[]{"calendar", "--name", calendarName, "--timezone", timezone});
   }
 
   private CommandWithArgs parseEditCalendarCommand(Matcher matcher) {
     ICommand calendarCommand = commandFactory.getCommand("edit");
 
     String[] args = {"calendar", "--name", matcher.group(1), "--property", matcher.group(2),
-        matcher.group(3)};
+            matcher.group(3)};
     return new CommandWithArgs(calendarCommand, args);
   }
 
@@ -369,7 +381,7 @@ public class CommandParser {
     if (calendarName == null || calendarName.equals("null")) {
       throw new IllegalArgumentException("Calendar name cannot be null");
     }
-    
+
     calendarName = removeQuotes(calendarName);
 
     String[] args = {"calendar", "--name", calendarName};
@@ -382,7 +394,7 @@ public class CommandParser {
     String eventName = removeQuotes(matcher.group(1));
 
     String[] args = {"copy", "event", eventName, "on", matcher.group(2), "--target",
-        matcher.group(3), "to", matcher.group(4)};
+            matcher.group(3), "to", matcher.group(4)};
     return new CommandWithArgs(copyCommand, args);
   }
 
@@ -390,7 +402,7 @@ public class CommandParser {
     ICommand copyCommand = commandFactory.getCommand("copy");
 
     String[] args = {"copy", "events", "on", matcher.group(1), "--target", matcher.group(2), "to",
-        matcher.group(3)};
+            matcher.group(3)};
     return new CommandWithArgs(copyCommand, args);
   }
 
@@ -398,7 +410,7 @@ public class CommandParser {
     ICommand copyCommand = commandFactory.getCommand("copy");
 
     String[] args = {"copy", "events", "between", matcher.group(1), "and", matcher.group(2),
-        "--target", matcher.group(3), "to", matcher.group(4)};
+            "--target", matcher.group(3), "to", matcher.group(4)};
     return new CommandWithArgs(copyCommand, args);
   }
 
@@ -411,13 +423,12 @@ public class CommandParser {
     String dateTime = matcher.group(1);
     if (dateTime == null || dateTime.trim().isEmpty()) {
       throw new IllegalArgumentException(
-          "Invalid date time format. Expected format: YYYY-MM-DDThh:mm");
+              "Invalid date time format. Expected format: YYYY-MM-DDThh:mm");
     }
 
-    // Validate the date time format
     if (!dateTime.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}")) {
       throw new IllegalArgumentException(
-          "Invalid date time format. Expected format: YYYY-MM-DDThh:mm");
+              "Invalid date time format. Expected format: YYYY-MM-DDThh:mm");
     }
 
     String[] args = {dateTime.trim()};
