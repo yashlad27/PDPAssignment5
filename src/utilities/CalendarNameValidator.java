@@ -17,35 +17,47 @@ public class CalendarNameValidator {
    * @throws IllegalArgumentException if the name is invalid
    */
   public static void validateCalendarName(String name) {
-    Stream.of(name)
-            .peek(n -> {
-              if (n == null) {
-                throw new IllegalArgumentException("Calendar name cannot be null");
-              }
-            })
-            .map(String::trim)
-            .map(n -> n.startsWith("\"") && n.endsWith("\"") ? n.substring(1, n.length() - 1) : n)
-            .map(n -> n.startsWith("'") && n.endsWith("'") ? n.substring(1, n.length() - 1) : n)
-            .peek(n -> {
-              if (n.isEmpty()) {
-                throw new IllegalArgumentException("Calendar name cannot be empty");
-              }
-            })
-            .peek(n -> {
-              if (n.chars()
-                      .mapToObj(ch -> (char) ch)
-                      .anyMatch(ch -> !Character.isLetterOrDigit(ch) && ch != '_')) {
-                throw new IllegalArgumentException("Invalid calendar name");
-              }
-            })
-            .peek(n -> {
-              if (existingNames.stream().anyMatch(existing -> existing.equals(n))) {
-                throw new IllegalArgumentException("Calendar name must be unique");
-              }
-            })
-            .peek(existingNames::add)
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Calendar name validation failed"));
+    if (name == null) {
+      throw new IllegalArgumentException("Calendar name cannot be null");
+    }
+
+    String trimmedName = name.trim();
+    String unquotedName = removeQuotes(trimmedName);
+    
+    if (unquotedName.isEmpty()) {
+      throw new IllegalArgumentException("Calendar name cannot be empty");
+    }
+
+    if (containsInvalidCharacters(unquotedName)) {
+      throw new IllegalArgumentException("Invalid calendar name");
+    }
+
+    if (isDuplicateName(unquotedName)) {
+      throw new IllegalArgumentException("Calendar name must be unique");
+    }
+
+    existingNames.add(unquotedName);
+  }
+
+  private static String removeQuotes(String name) {
+    if (name.startsWith("\"") && name.endsWith("\"")) {
+      return name.substring(1, name.length() - 1);
+    }
+    if (name.startsWith("'") && name.endsWith("'")) {
+      return name.substring(1, name.length() - 1);
+    }
+    return name;
+  }
+
+  private static boolean containsInvalidCharacters(String name) {
+    return name.chars()
+        .mapToObj(ch -> (char) ch)
+        .anyMatch(ch -> !Character.isLetterOrDigit(ch) && ch != '_');
+  }
+
+  private static boolean isDuplicateName(String name) {
+    return existingNames.stream()
+        .anyMatch(existing -> existing.equals(name));
   }
 
   /**
@@ -54,9 +66,7 @@ public class CalendarNameValidator {
    * @param name the calendar name to remove
    */
   public static void removeCalendarName(String name) {
-    if (name != null) {
-      existingNames.remove(name.trim());
-    }
+    existingNames.remove(name);
   }
 
   /**

@@ -25,8 +25,7 @@ public class RecurringEvent extends Event {
    * Private constructor used by the builder
    */
   private RecurringEvent(Builder builder) {
-    super(builder.subject, builder.startDateTime, builder.endDateTime,
-            builder.description, builder.location, builder.isPublic);
+    super(builder.subject, builder.startDateTime, builder.endDateTime, builder.description, builder.location, builder.isPublic);
 
     this.repeatDays = EnumSet.copyOf(builder.repeatDays);
     this.occurrences = builder.occurrences;
@@ -60,8 +59,7 @@ public class RecurringEvent extends Event {
     /**
      * Constructor for the builder with required params.
      */
-    public Builder(String subject, LocalDateTime startDateTime, LocalDateTime endDateTime,
-                   Set<DayOfWeek> repeatDays) {
+    public Builder(String subject, LocalDateTime startDateTime, LocalDateTime endDateTime, Set<DayOfWeek> repeatDays) {
       this.subject = subject;
       this.startDateTime = startDateTime;
       this.endDateTime = endDateTime;
@@ -118,6 +116,7 @@ public class RecurringEvent extends Event {
 
     /**
      * Validates the builder parameters.
+     *
      * @throws IllegalArgumentException if parameters are invalid
      */
     private void validate() {
@@ -152,21 +151,13 @@ public class RecurringEvent extends Event {
     LocalTime endTime = getEndDateTime().toLocalTime();
     int count = 0;
 
-    while ((this.occurrences > 0 && count < this.occurrences) ||
-            (this.endDate != null && !currentDate.isAfter(this.endDate))) {
+    while ((this.occurrences > 0 && count < this.occurrences) || (this.endDate != null && !currentDate.isAfter(this.endDate))) {
 
       if (repeatDays.contains(currentDate.getDayOfWeek())) {
         LocalDateTime occurrenceStart = LocalDateTime.of(currentDate, startTime);
         LocalDateTime occurrenceEnd = LocalDateTime.of(currentDate, endTime);
 
-        Event occurrence = new Event(
-                getSubject(),
-                occurrenceStart,
-                occurrenceEnd,
-                getDescription(),
-                getLocation(),
-                isPublic()
-        );
+        Event occurrence = new Event(getSubject(), occurrenceStart, occurrenceEnd, getDescription(), getLocation(), isPublic());
         occurrence.setAllDay(isAllDay());
 
         occurrences.add(occurrence);

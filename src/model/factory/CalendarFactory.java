@@ -46,9 +46,7 @@ public class CalendarFactory {
     if (timezoneHandler == null) {
       throw new IllegalArgumentException("TimeZoneHandler cannot be null");
     }
-    return new CalendarManager.Builder()
-            .timezoneHandler(timezoneHandler)
-            .build();
+    return new CalendarManager.Builder().timezoneHandler(timezoneHandler).build();
   }
 
   /**
@@ -69,8 +67,7 @@ public class CalendarFactory {
    * @param view            the view to interact with
    * @return an ICommandFactory for calendar commands
    */
-  public ICommandFactory createCalendarCommandFactory(CalendarManager calendarManager,
-                                                      ICalendarView view) {
+  public ICommandFactory createCalendarCommandFactory(CalendarManager calendarManager, ICalendarView view) {
     return new CalendarCommandFactory(calendarManager, view);
   }
 
@@ -83,16 +80,8 @@ public class CalendarFactory {
    * @param view                   the view to interact with
    * @return a CalendarController instance
    */
-  public CalendarController createController(
-          ICommandFactory eventCommandFactory,
-          ICommandFactory calendarCommandFactory,
-          CalendarManager calendarManager,
-          ICalendarView view) {
+  public CalendarController createController(ICommandFactory eventCommandFactory, ICommandFactory calendarCommandFactory, CalendarManager calendarManager, ICalendarView view) {
 
-    return new CalendarController(
-            eventCommandFactory,
-            calendarCommandFactory,
-            calendarManager,
-            view);
+    return new CalendarController(eventCommandFactory, calendarCommandFactory, calendarManager, view);
   }
 }

@@ -32,36 +32,49 @@ public class RecurringEventCreator extends AbstractEventCreator {
    * @param args the arguments for event creation
    */
   public RecurringEventCreator(String[] args) throws InvalidEventException {
+    validateArguments(args);
+    parseArguments(args);
+  }
+
+  private void validateArguments(String[] args) {
     if (args == null) {
       throw new IllegalArgumentException("Arguments array cannot be null");
     }
     if (args.length < 7) {
       throw new IllegalArgumentException("Insufficient arguments for creating a recurring event");
     }
-    
-    try {
-      this.eventName = args[1];
-      this.startDateTime = DateTimeUtil.parseDateTime(args[2]);
-      this.endDateTime = DateTimeUtil.parseDateTime(args[3]);
-      this.weekdays = args[4];
-      
-      // Check for empty weekdays before parsing
-      if (this.weekdays == null || this.weekdays.trim().isEmpty()) {
-        throw new InvalidEventException("Repeat days cannot be empty");
-      }
-      
-      this.repeatDays = DateTimeUtil.parseWeekdays(args[4]);
-      this.occurrences = Integer.parseInt(args[5]);
-      this.autoDecline = Boolean.parseBoolean(args[6]);
+  }
 
-      this.description = args.length > 7 ? removeQuotes(args[7]) : null;
-      this.location = args.length > 8 ? removeQuotes(args[8]) : null;
-      this.isPublic = args.length > 9 ? Boolean.parseBoolean(args[9]) : true;
+  private void parseArguments(String[] args) throws InvalidEventException {
+    try {
+      parseRequiredArguments(args);
+      parseOptionalArguments(args);
     } catch (InvalidEventException e) {
       throw e;  // Re-throw InvalidEventException as is
     } catch (Exception e) {
       throw new IllegalArgumentException("Error parsing arguments: " + e.getMessage(), e);
     }
+  }
+
+  private void parseRequiredArguments(String[] args) throws InvalidEventException {
+    this.eventName = args[1];
+    this.startDateTime = DateTimeUtil.parseDateTime(args[2]);
+    this.endDateTime = DateTimeUtil.parseDateTime(args[3]);
+    this.weekdays = args[4];
+    
+    if (this.weekdays == null || this.weekdays.trim().isEmpty()) {
+      throw new InvalidEventException("Repeat days cannot be empty");
+    }
+    
+    this.repeatDays = DateTimeUtil.parseWeekdays(args[4]);
+    this.occurrences = Integer.parseInt(args[5]);
+    this.autoDecline = Boolean.parseBoolean(args[6]);
+  }
+
+  private void parseOptionalArguments(String[] args) {
+    this.description = args.length > 7 ? removeQuotes(args[7]) : null;
+    this.location = args.length > 8 ? removeQuotes(args[8]) : null;
+    this.isPublic = args.length > 9 ? Boolean.parseBoolean(args[9]) : true;
   }
 
   @Override

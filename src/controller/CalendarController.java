@@ -313,48 +313,65 @@ public class CalendarController {
    * @throws IOException if there are issues reading the file
    */
   public boolean startHeadlessMode(String commandsFilePath) {
-    if (commandsFilePath == null || commandsFilePath.trim().isEmpty()) {
-      view.displayError("Error: File path cannot be empty");
+    if (!validateCommandFilePath(commandsFilePath)) {
       return false;
     }
 
     try (BufferedReader reader = new BufferedReader(new FileReader(commandsFilePath))) {
-      List<String> commands = reader.lines()
-              .map(String::trim)
-              .filter(line -> !line.isEmpty())
-              .collect(Collectors.toList());
-
-      // Check if file was empty
-      if (commands.isEmpty()) {
-        view.displayError("Error: Command file is empty. At least one command (exit) is required.");
+      List<String> commands = readCommands(reader);
+      if (!validateCommands(commands)) {
         return false;
       }
 
-      // Check if the last command was an exit command
-      String lastCommand = commands.get(commands.size() - 1);
-      if (!lastCommand.equalsIgnoreCase(EXIT_COMMAND)) {
-        view.displayError("Headless mode requires the last command to be 'exit'");
-        return false;
-      }
-
-      // Process all commands
-      for (String command : commands) {
-        String result = processCommand(command);
-        if (result.startsWith("Error")) {
-          view.displayError(result);
-          return false;
-        }
-        if (!command.equalsIgnoreCase(EXIT_COMMAND)) {
-          view.displayMessage(result);
-        }
-      }
-
-      return true;
-
+      return executeCommands(commands);
     } catch (IOException e) {
       view.displayError("Error reading command file: " + e.getMessage());
       return false;
     }
+  }
+
+  private boolean validateCommandFilePath(String filePath) {
+    if (filePath == null || filePath.trim().isEmpty()) {
+      view.displayError("Error: File path cannot be empty");
+      return false;
+    }
+    return true;
+  }
+
+  private List<String> readCommands(BufferedReader reader) {
+    return reader.lines()
+        .map(String::trim)
+        .filter(line -> !line.isEmpty())
+        .collect(Collectors.toList());
+  }
+
+  private boolean validateCommands(List<String> commands) {
+    if (commands.isEmpty()) {
+      view.displayError("Error: Command file is empty. At least one command (exit) is required.");
+      return false;
+    }
+
+    String lastCommand = commands.get(commands.size() - 1);
+    if (!lastCommand.equalsIgnoreCase(EXIT_COMMAND)) {
+      view.displayError("Headless mode requires the last command to be 'exit'");
+      return false;
+    }
+
+    return true;
+  }
+
+  private boolean executeCommands(List<String> commands) {
+    for (String command : commands) {
+      String result = processCommand(command);
+      if (result.startsWith("Error")) {
+        view.displayError(result);
+        return false;
+      }
+      if (!command.equalsIgnoreCase(EXIT_COMMAND)) {
+        view.displayMessage(result);
+      }
+    }
+    return true;
   }
 
   /**
