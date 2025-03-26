@@ -726,4 +726,40 @@ public class CommandParserTest {
             () -> parser.parseCommand("   "));
     assertEquals("Command cannot be empty", exception.getMessage());
   }
+
+  @Test
+  public void testParseCreateEventWithInvalidTimeFormat() {
+    String command = "create event \"Meeting\" from \"2024-13-45T10:00\" to \"2024-03-26T11:00\"";
+    assertThrows(IllegalArgumentException.class, () -> parser.parseCommand(command));
+  }
+
+  @Test
+  public void testParseCreateEventWithInvalidWeekdayFormat() {
+    String command = "create event \"Meeting\" from \"2024-03-26T10:00\" to \"2024-03-26T11:00\" repeats \"XYZ\" for 5 times";
+    assertThrows(IllegalArgumentException.class, () -> parser.parseCommand(command));
+  }
+
+  @Test
+  public void testParseCreateEventWithInvalidOccurrences() {
+    String command = "create event \"Meeting\" from \"2024-03-26T10:00\" to \"2024-03-26T11:00\" repeats \"MWF\" for 0 times";
+    assertThrows(IllegalArgumentException.class, () -> parser.parseCommand(command));
+  }
+
+  @Test
+  public void testParseCreateEventWithInvalidEndDate() {
+    String command = "create event \"Meeting\" from \"2024-03-26T10:00\" to \"2024-03-26T11:00\" repeats \"MWF\" until \"2024-03-25\"";
+    assertThrows(IllegalArgumentException.class, () -> parser.parseCommand(command));
+  }
+
+  @Test
+  public void testParseCreateEventWithMissingRequiredFields() {
+    String command = "create event \"Meeting\"";
+    assertThrows(IllegalArgumentException.class, () -> parser.parseCommand(command));
+  }
+
+  @Test
+  public void testParseCreateEventWithExtraFields() {
+    String command = "create event \"Meeting\" from \"2024-03-26T10:00\" to \"2024-03-26T11:00\" extra \"field\"";
+    assertThrows(IllegalArgumentException.class, () -> parser.parseCommand(command));
+  }
 }

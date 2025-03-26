@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -638,6 +639,48 @@ public class CalendarTest {
             .containsAll(Arrays.asList(monthEndEvent, nextMonthEvent)));
     assertTrue(calendar.getEventsInRange(yearEnd.toLocalDate(), nextYearStart.toLocalDate())
             .containsAll(Arrays.asList(yearEndEvent, nextYearEvent)));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testAddEventWithInvalidDateTimeRange() throws ConflictingEventException {
+    // Test adding event with end time before start time
+    Event invalidEvent = new Event("Invalid Meeting",
+            endDateTime, startDateTime, "Description", "Location", true);
+    calendar.addEvent(invalidEvent, false);
+  }
+
+  @Test
+  public void testAddEventWithFutureDate() throws ConflictingEventException {
+    // Test adding event with future date
+    LocalDateTime futureDate = LocalDateTime.now().plusYears(1);
+    Event futureEvent = new Event("Future Meeting",
+            futureDate, futureDate.plusHours(1), "Description", "Location", true);
+    assertTrue(calendar.addEvent(futureEvent, false));
+  }
+
+  @Test
+  public void testAddEventWithPastDate() throws ConflictingEventException {
+    // Test adding event with past date
+    LocalDateTime pastDate = LocalDateTime.now().minusYears(1);
+    Event pastEvent = new Event("Past Meeting",
+            pastDate, pastDate.plusHours(1), "Description", "Location", true);
+    assertTrue(calendar.addEvent(pastEvent, false));
+  }
+
+  @Test
+  public void testAddEventWithMaxDuration() throws ConflictingEventException {
+    // Test adding event with maximum allowed duration
+    Event maxDurationEvent = new Event("Long Meeting",
+            startDateTime, startDateTime.plusDays(30), "Description", "Location", true);
+    assertTrue(calendar.addEvent(maxDurationEvent, false));
+  }
+
+  @Test
+  public void testAddEventWithSpecialCharacters() throws ConflictingEventException {
+    // Test adding event with special characters in name
+    Event specialCharEvent = new Event("Meeting@#$%",
+            startDateTime, endDateTime, "Description", "Location", true);
+    assertTrue(calendar.addEvent(specialCharEvent, false));
   }
 
 }

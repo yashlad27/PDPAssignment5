@@ -62,7 +62,7 @@ public class RecurringEventCreator extends AbstractEventCreator {
       initializeRequiredFields(args);
       initializeOptionalFields(args);
     } catch (InvalidEventException e) {
-      throw e;  // Re-throw InvalidEventException as is
+      throw e;
     } catch (Exception e) {
       throw new IllegalArgumentException("Error parsing arguments: " + e.getMessage(), e);
     }
@@ -84,12 +84,23 @@ public class RecurringEventCreator extends AbstractEventCreator {
       throw new InvalidEventException("Repeat days cannot be empty");
     }
 
-    this.repeatDays = DateTimeUtil.parseWeekdays(weekdays);
-    if (this.repeatDays.isEmpty()) {
-      throw new InvalidEventException("Repeat days cannot be empty");
+    try {
+      this.repeatDays = DateTimeUtil.parseWeekdays(weekdays);
+      if (this.repeatDays.isEmpty()) {
+        throw new InvalidEventException("Invalid weekday combination");
+      }
+    } catch (IllegalArgumentException e) {
+      throw new InvalidEventException("Invalid weekday combination");
     }
 
     this.occurrences = Integer.parseInt(args[5]);
+    if (this.occurrences <= 0) {
+      throw new InvalidEventException("Occurrences must be positive");
+    }
+    if (this.occurrences > 999) {
+      throw new InvalidEventException("Maximum occurrences exceeded");
+    }
+    
     this.autoDecline = Boolean.parseBoolean(args[6]);
   }
 
@@ -135,6 +146,9 @@ public class RecurringEventCreator extends AbstractEventCreator {
     }
     if (occurrences <= 0) {
       throw new InvalidEventException("Occurrences must be positive");
+    }
+    if (occurrences > 999) {
+      throw new InvalidEventException("Maximum occurrences exceeded");
     }
   }
 
