@@ -53,14 +53,15 @@ public class CalendarRegistry {
       throw new IllegalArgumentException("Calendar name cannot be null or empty");
     }
 
-    if (calendars.containsKey(name)) {
-      throw new DuplicateCalendarException("Calendar with name '" + name + "' already exists");
+    String trimmedName = name.trim();
+    if (calendars.containsKey(trimmedName)) {
+      throw new DuplicateCalendarException("Calendar with name '" + trimmedName + "' already exists");
     }
 
-    calendars.put(name, calendar);
+    calendars.put(trimmedName, calendar);
 
     if (activeCalendarName == null) {
-      activeCalendarName = name;
+      activeCalendarName = trimmedName;
     }
   }
 
@@ -76,13 +77,8 @@ public class CalendarRegistry {
     }
 
     calendars.remove(name);
-
     if (name.equals(activeCalendarName)) {
-      if (!calendars.isEmpty()) {
-        activeCalendarName = calendars.keySet().iterator().next();
-      } else {
-        activeCalendarName = null;
-      }
+      activeCalendarName = calendars.isEmpty() ? null : calendars.keySet().iterator().next();
     }
   }
 
@@ -100,7 +96,8 @@ public class CalendarRegistry {
       throw new IllegalArgumentException("New calendar name cannot be null or empty");
     }
 
-    if (!calendars.containsKey(oldName)) {
+    Calendar calendar = calendars.get(oldName);
+    if (calendar == null) {
       throw new CalendarNotFoundException("Calendar not found: " + oldName);
     }
 
@@ -108,15 +105,14 @@ public class CalendarRegistry {
       throw new DuplicateCalendarException("Calendar with name '" + newName + "' already exists");
     }
 
-    Calendar calendar = calendars.get(oldName);
+    if (!oldName.equals(newName)) {
+      calendar.setName(newName);
+      calendars.remove(oldName);
+      calendars.put(newName, calendar);
 
-    calendar.setName(newName);
-
-    calendars.remove(oldName);
-    calendars.put(newName, calendar);
-
-    if (oldName.equals(activeCalendarName)) {
-      activeCalendarName = newName;
+      if (oldName.equals(activeCalendarName)) {
+        activeCalendarName = newName;
+      }
     }
   }
 
@@ -137,15 +133,6 @@ public class CalendarRegistry {
    */
   public Set<String> getCalendarNames() {
     return calendars.keySet();
-  }
-
-  /**
-   * Gets the number of calendars.
-   *
-   * @return the number of calendars
-   */
-  public int getCalendarCount() {
-    return calendars.size();
   }
 
   /**
@@ -181,30 +168,5 @@ public class CalendarRegistry {
    */
   public String getActiveCalendarName() {
     return activeCalendarName;
-  }
-
-  /**
-   * Applies a consumer to a calendar by name.
-   *
-   * @param calendarName the name of the calendar
-   * @param consumer     the consumer to apply
-   * @throws CalendarNotFoundException if the calendar cannot be found
-   */
-  public void applyToCalendar(String calendarName, Consumer<Calendar> consumer)
-          throws CalendarNotFoundException {
-    Calendar calendar = getCalendarByName(calendarName);
-    consumer.accept(calendar);
-  }
-
-  /**
-   * Applies a consumer to the active calendar.
-   *
-   * @param consumer the consumer to apply
-   * @throws CalendarNotFoundException if there is no active calendar
-   */
-  public void applyToActiveCalendar(Consumer<Calendar> consumer)
-          throws CalendarNotFoundException {
-    Calendar calendar = getActiveCalendar();
-    consumer.accept(calendar);
   }
 }

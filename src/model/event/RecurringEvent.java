@@ -90,13 +90,13 @@ public class RecurringEvent extends Event {
 
     public Builder occurrences(int occurrences) {
       this.occurrences = occurrences;
-      this.endDate = null;   // reset endDate as we are using occurrences
+      this.endDate = null;
       return this;
     }
 
     public Builder endDate(LocalDate endDate) {
       this.endDate = endDate;
-      this.occurrences = -1;  // reset occurrences as we are using endDate
+      this.occurrences = -1;
       return this;
     }
 

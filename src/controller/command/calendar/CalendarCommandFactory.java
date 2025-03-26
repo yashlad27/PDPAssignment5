@@ -74,6 +74,10 @@ public class CalendarCommandFactory implements ICommandFactory {
     registerCommands(copyEventCommand);
   }
 
+  private String handleError(Exception e) {
+    return "Error: " + e.getMessage();
+  }
+
   private void registerCommands(CopyEventCommand copyEventCommand) {
     commands.put("create", this::executeCreateCommand);
     commands.put("edit", this::executeEditCalendarCommand);
@@ -81,13 +85,16 @@ public class CalendarCommandFactory implements ICommandFactory {
     commands.put("copy", args -> {
       try {
         return copyEventCommand.execute(args);
-      } catch (ConflictingEventException | InvalidEventException | EventNotFoundException e) {
-        throw new RuntimeException(e);
+      } catch (Exception e) {
+        return handleError(e);
       }
     });
     commands.put("export", args -> {
-      ICalendarCommand command = createExportCalendarCommand(args);
-      return command.execute();
+      try {
+        return createExportCalendarCommand(args).execute();
+      } catch (Exception e) {
+        return handleError(e);
+      }
     });
   }
 
@@ -167,10 +174,6 @@ public class CalendarCommandFactory implements ICommandFactory {
     return new ExportCalendarCommand(calendarName, filePath, getController());
   }
 
-  public boolean hasCommand(String commandName) {
-    return commands.containsKey(commandName);
-  }
-
   @Override
   public ICommand getCommand(String commandName) {
     if (commandName == null) {
@@ -183,7 +186,7 @@ public class CalendarCommandFactory implements ICommandFactory {
         try {
           return handler.execute(args);
         } catch (Exception e) {
-          return "Error: " + e.getMessage();
+          return handleError(e);
         }
       });
     }

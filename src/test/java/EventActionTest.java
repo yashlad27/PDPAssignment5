@@ -56,10 +56,8 @@ public class EventActionTest {
       assertTrue("Event should have a subject", event.getSubject() != null && !event.getSubject().isEmpty());
     };
 
-    // Test single event
     printAction.execute(regularEvent);
 
-    // Test list of events
     printAction.executeOnList(events);
   }
 
@@ -72,7 +70,6 @@ public class EventActionTest {
       }
     };
 
-    // Test single event
     String originalSubject = regularEvent.getSubject();
     String originalDesc = regularEvent.getDescription();
 
@@ -81,7 +78,6 @@ public class EventActionTest {
     assertEquals("Event subject should be modified", originalSubject + " (Modified)", regularEvent.getSubject());
     assertEquals("Event description should be modified", originalDesc + " (Updated)", regularEvent.getDescription());
 
-    // Test list of events
     modifyAction.executeOnList(events);
     assertTrue("All events should have modified subjects",
             events.stream().allMatch(e -> e.getSubject().endsWith(" (Modified)")));
@@ -93,7 +89,6 @@ public class EventActionTest {
       assertTrue("Event should not be null", event != null);
     };
 
-    // This should throw an AssertionError for null event
     try {
       nullCheckAction.execute(null);
       assertFalse("Should have thrown an assertion error", true);
@@ -115,10 +110,8 @@ public class EventActionTest {
       }
     };
 
-    // Test single event
     validationAction.execute(regularEvent);
 
-    // Test list of events
     validationAction.executeOnList(events);
   }
 
@@ -129,10 +122,8 @@ public class EventActionTest {
     EventAction firstAction = event -> actionLog.add("First action on " + event.getSubject());
     EventAction secondAction = event -> actionLog.add("Second action on " + event.getSubject());
 
-    // Compose actions
     EventAction composedAction = firstAction.andThen(secondAction);
 
-    // Execute composed action
     composedAction.execute(regularEvent);
 
     assertEquals("Should have two log entries", 2, actionLog.size());
@@ -152,27 +143,22 @@ public class EventActionTest {
 
   @Test
   public void testStaticFactoryMethods() {
-    // Test setSubject
     String newSubject = "New Subject";
     EventAction.setSubject(newSubject).execute(regularEvent);
     assertEquals("Subject should be updated", newSubject, regularEvent.getSubject());
 
-    // Test setDescription
     String newDescription = "New Description";
     EventAction.setDescription(newDescription).execute(regularEvent);
     assertEquals("Description should be updated", newDescription, regularEvent.getDescription());
 
-    // Test setLocation
     String newLocation = "New Location";
     EventAction.setLocation(newLocation).execute(regularEvent);
     assertEquals("Location should be updated", newLocation, regularEvent.getLocation());
 
-    // Test setEndDateTime first (to avoid IllegalArgumentException)
     LocalDateTime newEnd = LocalDateTime.of(2023, 5, 15, 12, 0);
     EventAction.setEndDateTime(newEnd).execute(regularEvent);
     assertEquals("End time should be updated", newEnd, regularEvent.getEndDateTime());
 
-    // Test setStartDateTime
     LocalDateTime newStart = LocalDateTime.of(2023, 5, 15, 11, 0);
     EventAction.setStartDateTime(newStart).execute(regularEvent);
     assertEquals("Start time should be updated", newStart, regularEvent.getStartDateTime());
