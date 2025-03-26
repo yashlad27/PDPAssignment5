@@ -1,6 +1,7 @@
 import org.junit.Test;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -230,7 +231,8 @@ public class AllDayRecurringUntilEventCreatorTest {
     @Override
     public boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
                                                    LocalDate untilDate, boolean autoDecline,
-                                                   String description, String location, boolean isPublic)
+                                                   String description, String location,
+                                                   boolean isPublic)
             throws InvalidEventException, ConflictingEventException {
       if (shouldThrowConflict) {
         throw new ConflictingEventException("Test conflict exception");
@@ -271,7 +273,8 @@ public class AllDayRecurringUntilEventCreatorTest {
 
     @Override
     public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-                                              int occurrences, boolean autoDecline, String description,
+                                              int occurrences, boolean autoDecline,
+                                              String description,
                                               String location, boolean isPublic) {
       return true;
     }
@@ -287,12 +290,12 @@ public class AllDayRecurringUntilEventCreatorTest {
     }
 
     @Override
-    public boolean isBusy(java.time.LocalDateTime dateTime) {
+    public boolean isBusy(LocalDateTime dateTime) {
       return false;
     }
 
     @Override
-    public Event findEvent(String subject, java.time.LocalDateTime startDateTime)
+    public Event findEvent(String subject, LocalDateTime startDateTime)
             throws EventNotFoundException {
       throw new EventNotFoundException("Event not found");
     }
@@ -303,13 +306,13 @@ public class AllDayRecurringUntilEventCreatorTest {
     }
 
     @Override
-    public boolean editSingleEvent(String subject, java.time.LocalDateTime startDateTime,
+    public boolean editSingleEvent(String subject, LocalDateTime startDateTime,
                                    String property, String newValue) {
       return true;
     }
 
     @Override
-    public int editEventsFromDate(String subject, java.time.LocalDateTime startDateTime,
+    public int editEventsFromDate(String subject, LocalDateTime startDateTime,
                                   String property, String newValue) {
       return 0;
     }

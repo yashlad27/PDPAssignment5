@@ -696,9 +696,6 @@ public class CalendarTest {
     assertEquals(0, calendar.getAllEvents().size());
   }
 
-  /**
-   * Test adding recurring event with end date far in the future.
-   */
   @Test
   public void testCreateRecurringEventUntilWithFarFutureDate() throws ConflictingEventException {
     LocalDateTime start = LocalDateTime.of(2023, 5, 15, 14, 0);
@@ -708,31 +705,24 @@ public class CalendarTest {
     boolean result = calendar.createRecurringEventUntil("Far Future Recurring Event",
             start, end, "MWF", untilDate, false);
 
-    // Should succeed
     assertTrue(result);
 
-    // Should create many occurrences
     List<Event> events = calendar.getAllEvents();
     assertTrue("Should have many occurrences", events.size() > 100);
   }
 
-  /**
-   * Test handling of null parameters in createAllDayRecurringEvent.
-   */
   @Test
   public void testCreateAllDayRecurringEventWithNullParams() throws ConflictingEventException {
     LocalDate start = LocalDate.of(2023, 5, 8);
 
-    // Test with null event name
     assertFalse(calendar.createAllDayRecurringEvent(null, start, "MWF",
             3, false, "Description", "Location",
             true));
 
-    // Test with null weekdays
     assertFalse(calendar.createAllDayRecurringEvent("Event", start, null,
-            3, false, "Description", "Location", true));
+            3, false, "Description", "Location",
+            true));
 
-    // Optional parameters should be allowed to be null
     assertTrue(calendar.createAllDayRecurringEvent("Event", start, "MWF",
             3, false, null, null, true));
 
@@ -746,20 +736,15 @@ public class CalendarTest {
     }
   }
 
-  /**
-   * Test handling of null parameters in createAllDayRecurringEventUntil.
-   */
   @Test
   public void testCreateAllDayRecurringEventUntilWithNullParams() throws ConflictingEventException {
     LocalDate start = LocalDate.of(2023, 5, 8);
     LocalDate until = LocalDate.of(2023, 5, 22);
 
-    // Test with null event name
     assertFalse(calendar.createAllDayRecurringEventUntil(null, start,
             "MWF", until, false, "Description",
             "Location", true));
 
-    // Test with null weekdays
     assertFalse(calendar.createAllDayRecurringEventUntil("Event", start,
             null, until, false, "Description",
             "Location", true));
@@ -776,12 +761,9 @@ public class CalendarTest {
     }
   }
 
-  /**
-   * Test handling of conflicts with recurring events.
-   */
+
   @Test
   public void testRecurringEventComplexConflictScenarios() throws ConflictingEventException {
-    // First, create a recurring event on Mondays and Wednesdays
     LocalDateTime start1 = LocalDateTime.of(2023, 5, 8, 10, 0);
     LocalDateTime end1 = LocalDateTime.of(2023, 5, 8, 11, 0);
     Set<DayOfWeek> days1 = EnumSet.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY);
@@ -811,9 +793,7 @@ public class CalendarTest {
     assertEquals(4, calendar.getAllEvents().size());
   }
 
-  /**
-   * Test editing properties of recurring events.
-   */
+
   @Test
   public void testEditRecurringEventProperties() throws ConflictingEventException {
     calendar.addRecurringEvent(recurringEvent, false);
@@ -837,9 +817,6 @@ public class CalendarTest {
     }
   }
 
-  /**
-   * Test editEventsFromDate method with various date scenarios.
-   */
   @Test
   public void testEditEventsFromDate() throws ConflictingEventException {
     calendar.addRecurringEvent(recurringEvent, false);
@@ -860,7 +837,6 @@ public class CalendarTest {
     assertNotNull(firstOccurrence);
     assertEquals("Recurring Meeting", firstOccurrence.getSubject());
 
-    // Verify other occurrences were updated
     for (int i = 1; i < allEvents.size(); i++) {
       Event occurrence = calendar.findEvent("Updated from Second",
               allEvents.get(i).getStartDateTime());
@@ -869,25 +845,19 @@ public class CalendarTest {
     }
   }
 
-  /**
-   * Test that createAllDayRecurringEvent handles zero or negative occurrences.
-   */
   @Test
   public void testCreateAllDayRecurringEventWithInvalidOccurrences()
           throws ConflictingEventException {
     LocalDate start = LocalDate.of(2023, 5, 8);
 
-    // Test with zero occurrences
     assertFalse(calendar.createAllDayRecurringEvent("Zero Occurrences",
             start, "MWF", 0, false,
             "Description", "Location", true));
 
-    // Test with negative occurrences
     assertFalse(calendar.createAllDayRecurringEvent("Negative Occurrences", start,
             "MWF", -5, false, "Description",
             "Location", true));
 
-    // Verify no events were added
     assertEquals(0, calendar.getAllEvents().size());
     assertEquals(0, calendar.getAllRecurringEvents().size());
   }

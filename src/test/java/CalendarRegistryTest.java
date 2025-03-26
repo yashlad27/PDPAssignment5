@@ -1,15 +1,16 @@
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.function.Consumer;
 
 import model.calendar.Calendar;
 import model.calendar.CalendarRegistry;
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
-import org.junit.Before;
-import org.junit.Test;
 
-import java.util.function.Consumer;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class CalendarRegistryTest {
 
@@ -19,7 +20,7 @@ public class CalendarRegistryTest {
   @Before
   public void setUp() {
     calendarRegistry = new CalendarRegistry();
-    mockCalendar = new CalendarMock("Test Calendar");  // Use CalendarMock here
+    mockCalendar = new CalendarMock("Test Calendar");
   }
 
   @Test
@@ -68,13 +69,13 @@ public class CalendarRegistryTest {
 
   @Test(expected = CalendarNotFoundException.class)
   public void testRenameCalendarNotFound()
-      throws CalendarNotFoundException, DuplicateCalendarException {
+          throws CalendarNotFoundException, DuplicateCalendarException {
     calendarRegistry.renameCalendar("Non-existent Calendar", "New Name");
   }
 
   @Test(expected = DuplicateCalendarException.class)
   public void testRenameCalendarToExistingName()
-      throws DuplicateCalendarException, CalendarNotFoundException {
+          throws DuplicateCalendarException, CalendarNotFoundException {
     calendarRegistry.registerCalendar("Calendar1", mockCalendar);
     Calendar anotherCalendar = new CalendarMock("Calendar2");
     calendarRegistry.registerCalendar("Calendar2", anotherCalendar);
@@ -123,10 +124,11 @@ public class CalendarRegistryTest {
 
   @Test
   public void testApplyToActiveCalendar()
-      throws DuplicateCalendarException, CalendarNotFoundException {
+          throws DuplicateCalendarException, CalendarNotFoundException {
     calendarRegistry.registerCalendar("Test Calendar", mockCalendar);
     calendarRegistry.setActiveCalendar("Test Calendar");
-    Consumer<Calendar> mockConsumer = calendar -> calendar.setName("Updated Active Calendar");
+    Consumer<Calendar> mockConsumer = calendar ->
+            calendar.setName("Updated Active Calendar");
     calendarRegistry.applyToActiveCalendar(mockConsumer);
     assertEquals("Updated Active Calendar", mockCalendar.getName());
   }

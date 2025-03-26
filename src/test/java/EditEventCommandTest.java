@@ -30,8 +30,10 @@ public class EditEventCommandTest {
     editCommand = new EditEventCommand(calendar);
 
     LocalDateTime now = LocalDateTime.now();
-    LocalDateTime startDateTime = LocalDateTime.of(2023, 5, 15, 10, 0);
-    LocalDateTime endDateTime = LocalDateTime.of(2023, 5, 15, 11, 0);
+    LocalDateTime startDateTime = LocalDateTime.of(2023, 5,
+            15, 10, 0);
+    LocalDateTime endDateTime = LocalDateTime.of(2023, 5,
+            15, 11, 0);
 
     Event singleEvent = new Event("Meeting", startDateTime, endDateTime, null,
             null,
@@ -39,10 +41,13 @@ public class EditEventCommandTest {
     );
     calendar.addEvent(singleEvent, false);
 
-    LocalDateTime recStartDateTime = LocalDateTime.of(2023, 6, 1, 14, 0);
-    LocalDateTime recEndDateTime = LocalDateTime.of(2023, 6, 1, 15, 0);
+    LocalDateTime recStartDateTime = LocalDateTime.of(2023, 6,
+            1, 14, 0);
+    LocalDateTime recEndDateTime = LocalDateTime.of(2023, 6,
+            1, 15, 0);
 
-    calendar.createRecurringEventUntil("Weekly Meeting", recStartDateTime, recEndDateTime, "MW",
+    calendar.createRecurringEventUntil("Weekly Meeting",
+            recStartDateTime, recEndDateTime, "MW",
             LocalDate.of(2023, 7, 1),
             false
     );
@@ -220,14 +225,17 @@ public class EditEventCommandTest {
   public void testExecuteWithInsufficientArgsForSeriesFromDateEdit() {
     String[] args = {"series_from_date", "Weekly Meeting", "2023-06-01T14:00", "subject"};
     String result = editCommand.execute(args);
-    assertTrue("Should return error message for insufficient arguments", result.contains("Error in command arguments: Insufficient arguments for editing events from date"));
+    assertTrue("Should return error message for insufficient arguments",
+            result.contains("Error in command arguments:"
+                    + " Insufficient arguments for editing events from date"));
   }
 
   // New test cases
 
   @Test
   public void testEditEventWithQuotedValues() {
-    String[] args = {"single", "description", "Meeting", "2023-05-15T10:00", "\"Quoted description\""};
+    String[] args = {"single", "description", "Meeting", "2023-05-15T10:00",
+            "\"Quoted description\""};
     String result = editCommand.execute(args);
     assertTrue(result.contains("Successfully edited event"));
   }
@@ -358,25 +366,21 @@ public class EditEventCommandTest {
 
   @Test
   public void testExecuteWithEventNotFoundException() {
-    // Create a custom EventNotFoundException
     EventNotFoundException notFoundEx = new EventNotFoundException("Test not found exception");
 
-    // Create a mock calendar that simulates the behavior without actually throwing the checked exception
     ICalendar mockExceptionCalendar = new Calendar() {
       @Override
-      public boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property, String newValue) {
-        // Return false instead of throwing the exception
+      public boolean editSingleEvent(String subject, LocalDateTime startDateTime,
+                                     String property, String newValue) {
         return false;
       }
     };
 
-    // Create a mock command that will deliberately throw our exception during execution
     EditEventCommand cmd = new EditEventCommand(mockExceptionCalendar) {
       @Override
       public String execute(String[] args) {
         try {
           if (args != null && args.length > 0 && "single".equals(args[0])) {
-            // Simulate the catch block by directly returning the error message
             return "Failed to edit event: Event not found - " + notFoundEx.getMessage();
           }
           return super.execute(args);
@@ -398,16 +402,13 @@ public class EditEventCommandTest {
    */
   @Test
   public void testExecuteWithConflictingEventException() {
-    // Create a custom ConflictingEventException
     ConflictingEventException conflictEx = new ConflictingEventException("Test conflict exception");
 
-    // Create a mock command that will simulate throwing our exception
     EditEventCommand cmd = new EditEventCommand(calendar) {
       @Override
       public String execute(String[] args) {
         try {
           if (args != null && args.length > 0 && "single".equals(args[0])) {
-            // Simulate the catch block by directly returning the error message
             return "Failed to edit event: Would create a conflict - " + conflictEx.getMessage();
           }
           return super.execute(args);
@@ -429,16 +430,13 @@ public class EditEventCommandTest {
    */
   @Test
   public void testExecuteWithInvalidEventException() {
-    // Create a custom InvalidEventException
     InvalidEventException invalidEx = new InvalidEventException("Test invalid event exception");
 
-    // Create a mock command that will simulate throwing our exception
     EditEventCommand cmd = new EditEventCommand(calendar) {
       @Override
       public String execute(String[] args) {
         try {
           if (args != null && args.length > 0 && "single".equals(args[0])) {
-            // Simulate the catch block by directly returning the error message
             return "Failed to edit event: Invalid property or value - " + invalidEx.getMessage();
           }
           return super.execute(args);
@@ -455,12 +453,9 @@ public class EditEventCommandTest {
     assertTrue(result.contains("Test invalid event exception"));
   }
 
-  /**
-   * Test with exactly 3 arguments, which is the minimum required.
-   */
+
   @Test
   public void testExecuteWithExactlyMinimumArgs() {
-    // Create a subclass that returns a predefined message for args with specific length
     EditEventCommand testCmd = new EditEventCommand(calendar) {
       @Override
       public String execute(String[] args) {

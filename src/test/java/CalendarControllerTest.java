@@ -227,7 +227,8 @@ public class CalendarControllerTest {
       } else if ("error".equals(name)) {
         return errorCommand;
       } else if (name.equals("create")) {
-        return new MockCommand("Calendar 'My Calendar' created with timezone 'America/New_York'",
+        return new MockCommand("Calendar 'My Calendar' created with timezone "
+                + "'America/New_York'",
                 "create");
       } else if (name.equals("use")) {
         if (shouldThrowError) {
@@ -392,9 +393,6 @@ public class CalendarControllerTest {
     }
   }
 
-  /**
-   * Mock implementation of CalendarManager for testing.
-   */
   private static class MockCalendarManager extends CalendarManager {
     private final MockCalendar mockCalendar;
     private final List<String> operationLog;

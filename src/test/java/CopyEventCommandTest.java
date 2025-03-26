@@ -179,10 +179,12 @@ public class CopyEventCommandTest {
   @Test
   public void testCopyEventWithSameTimeDifferentSubject() throws Exception {
     LocalDateTime time = LocalDateTime.of(2024, 3, 15, 10, 0);
-    Event original = new Event("Original Event", time, time.plusHours(1), "Desc", "Loc", true);
+    Event original = new Event("Original Event", time, time.plusHours(1),
+            "Desc", "Loc", true);
     sourceCalendar.addEvent(original, false);
 
-    Event existing = new Event("Different Event", time, time.plusHours(1), "Desc", "Loc", true);
+    Event existing = new Event("Different Event", time, time.plusHours(1),
+            "Desc", "Loc", true);
     targetCalendar.addEvent(existing, false);
 
     String result = copyCommand.execute(new String[]{
@@ -220,7 +222,8 @@ public class CopyEventCommandTest {
   @Test
   public void testCopyZeroDurationEvent() throws Exception {
     LocalDateTime time = LocalDateTime.of(2024, 3, 15, 10, 0);
-    Event event = new Event("Zero Duration", time, time, null, null, true);
+    Event event = new Event("Zero Duration", time, time,
+            null, null, true);
     sourceCalendar.addEvent(event, false);
 
     String result = copyCommand.execute(new String[]{
@@ -278,8 +281,10 @@ public class CopyEventCommandTest {
 
   @Test
   public void testCopyEventWithQuotedName() throws Exception {
-    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    LocalDateTime startTime = LocalDateTime.of(2024, 3,
+            15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3,
+            15, 11, 0);
     Event testEvent = new Event("Team Meeting with \"Quotes\"", startTime, endTime,
             "Test Description", "Test Location", true);
     sourceCalendar.addEvent(testEvent, false);
@@ -299,8 +304,10 @@ public class CopyEventCommandTest {
 
   @Test
   public void testCopyEventWithSpecialCharacters() throws Exception {
-    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    LocalDateTime startTime = LocalDateTime.of(2024, 3,
+            15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3,
+            15, 11, 0);
     Event testEvent = new Event("Meeting with, commas", startTime, endTime,
             "Description with, commas", "Location with, commas", true);
     sourceCalendar.addEvent(testEvent, false);
@@ -324,7 +331,8 @@ public class CopyEventCommandTest {
   public void testCopyAllDayEvent() throws Exception {
     LocalDateTime start = LocalDateTime.of(2024, 3, 15, 0, 0);
     LocalDateTime end = LocalDateTime.of(2024, 3, 15, 23, 59);
-    Event event = new Event("All Day Event", start, end, null, null, true);
+    Event event = new Event("All Day Event", start, end,
+            null, null, true);
     sourceCalendar.addEvent(event, false);
 
     String result = copyCommand.execute(new String[]{
@@ -337,7 +345,8 @@ public class CopyEventCommandTest {
 
   @Test
   public void testCopyEventWithEmptyFields() throws Exception {
-    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    LocalDateTime startTime = LocalDateTime.of(2024, 3,
+            15, 10, 0);
     LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
     Event testEvent = new Event("Empty Fields Event", startTime, endTime,
             "", "", true);
@@ -362,7 +371,8 @@ public class CopyEventCommandTest {
   public void testCopyEventToLeapDay() throws Exception {
     LocalDateTime start = LocalDateTime.of(2024, 3, 15, 10, 0);
     LocalDateTime end = LocalDateTime.of(2024, 3, 15, 11, 0);
-    Event event = new Event("Leap Test", start, end, "Leap Desc", "Leap Loc", true);
+    Event event = new Event("Leap Test", start, end,
+            "Leap Desc", "Leap Loc", true);
     sourceCalendar.addEvent(event, false);
 
     String result = copyCommand.execute(new String[]{
@@ -398,8 +408,10 @@ public class CopyEventCommandTest {
 
   @Test
   public void testCopyEventWithInvalidDateTimeFormat() throws Exception {
-    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    LocalDateTime startTime = LocalDateTime.of(2024, 3,
+            15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3,
+            15, 11, 0);
     Event testEvent = new Event("Test Event", startTime, endTime,
             "Description", "Location", true);
     sourceCalendar.addEvent(testEvent, false);
@@ -415,8 +427,10 @@ public class CopyEventCommandTest {
 
   @Test
   public void testCopyEventWithInvalidTargetDateTimeFormat() throws Exception {
-    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    LocalDateTime startTime = LocalDateTime.of(2024, 3,
+            15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3,
+            15, 11, 0);
     Event testEvent = new Event("Test Event", startTime, endTime,
             "Description", "Location", true);
     sourceCalendar.addEvent(testEvent, false);
@@ -452,8 +466,10 @@ public class CopyEventCommandTest {
 
   @Test
   public void testCopyEventWithInvalidTargetFlag() throws Exception {
-    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    LocalDateTime startTime = LocalDateTime.of(2024, 3,
+            15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3,
+            15, 11, 0);
     Event testEvent = new Event("Test Event", startTime, endTime,
             "Description", "Location", true);
     sourceCalendar.addEvent(testEvent, false);
@@ -469,8 +485,10 @@ public class CopyEventCommandTest {
 
   @Test
   public void testCopyEventWithInvalidToKeyword() throws Exception {
-    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    LocalDateTime startTime = LocalDateTime.of(2024, 3,
+            15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3,
+            15, 11, 0);
     Event testEvent = new Event("Test Event", startTime, endTime,
             "Description", "Location", true);
     sourceCalendar.addEvent(testEvent, false);
@@ -486,8 +504,10 @@ public class CopyEventCommandTest {
 
   @Test
   public void testCopyEventWithInvalidOnKeyword() throws Exception {
-    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    LocalDateTime startTime = LocalDateTime.of(2024, 3,
+            15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3,
+            15, 11, 0);
     Event testEvent = new Event("Test Event", startTime, endTime,
             "Description", "Location", true);
     sourceCalendar.addEvent(testEvent, false);
