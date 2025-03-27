@@ -43,10 +43,7 @@ public class SingleEventCopyStrategy implements CopyStrategy {
 
   @Override
   public String execute(String[] args)
-          throws CalendarNotFoundException, EventNotFoundException,
-          ConflictingEventException, InvalidEventException {
-    // Validate format: copy event <eventName> on <dateStringTtimeString> --target <calendarName>
-    // to <dateStringTtimeString>
+      throws CalendarNotFoundException, EventNotFoundException, ConflictingEventException, InvalidEventException {
     if (args.length < 9) {
       throw new InvalidEventException("Insufficient arguments for copy event command");
     }
@@ -98,50 +95,41 @@ public class SingleEventCopyStrategy implements CopyStrategy {
    * Copies a single event from the active calendar to a target calendar.
    */
   private String copyEvent(String eventName, String dateTimeStr, String targetCalendarName,
-                           String targetDateTimeStr) throws Exception {
-    // Parse the date/time
+      String targetDateTimeStr) throws Exception {
     LocalDateTime sourceDateTime = DateTimeUtil.parseDateTime(dateTimeStr);
     LocalDateTime targetDateTime = DateTimeUtil.parseDateTime(targetDateTimeStr);
 
-    // Validate target calendar exists
     if (!calendarManager.hasCalendar(targetCalendarName)) {
       throw new CalendarNotFoundException(
-              "Target calendar '" + targetCalendarName + "' does not " + "exist");
+          "Target calendar '" + targetCalendarName + "' does not " + "exist");
     }
 
-    // Get source calendar (active calendar)
     ICalendar sourceCalendar = calendarManager.getActiveCalendar();
 
-    // Find the event
     Event sourceEvent = sourceCalendar.findEvent(eventName, sourceDateTime);
     if (sourceEvent == null) {
       throw new EventNotFoundException("Event not found: " + eventName + " at " + sourceDateTime);
     }
 
-    // Get the source and target timezones
     String sourceTimezone = ((model.calendar.Calendar) sourceCalendar).getTimezone();
     String targetTimezone = calendarManager.executeOnCalendar(targetCalendarName,
-            calendar -> ((model.calendar.Calendar) calendar).getTimezone());
+        calendar -> ((model.calendar.Calendar) calendar).getTimezone());
 
-    // Create timezone converter
     TimezoneConverter converter = timezoneHandler.getConverter(sourceTimezone, targetTimezone);
 
-    // Calculate duration of the source event
     long durationSeconds = sourceEvent.getEndDateTime().toEpochSecond(java.time.ZoneOffset.UTC)
-            - sourceEvent.getStartDateTime().toEpochSecond(java.time.ZoneOffset.UTC);
+        - sourceEvent.getStartDateTime().toEpochSecond(java.time.ZoneOffset.UTC);
 
-    // Create a new event with the adjusted time
     Event newEvent = new Event(sourceEvent.getSubject(), converter.convert(targetDateTime),
-            converter.convert(targetDateTime.plusSeconds(durationSeconds)),
-            sourceEvent.getDescription(), sourceEvent.getLocation(), sourceEvent.isPublic());
+        converter.convert(targetDateTime.plusSeconds(durationSeconds)),
+        sourceEvent.getDescription(), sourceEvent.getLocation(), sourceEvent.isPublic());
 
-    // Add the event to the target calendar
     boolean success = calendarManager.executeOnCalendar(targetCalendarName,
-            calendar -> calendar.addEvent(newEvent, true));
+        calendar -> calendar.addEvent(newEvent, true));
 
     if (success) {
       return "Event '" + eventName + "' copied successfully to calendar '" + targetCalendarName
-              + "'.";
+          + "'.";
     } else {
       return "Failed to copy event due to conflicts.";
     }
