@@ -25,23 +25,19 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Consolidated test for command system functionality.
- * Enhanced for comprehensive coverage of command system behavior.
+ * Consolidated test for command system functionality. Enhanced for comprehensive coverage of
+ * command system behavior.
  */
 public class ConsolidatedCommandTest {
 
   private Calendar calendar;
-  private TestCalendarView view;
-  private CommandFactory commandFactory;
-  private CommandParser parser;
   private CalendarController controller;
-  private CalendarManager calendarManager;
-  private String uniqueCalendarName;
 
   /**
    * Custom test implementation of ICalendarView for testing.
    */
   private static class TestCalendarView implements ICalendarView {
+
     private final List<String> messages = new ArrayList<>();
     private final List<String> errors = new ArrayList<>();
 
@@ -76,10 +72,10 @@ public class ConsolidatedCommandTest {
 
   @Before
   public void setUp() {
-    uniqueCalendarName = "TestCalendar_" + UUID.randomUUID().toString().substring(0, 8);
-    view = new TestCalendarView();
+    String uniqueCalendarName = "TestCalendar_" + UUID.randomUUID().toString().substring(0, 8);
+    TestCalendarView view = new TestCalendarView();
 
-    calendarManager = new CalendarManager.Builder().build();
+    CalendarManager calendarManager = new CalendarManager.Builder().build();
     try {
       calendarManager.createCalendarWithDefaultTimezone(uniqueCalendarName);
       calendarManager.setActiveCalendar(uniqueCalendarName);
@@ -88,82 +84,71 @@ public class ConsolidatedCommandTest {
       throw new RuntimeException("Failed to create calendar manager", e);
     }
 
-    commandFactory = new CommandFactory(calendar, view);
+    CommandFactory commandFactory = new CommandFactory(calendar, view);
 
     controller = new CalendarController(commandFactory, commandFactory, calendarManager, view);
 
-    parser = new CommandParser(commandFactory);
+    CommandParser parser = new CommandParser(commandFactory);
   }
 
   // ===== Command Creation Tests =====
 
   @Test
-  public void testCreateEventCommand() throws ConflictingEventException,
-          InvalidEventException, EventNotFoundException {
-    Event testEvent = new Event("Meeting",
-            LocalDateTime.of(2023, 3, 15, 10, 0),
-            LocalDateTime.of(2023, 3, 15, 11, 0),
-            "Description", "Location", true);
+  public void testCreateEventCommand()
+      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+    Event testEvent = new Event("Meeting", LocalDateTime.of(2023, 3, 15, 10, 0),
+        LocalDateTime.of(2023, 3, 15, 11, 0), "Description", "Location", true);
     calendar.addEvent(testEvent, false);
 
     List<Event> events = calendar.getEventsOnDate(LocalDate.of(2023, 3, 15));
     assertEquals("No events found after direct addition", 1, events.size());
-    assertEquals("Event subject does not match", "Meeting",
-            events.get(0).getSubject());
+    assertEquals("Event subject does not match", "Meeting", events.get(0).getSubject());
   }
 
   @Test
-  public void testCreateEventWithConflict() throws ConflictingEventException,
-          InvalidEventException {
-    Event firstEvent = new Event("First Meeting",
-            LocalDateTime.of(2023, 4, 5, 10, 0),
-            LocalDateTime.of(2023, 4, 5, 11, 0),
-            "First Description", "Location", true);
+  public void testCreateEventWithConflict()
+      throws ConflictingEventException, InvalidEventException {
+    Event firstEvent = new Event("First Meeting", LocalDateTime.of(2023, 4, 5, 10, 0),
+        LocalDateTime.of(2023, 4, 5, 11, 0), "First Description", "Location", true);
     calendar.addEvent(firstEvent, false);
 
-    String result = controller.processCommand("create event "
-            + "\"Conflicting Meeting\" from 2023-04-05T10:30 to 2023-04-05T11:30");
+    String result = controller.processCommand(
+        "create event " + "\"Conflicting Meeting\" from 2023-04-05T10:30 to 2023-04-05T11:30");
 
     assertTrue("Command should either report conflict or handle it appropriately",
-            result.contains("conflicts") ||
-                    result.contains("Error") ||
-                    result.contains("success") ||
-                    result.contains("created"));
+        result.contains("conflicts") || result.contains("Error") || result.contains("success")
+            || result.contains("created"));
 
     List<Event> events = calendar.getEventsOnDate(LocalDate.of(2023, 4, 5));
     assertTrue("Calendar should contain at least one event", events.size() >= 1);
   }
 
   @Test
-  public void testCreateEventWithForceFlag() throws ConflictingEventException,
-          InvalidEventException {
-    Event firstEvent = new Event("First Meeting",
-            LocalDateTime.of(2023, 4, 6, 10, 0),
-            LocalDateTime.of(2023, 4, 6, 11, 0),
-            "First Description", "Location", true);
+  public void testCreateEventWithForceFlag()
+      throws ConflictingEventException, InvalidEventException {
+    Event firstEvent = new Event("First Meeting", LocalDateTime.of(2023, 4, 6, 10, 0),
+        LocalDateTime.of(2023, 4, 6, 11, 0), "First Description", "Location", true);
     calendar.addEvent(firstEvent, false);
 
-    String result = controller.processCommand("create event "
-            + "\"Forced Meeting\" from 2023-04-06T10:30 to 2023-04-06T11:30 --force");
+    String result = controller.processCommand(
+        "create event " + "\"Forced Meeting\" from 2023-04-06T10:30 to 2023-04-06T11:30 --force");
 
     List<Event> events = calendar.getEventsOnDate(LocalDate.of(2023, 4, 6));
 
     if (events.size() == 2) {
       assertTrue("Should have added second event",
-              events.stream().anyMatch(e -> e.getSubject().equals("Forced Meeting")));
+          events.stream().anyMatch(e -> e.getSubject().equals("Forced Meeting")));
     } else {
       assertTrue("Should have either added event or returned appropriate error",
-              result.contains("created") || result.contains("Error"));
+          result.contains("created") || result.contains("Error"));
     }
   }
 
   @Test
-  public void testPrintEventsCommand() throws ConflictingEventException, InvalidEventException,
-          EventNotFoundException {
-    Event event = new Event("Test Event",
-            LocalDateTime.of(2023, 3, 20, 9, 0),
-            LocalDateTime.of(2023, 3, 20, 10, 0),
-            "Description", "Location", true);
+  public void testPrintEventsCommand()
+      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+    Event event = new Event("Test Event", LocalDateTime.of(2023, 3, 20, 9, 0),
+        LocalDateTime.of(2023, 3, 20, 10, 0), "Description", "Location", true);
     calendar.addEvent(event, false);
 
     List<Event> events = calendar.getEventsOnDate(LocalDate.of(2023, 3, 20));
@@ -183,21 +168,17 @@ public class ConsolidatedCommandTest {
     String result = controller.processCommand(commandString);
 
     assertTrue("Result should indicate no events",
-            result.contains("No events") || result.toLowerCase().contains("empty"));
+        result.contains("No events") || result.toLowerCase().contains("empty"));
   }
 
   @Test
   public void testPrintEventsInDateRange() throws ConflictingEventException, InvalidEventException {
-    Event event1 = new Event("Event 1",
-            LocalDateTime.of(2023, 5, 10, 9, 0),
-            LocalDateTime.of(2023, 5, 10, 10, 0),
-            "Description 1", "Location 1", true);
+    Event event1 = new Event("Event 1", LocalDateTime.of(2023, 5, 10, 9, 0),
+        LocalDateTime.of(2023, 5, 10, 10, 0), "Description 1", "Location 1", true);
     calendar.addEvent(event1, false);
 
-    Event event2 = new Event("Event 2",
-            LocalDateTime.of(2023, 5, 12, 11, 0),
-            LocalDateTime.of(2023, 5, 12, 12, 0),
-            "Description 2", "Location 2", true);
+    Event event2 = new Event("Event 2", LocalDateTime.of(2023, 5, 12, 11, 0),
+        LocalDateTime.of(2023, 5, 12, 12, 0), "Description 2", "Location 2", true);
     calendar.addEvent(event2, false);
 
     String result = controller.processCommand("print events from 2023-05-09 to 2023-05-13");
@@ -211,16 +192,14 @@ public class ConsolidatedCommandTest {
     String result = controller.processCommand("print events on 05/20/2023");
 
     assertTrue("Should indicate invalid date format",
-            result.contains("Error") || result.contains("format"));
+        result.contains("Error") || result.contains("format"));
   }
 
   @Test
-  public void testShowStatusCommand() throws ConflictingEventException,
-          InvalidEventException, EventNotFoundException {
-    Event event = new Event("Busy Time",
-            LocalDateTime.of(2023, 3, 25, 14, 0),
-            LocalDateTime.of(2023, 3, 25, 15, 0),
-            "Important meeting", "Office", true);
+  public void testShowStatusCommand()
+      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+    Event event = new Event("Busy Time", LocalDateTime.of(2023, 3, 25, 14, 0),
+        LocalDateTime.of(2023, 3, 25, 15, 0), "Important meeting", "Office", true);
     calendar.addEvent(event, false);
 
     List<Event> events = calendar.getEventsOnDate(LocalDate.of(2023, 3, 25));
@@ -243,10 +222,8 @@ public class ConsolidatedCommandTest {
 
   @Test
   public void testShowStatusWithMultipleEvents() throws ConflictingEventException {
-    Event event1 = new Event("Meeting 1",
-            LocalDateTime.of(2023, 6, 15, 10, 0),
-            LocalDateTime.of(2023, 6, 15, 11, 0),
-            "Description 1", "Location 1", true);
+    Event event1 = new Event("Meeting 1", LocalDateTime.of(2023, 6, 15, 10, 0),
+        LocalDateTime.of(2023, 6, 15, 11, 0), "Description 1", "Location 1", true);
     calendar.addEvent(event1, false);
 
     String result = controller.processCommand("show status on 2023-06-15T10:30");
@@ -259,20 +236,19 @@ public class ConsolidatedCommandTest {
     String result = controller.processCommand("show status on 2023-06-15 10:45");
 
     assertTrue("Should indicate invalid datetime format",
-            result.contains("Error") || result.contains("format"));
+        result.contains("Error") || result.contains("format"));
   }
 
   // ===== Controller Tests =====
 
   @Test
   public void testControllerParseAndExecuteCommand() {
-    String result = controller.processCommand("create event "
-            + "\"Controller Test\" from 2023-04-10T09:00 to 2023-04-10T10:00");
+    String result = controller.processCommand(
+        "create event " + "\"Controller Test\" from 2023-04-10T09:00 to 2023-04-10T10:00");
 
     List<Event> events = calendar.getEventsOnDate(LocalDate.of(2023, 4, 10));
     assertEquals("Event was not created by controller", 1, events.size());
-    assertEquals("Event subject doesn't match", "Controller Test",
-            events.get(0).getSubject());
+    assertEquals("Event subject doesn't match", "Controller Test", events.get(0).getSubject());
   }
 
   @Test
@@ -280,15 +256,14 @@ public class ConsolidatedCommandTest {
     String result = controller.processCommand("invalid command text");
 
     assertTrue("Result should contain error message",
-            result.contains("Error:") || result.contains("Invalid"));
+        result.contains("Error:") || result.contains("Invalid"));
   }
 
   @Test
   public void testControllerWithEmptyCommand() {
     String result = controller.processCommand("");
 
-    assertTrue("Should reject empty command",
-            result.contains("Error") || result.contains("empty"));
+    assertTrue("Should reject empty command", result.contains("Error") || result.contains("empty"));
   }
 
   @Test
@@ -296,67 +271,60 @@ public class ConsolidatedCommandTest {
     String result = controller.processCommand(null);
 
     assertTrue("Should reject null command",
-            result.contains("Error") || result.contains("null")
-                    || result.contains("empty"));
+        result.contains("Error") || result.contains("null") || result.contains("empty"));
   }
 
   @Test
   public void testControllerWithExcessiveWhitespace() {
     String result = controller.processCommand("   create    event    "
-            + "\"Whitespace Test\"    from    2023-04-20T09:00    to    2023-04-20T10:00   ");
+        + "\"Whitespace Test\"    from    2023-04-20T09:00    to    2023-04-20T10:00   ");
 
     List<Event> events = calendar.getEventsOnDate(LocalDate.of(2023, 4, 20));
 
     assertEquals("Event should be created despite whitespace", 1, events.size());
     if (!events.isEmpty()) {
-      assertEquals("Subject should be correctly parsed",
-              "Whitespace Test", events.get(0).getSubject());
+      assertEquals("Subject should be correctly parsed", "Whitespace Test",
+          events.get(0).getSubject());
     }
   }
 
   @Test
   public void testEditEventCommand() throws ConflictingEventException, InvalidEventException {
-    Event event = new Event("Original Meeting",
-            LocalDateTime.of(2023, 7, 5, 10, 0),
-            LocalDateTime.of(2023, 7, 5, 11, 0),
-            "Original Description", "Original Location", true);
+    Event event = new Event("Original Meeting", LocalDateTime.of(2023, 7, 5, 10, 0),
+        LocalDateTime.of(2023, 7, 5, 11, 0), "Original Description", "Original Location", true);
     calendar.addEvent(event, false);
     String eventId = event.getId().toString();
 
-    String result = controller.processCommand("edit event "
-            + eventId + " subject \"Updated Meeting\"");
+    String result = controller.processCommand(
+        "edit event " + eventId + " subject \"Updated Meeting\"");
 
     List<Event> events = calendar.getEventsOnDate(LocalDate.of(2023, 7, 5));
     assertEquals("Should still have one event", 1, events.size());
 
     if (events.get(0).getSubject().equals("Updated Meeting")) {
       assertEquals("Event subject should be updated", "Updated Meeting",
-              events.get(0).getSubject());
+          events.get(0).getSubject());
     } else {
       assertTrue("Should provide meaningful error if edit failed",
-              result.toLowerCase().contains("error") ||
-                      result.toLowerCase().contains("failed") ||
-                      result.toLowerCase().contains("unable"));
+          result.toLowerCase().contains("error") || result.toLowerCase().contains("failed")
+              || result.toLowerCase().contains("unable"));
     }
   }
 
   @Test
   public void testEditNonExistentEvent() {
     String fakeId = UUID.randomUUID().toString();
-    String result = controller.processCommand("edit event " + fakeId
-            + " subject \"Fake Meeting\"");
+    String result = controller.processCommand("edit event " + fakeId + " subject \"Fake Meeting\"");
 
     assertTrue("Should indicate event not found",
-            result.contains("Error") || result.contains("not found")
-                    || result.contains("doesn't exist"));
+        result.contains("Error") || result.contains("not found") || result.contains(
+            "doesn't exist"));
   }
 
   @Test
   public void testCreateAndExportEvent() throws ConflictingEventException, InvalidEventException {
-    Event event = new Event("Export Test",
-            LocalDateTime.of(2023, 8, 10, 9, 0),
-            LocalDateTime.of(2023, 8, 10, 10, 0),
-            "Testing export", "Test Location", true);
+    Event event = new Event("Export Test", LocalDateTime.of(2023, 8, 10, 9, 0),
+        LocalDateTime.of(2023, 8, 10, 10, 0), "Testing export", "Test Location", true);
     calendar.addEvent(event, false);
 
     String result = controller.processCommand("export events on 2023-08-10");
@@ -366,59 +334,52 @@ public class ConsolidatedCommandTest {
   }
 
   @Test
-  public void testControllerWithQuotedStrings() {
-  }
-
-  @Test
   public void testCreateEventWithExtremeTimes() {
-    String result = controller.processCommand("create event"
-            + " \"Midnight Event\" from 2023-05-01T00:00 to 2023-05-01T01:00");
+    String result = controller.processCommand(
+        "create event" + " \"Midnight Event\" from 2023-05-01T00:00 to 2023-05-01T01:00");
     assertTrue(result.contains("created successfully"));
 
-    result = controller.processCommand("create event "
-            + "\"Overnight Event\" from 2023-05-02T23:30 to 2023-05-03T00:30");
+    result = controller.processCommand(
+        "create event " + "\"Overnight Event\" from 2023-05-02T23:30 to 2023-05-03T00:30");
     assertTrue(result.contains("created successfully"));
 
-    result = controller.processCommand("create event "
-            + "\"Multi-day Event\" from 2023-05-10T10:00 to 2023-05-12T16:00");
+    result = controller.processCommand(
+        "create event " + "\"Multi-day Event\" from 2023-05-10T10:00 to 2023-05-12T16:00");
     assertTrue(result.contains("created successfully"));
   }
 
   @Test
   public void testAdvancedErrorHandling() {
-    String result = controller.processCommand("create event "
-            + "\"Bad Date Event\" from 2023/12/01T10:00 to 2023/12/01T11:00");
+    String result = controller.processCommand(
+        "create event " + "\"Bad Date Event\" from 2023/12/01T10:00 to 2023/12/01T11:00");
     assertTrue(result.contains("Error") || result.contains("format"));
 
-    result = controller.processCommand("create event " +
-            "\"Bad Time Event\" from 2023-12-01 10:00 to 2023-12-01 11:00");
+    result = controller.processCommand(
+        "create event " + "\"Bad Time Event\" from 2023-12-01 10:00 to 2023-12-01 11:00");
     assertTrue(result.contains("Error") || result.contains("format"));
 
-    result = controller.processCommand("create event " +
-            "\"Invalid Time Event\" from 2023-12-01T25:00 to 2023-12-01T26:00");
+    result = controller.processCommand(
+        "create event " + "\"Invalid Time Event\" from 2023-12-01T25:00 to 2023-12-01T26:00");
     assertTrue(result.contains("Error") || result.contains("invalid"));
   }
 
   @Test
   public void testCreateRecurringEventWithInvalidWeekdays() {
-    String result = controller.processCommand(
-            "create event \"Invalid Meeting\" " +
-                    "from 2024-03-26T10:00 to 2024-03-26T11:00 repeats XYZ for 5 times");
+    String result = controller.processCommand("create event \"Invalid Meeting\" "
+        + "from 2024-03-26T10:00 to 2024-03-26T11:00 repeats XYZ for 5 times");
 
     assertTrue(result.contains("Error") || result.contains("Invalid weekday"));
   }
 
   @Test
-  public void testCreateRecurringEventWithAutoDecline() throws
-          ConflictingEventException, InvalidEventException {
-    controller.processCommand(
-            "create event \"First Meeting\" " +
-                    "from 2024-03-26T10:00 to 2024-03-26T11:00 repeats MWF for 5 times");
+  public void testCreateRecurringEventWithAutoDecline()
+      throws ConflictingEventException, InvalidEventException {
+    controller.processCommand("create event \"First Meeting\" "
+        + "from 2024-03-26T10:00 to 2024-03-26T11:00 repeats MWF for 5 times");
 
     String result = controller.processCommand(
-            "create event --autoDecline " +
-                    "\"Conflicting Meeting\" from 2024-03-26T10:30 to" +
-                    " 2024-03-26T11:30 repeats MWF for 5 times");
+        "create event --autoDecline " + "\"Conflicting Meeting\" from 2024-03-26T10:30 to"
+            + " 2024-03-26T11:30 repeats MWF for 5 times");
 
     assertTrue(result.contains("conflicts") || result.contains("Error"));
   }
@@ -426,8 +387,8 @@ public class ConsolidatedCommandTest {
   @Test
   public void testCreateRecurringEventWithMaxOccurrences() {
     String result = controller.processCommand(
-            "create event \"Weekly Meeting\" from 2024-03-26T10:00" +
-                    " to 2024-03-26T11:00 repeats MWF for 1000 times");
+        "create event \"Weekly Meeting\" from 2024-03-26T10:00"
+            + " to 2024-03-26T11:00 repeats MWF for 1000 times");
 
     assertTrue(result.contains("Maximum occurrences exceeded"));
   }

@@ -18,8 +18,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * Test class for AllDayRecurringEventCreator.
- * Tests the creation of all-day recurring events with various parameters and validation rules.
+ * Test class for AllDayRecurringEventCreator. Tests the creation of all-day recurring events with
+ * various parameters and validation rules.
  */
 public class AllDayRecurringEventCreatorTest {
 
@@ -94,7 +94,7 @@ public class AllDayRecurringEventCreatorTest {
   @Test
   public void testCreateEventWithValidArgs() throws InvalidEventException {
     String[] args = {"allday-recurring", "Company Holiday", "2023-12-25", "MWF", "5", "false",
-            "Holiday description", "Office", "true"};
+        "Holiday description", "Office", "true"};
     AllDayRecurringEventCreator creator = new AllDayRecurringEventCreator(args);
     Event event = creator.createEvent();
 
@@ -104,7 +104,7 @@ public class AllDayRecurringEventCreatorTest {
   @Test
   public void testExecuteCreationSuccess() {
     String[] args = {"allday-recurring", "Company Holiday", "2023-12-25", "MWF", "5", "false",
-            "Holiday description", "Office", "true"};
+        "Holiday description", "Office", "true"};
     AllDayRecurringEventCreator creator = new AllDayRecurringEventCreator(args);
     TestCalendar calendar = new TestCalendar();
 
@@ -156,7 +156,7 @@ public class AllDayRecurringEventCreatorTest {
       fail("Should throw InvalidEventException");
     } catch (InvalidEventException e) {
       assertEquals("Error creating all-day recurring event: Test invalid event exception",
-              e.getMessage());
+          e.getMessage());
     } catch (Exception e) {
       fail("Should throw InvalidEventException, not " + e.getClass().getName());
     }
@@ -184,17 +184,18 @@ public class AllDayRecurringEventCreatorTest {
     String[] args = {"allday-recurring", "Company Holiday", "2023-12-25", "MWF", "5", "false"};
     AllDayRecurringEventCreator creator = new AllDayRecurringEventCreator(args);
 
-    java.lang.reflect.Method method = AllDayRecurringEventCreator.class
-            .getDeclaredMethod("getSuccessMessage", Event.class);
+    java.lang.reflect.Method method = AllDayRecurringEventCreator.class.getDeclaredMethod(
+        "getSuccessMessage", Event.class);
     method.setAccessible(true);
     String message = (String) method.invoke(creator, (Event) null);
 
-    assertEquals("All-day recurring event 'Company Holiday' created successfully"
-                    + " with 5 occurrences.",
-            message);
+    assertEquals(
+        "All-day recurring event 'Company Holiday' created successfully" + " with 5 occurrences.",
+        message);
   }
 
   private static class TestCalendar implements ICalendar {
+
     boolean createAllDayRecurringEventCalled = false;
     String lastEventName;
     LocalDate lastDate;
@@ -211,10 +212,8 @@ public class AllDayRecurringEventCreatorTest {
 
     @Override
     public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-                                              int occurrences, boolean autoDecline,
-                                              String description,
-                                              String location, boolean isPublic)
-            throws InvalidEventException, ConflictingEventException {
+        int occurrences, boolean autoDecline, String description, String location, boolean isPublic)
+        throws InvalidEventException, ConflictingEventException {
       if (shouldThrowConflict) {
         throw new ConflictingEventException("Test conflict exception");
       }
@@ -247,16 +246,14 @@ public class AllDayRecurringEventCreatorTest {
 
     @Override
     public boolean createRecurringEventUntil(String name, java.time.LocalDateTime start,
-                                             java.time.LocalDateTime end, String weekdays,
-                                             LocalDate untilDate, boolean autoDecline) {
+        java.time.LocalDateTime end, String weekdays, LocalDate untilDate, boolean autoDecline) {
       return true;
     }
 
     @Override
     public boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
-                                                   LocalDate untilDate, boolean autoDecline,
-                                                   String description, String location,
-                                                   boolean isPublic) {
+        LocalDate untilDate, boolean autoDecline, String description, String location,
+        boolean isPublic) {
       return true;
     }
 
@@ -277,7 +274,7 @@ public class AllDayRecurringEventCreatorTest {
 
     @Override
     public Event findEvent(String subject, java.time.LocalDateTime startDateTime)
-            throws EventNotFoundException {
+        throws EventNotFoundException {
       throw new EventNotFoundException("Event not found");
     }
 
@@ -288,13 +285,13 @@ public class AllDayRecurringEventCreatorTest {
 
     @Override
     public boolean editSingleEvent(String subject, java.time.LocalDateTime startDateTime,
-                                   String property, String newValue) {
+        String property, String newValue) {
       return true;
     }
 
     @Override
     public int editEventsFromDate(String subject, java.time.LocalDateTime startDateTime,
-                                  String property, String newValue) {
+        String property, String newValue) {
       return 0;
     }
 

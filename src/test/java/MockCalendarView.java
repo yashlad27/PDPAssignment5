@@ -4,10 +4,11 @@ import java.util.List;
 import view.ICalendarView;
 
 /**
- * Mock implementation of ICalendarView for testing purposes.
- * Tracks displayed messages and errors for verification in tests.
+ * Mock implementation of ICalendarView for testing purposes. Tracks displayed messages and errors
+ * for verification in tests.
  */
 public class MockCalendarView implements ICalendarView {
+
   private final List<String> displayedMessages;
   private final List<String> displayedErrors;
 

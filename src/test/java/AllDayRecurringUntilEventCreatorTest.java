@@ -19,8 +19,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * Test class for AllDayRecurringUntilEventCreator.
- * Tests the creation of all-day recurring events with an end date.
+ * Test class for AllDayRecurringUntilEventCreator. Tests the creation of all-day recurring events
+ * with an end date.
  */
 public class AllDayRecurringUntilEventCreatorTest {
 
@@ -47,8 +47,8 @@ public class AllDayRecurringUntilEventCreatorTest {
 
   @Test
   public void testConstructorWithInvalidStartDate() {
-    String[] args = {"allday-recurring-until", "Holiday", "invalid-date", "MWF",
-            "2024-01-31", "false"};
+    String[] args = {"allday-recurring-until", "Holiday", "invalid-date", "MWF", "2024-01-31",
+        "false"};
     try {
       new AllDayRecurringUntilEventCreator(args);
       fail("Should throw IllegalArgumentException for invalid start date");
@@ -59,8 +59,8 @@ public class AllDayRecurringUntilEventCreatorTest {
 
   @Test
   public void testConstructorWithInvalidUntilDate() {
-    String[] args = {"allday-recurring-until", "Holiday", "2023-12-25", "MWF",
-            "invalid-date", "false"};
+    String[] args = {"allday-recurring-until", "Holiday", "2023-12-25", "MWF", "invalid-date",
+        "false"};
     try {
       new AllDayRecurringUntilEventCreator(args);
       fail("Should throw IllegalArgumentException for invalid until date");
@@ -83,8 +83,7 @@ public class AllDayRecurringUntilEventCreatorTest {
 
   @Test
   public void testCreateEventWithEmptyWeekdays() {
-    String[] args = {"allday-recurring-until", "Holiday", "2023-12-25", "",
-            "2024-01-31", "false"};
+    String[] args = {"allday-recurring-until", "Holiday", "2023-12-25", "", "2024-01-31", "false"};
     AllDayRecurringUntilEventCreator creator = new AllDayRecurringUntilEventCreator(args);
     try {
       creator.createEvent();
@@ -96,8 +95,8 @@ public class AllDayRecurringUntilEventCreatorTest {
 
   @Test
   public void testCreateEventWithUntilDateBeforeStartDate() {
-    String[] args = {"allday-recurring-until", "Holiday", "2023-12-25", "MWF",
-            "2023-12-24", "false"};
+    String[] args = {"allday-recurring-until", "Holiday", "2023-12-25", "MWF", "2023-12-24",
+        "false"};
     try {
       new AllDayRecurringUntilEventCreator(args);
       fail("Should throw IllegalArgumentException for until date before start date");
@@ -108,9 +107,8 @@ public class AllDayRecurringUntilEventCreatorTest {
 
   @Test
   public void testCreateEventWithValidArgs() throws InvalidEventException {
-    String[] args = {"allday-recurring-until", "Company Holiday", "2023-12-25",
-            "MWF", "2024-01-31", "false",
-            "Holiday description", "Office", "true"};
+    String[] args = {"allday-recurring-until", "Company Holiday", "2023-12-25", "MWF", "2024-01-31",
+        "false", "Holiday description", "Office", "true"};
     AllDayRecurringUntilEventCreator creator = new AllDayRecurringUntilEventCreator(args);
     Event event = creator.createEvent();
 
@@ -119,9 +117,8 @@ public class AllDayRecurringUntilEventCreatorTest {
 
   @Test
   public void testExecuteCreationSuccess() {
-    String[] args = {"allday-recurring-until", "Company Holiday", "2023-12-25",
-            "MWF", "2024-01-31", "false",
-            "Holiday description", "Office", "true"};
+    String[] args = {"allday-recurring-until", "Company Holiday", "2023-12-25", "MWF", "2024-01-31",
+        "false", "Holiday description", "Office", "true"};
     AllDayRecurringUntilEventCreator creator = new AllDayRecurringUntilEventCreator(args);
     TestCalendar calendar = new TestCalendar();
 
@@ -146,8 +143,8 @@ public class AllDayRecurringUntilEventCreatorTest {
 
   @Test
   public void testExecuteCreationWithConflict() {
-    String[] args = {"allday-recurring-until", "Company Holiday", "2023-12-25", "MWF",
-            "2024-01-31", "false"};
+    String[] args = {"allday-recurring-until", "Company Holiday", "2023-12-25", "MWF", "2024-01-31",
+        "false"};
     AllDayRecurringUntilEventCreator creator = new AllDayRecurringUntilEventCreator(args);
     TestCalendar calendar = new TestCalendar();
     calendar.shouldThrowConflict = true;
@@ -164,8 +161,8 @@ public class AllDayRecurringUntilEventCreatorTest {
 
   @Test
   public void testExecuteCreationWithInvalidEvent() {
-    String[] args = {"allday-recurring-until", "Company Holiday", "2023-12-25", "MWF",
-            "2024-01-31", "false"};
+    String[] args = {"allday-recurring-until", "Company Holiday", "2023-12-25", "MWF", "2024-01-31",
+        "false"};
     AllDayRecurringUntilEventCreator creator = new AllDayRecurringUntilEventCreator(args);
     TestCalendar calendar = new TestCalendar();
     calendar.shouldThrowInvalid = true;
@@ -182,8 +179,8 @@ public class AllDayRecurringUntilEventCreatorTest {
 
   @Test
   public void testExecuteCreationWithCreationFailure() {
-    String[] args = {"allday-recurring-until", "Company Holiday", "2023-12-25", "MWF",
-            "2024-01-31", "false"};
+    String[] args = {"allday-recurring-until", "Company Holiday", "2023-12-25", "MWF", "2024-01-31",
+        "false"};
     AllDayRecurringUntilEventCreator creator = new AllDayRecurringUntilEventCreator(args);
     TestCalendar calendar = new TestCalendar();
     calendar.shouldReturnFalse = true;
@@ -200,12 +197,12 @@ public class AllDayRecurringUntilEventCreatorTest {
 
   @Test
   public void testGetSuccessMessage() throws Exception {
-    String[] args = {"allday-recurring-until", "Company Holiday", "2023-12-25", "MWF",
-            "2024-01-31", "false"};
+    String[] args = {"allday-recurring-until", "Company Holiday", "2023-12-25", "MWF", "2024-01-31",
+        "false"};
     AllDayRecurringUntilEventCreator creator = new AllDayRecurringUntilEventCreator(args);
 
-    java.lang.reflect.Method method = AllDayRecurringUntilEventCreator.class
-            .getDeclaredMethod("getSuccessMessage", Event.class);
+    java.lang.reflect.Method method = AllDayRecurringUntilEventCreator.class.getDeclaredMethod(
+        "getSuccessMessage", Event.class);
     method.setAccessible(true);
     String message = (String) method.invoke(creator, (Event) null);
 
@@ -214,6 +211,7 @@ public class AllDayRecurringUntilEventCreatorTest {
   }
 
   private static class TestCalendar implements ICalendar {
+
     boolean createAllDayRecurringEventUntilCalled = false;
     String lastEventName;
     LocalDate lastDate;
@@ -230,10 +228,8 @@ public class AllDayRecurringUntilEventCreatorTest {
 
     @Override
     public boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
-                                                   LocalDate untilDate, boolean autoDecline,
-                                                   String description, String location,
-                                                   boolean isPublic)
-            throws InvalidEventException, ConflictingEventException {
+        LocalDate untilDate, boolean autoDecline, String description, String location,
+        boolean isPublic) throws InvalidEventException, ConflictingEventException {
       if (shouldThrowConflict) {
         throw new ConflictingEventException("Test conflict exception");
       }
@@ -266,16 +262,14 @@ public class AllDayRecurringUntilEventCreatorTest {
 
     @Override
     public boolean createRecurringEventUntil(String name, java.time.LocalDateTime start,
-                                             java.time.LocalDateTime end, String weekdays,
-                                             LocalDate untilDate, boolean autoDecline) {
+        java.time.LocalDateTime end, String weekdays, LocalDate untilDate, boolean autoDecline) {
       return true;
     }
 
     @Override
     public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-                                              int occurrences, boolean autoDecline,
-                                              String description,
-                                              String location, boolean isPublic) {
+        int occurrences, boolean autoDecline, String description, String location,
+        boolean isPublic) {
       return true;
     }
 
@@ -296,7 +290,7 @@ public class AllDayRecurringUntilEventCreatorTest {
 
     @Override
     public Event findEvent(String subject, LocalDateTime startDateTime)
-            throws EventNotFoundException {
+        throws EventNotFoundException {
       throw new EventNotFoundException("Event not found");
     }
 
@@ -306,14 +300,14 @@ public class AllDayRecurringUntilEventCreatorTest {
     }
 
     @Override
-    public boolean editSingleEvent(String subject, LocalDateTime startDateTime,
-                                   String property, String newValue) {
+    public boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property,
+        String newValue) {
       return true;
     }
 
     @Override
-    public int editEventsFromDate(String subject, LocalDateTime startDateTime,
-                                  String property, String newValue) {
+    public int editEventsFromDate(String subject, LocalDateTime startDateTime, String property,
+        String newValue) {
       return 0;
     }
 
