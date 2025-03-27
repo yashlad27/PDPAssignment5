@@ -104,8 +104,7 @@ public class Calendar implements ICalendar {
    *
    * @param recurringEvent The recurring event to add, must not be null
    * @param autoDecline    If true, throws exception on conflict; if false, returns false
-   * @return true if event was added successfully, false if there was a conflict and autoDecline is
-   * false
+   * @return true if event was added successfully, false otherwise
    */
   @Override
   public boolean addRecurringEvent(RecurringEvent recurringEvent, boolean autoDecline)
@@ -277,7 +276,7 @@ public class Calendar implements ICalendar {
     int count = 0;
 
     List<Event> matchingEvents = events.stream().filter(
-            e -> e.getSubject().equals(subject) && !e.getStartDateTime().isBefore(startDateTime))
+        e -> e.getSubject().equals(subject) && !e.getStartDateTime().isBefore(startDateTime))
         .collect(Collectors.toList());
 
     for (Event event : matchingEvents) {

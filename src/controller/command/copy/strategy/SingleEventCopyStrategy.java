@@ -43,7 +43,8 @@ public class SingleEventCopyStrategy implements CopyStrategy {
 
   @Override
   public String execute(String[] args)
-      throws CalendarNotFoundException, EventNotFoundException, ConflictingEventException, InvalidEventException {
+      throws CalendarNotFoundException, EventNotFoundException, ConflictingEventException
+      , InvalidEventException {
     if (args.length < 9) {
       throw new InvalidEventException("Insufficient arguments for copy event command");
     }
