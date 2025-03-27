@@ -51,7 +51,6 @@ public class EventActionTest {
     };
 
     printAction.execute(regularEvent);
-
     printAction.executeOnList(events);
   }
 
@@ -82,7 +81,7 @@ public class EventActionTest {
   @Test
   public void testNullEventAction() {
     EventAction nullCheckAction = event -> {
-      assertNotNull("Event should not be null", null);
+      assertNotNull("Event should not be null", event);
     };
 
     try {
@@ -106,10 +105,7 @@ public class EventActionTest {
       }
     };
 
-    // Test single event
     validationAction.execute(regularEvent);
-
-    // Test list of events
     validationAction.executeOnList(events);
   }
 
@@ -120,10 +116,7 @@ public class EventActionTest {
     EventAction firstAction = event -> actionLog.add("First action on " + event.getSubject());
     EventAction secondAction = event -> actionLog.add("Second action on " + event.getSubject());
 
-    // Compose actions
     EventAction composedAction = firstAction.andThen(secondAction);
-
-    // Execute composed action
     composedAction.execute(regularEvent);
 
     assertEquals("Should have two log entries", 2, actionLog.size());
@@ -137,8 +130,9 @@ public class EventActionTest {
       // Do nothing
     };
 
-    // Should not throw any exception
-    anyAction.executeOnList(new ArrayList<>());
+    List<Event> emptyList = new ArrayList<>();
+    anyAction.executeOnList(emptyList);
+    assertTrue("Empty list should remain empty", emptyList.isEmpty());
   }
 
   @Test
