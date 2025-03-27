@@ -32,7 +32,8 @@ public interface TimezoneConverter {
    * @param handler      the timezone handler to use for the actual conversion logic
    * @return a converter that performs the specified conversion
    */
-  static TimezoneConverter between(String fromTimezone, String toTimezone, TimeZoneHandler handler) {
+  static TimezoneConverter between(String fromTimezone, String toTimezone,
+                                   TimeZoneHandler handler) {
     return dateTime -> handler.convertTime(dateTime, fromTimezone, toTimezone);
   }
 

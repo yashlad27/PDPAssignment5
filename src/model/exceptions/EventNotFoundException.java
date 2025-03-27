@@ -1,7 +1,8 @@
 package model.exceptions;
 
 /**
- * Exception thrown when attempting to access or modify an event that does not exist in the calendar.
+ * Exception thrown when attempting to access or modify an event that does not exist in
+ * the calendar.
  * This exception is used to indicate that a requested event could not be found,
  * either because it was deleted or never created.
  */

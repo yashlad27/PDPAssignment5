@@ -48,9 +48,10 @@ public class AllDayRecurringUntilEventCreator extends AbstractEventCreator {
       this.description = args.length > 6 ? removeQuotes(args[6]) : null;
       this.location = args.length > 7 ? removeQuotes(args[7]) : null;
       this.isPublic = args.length > 8 ? Boolean.parseBoolean(args[8]) : true;
-      
+
       if (untilDate != null && date != null && untilDate.isBefore(date)) {
-        throw new IllegalArgumentException("Error parsing arguments: Until date must be after start date");
+        throw new IllegalArgumentException("Error parsing arguments: "
+                + "Until date must be after start date");
       }
     } catch (Exception e) {
       throw new IllegalArgumentException("Error parsing arguments: " + e.getMessage(), e);
@@ -70,9 +71,6 @@ public class AllDayRecurringUntilEventCreator extends AbstractEventCreator {
     if (untilDate == null) {
       throw new InvalidEventException("Until date cannot be null");
     }
-
-    // For recurring events, we return null since the actual event creation
-    // is handled in executeCreation using the calendar
     return null;
   }
 

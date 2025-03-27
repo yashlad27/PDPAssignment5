@@ -270,8 +270,9 @@ public class CommandParser {
     String location = matcher.group(7);
 
     String[] args = {"recurring", eventName, startTime, endTime, weekdays, occurrences,
-            description != null ? description : "", location != null ? location : "", "true",
-            "false"
+                        description != null ? description : "", location != null ?
+                        location : "", "true",
+                        "false"
     };
     return new CommandWithArgs(commandFactory.getCommand("create"), args);
   }
@@ -410,7 +411,7 @@ public class CommandParser {
     ICommand copyCommand = commandFactory.getCommand("copy");
 
     String[] args = {"copy", "events", "between", matcher.group(1), "and", matcher.group(2),
-            "--target", matcher.group(3), "to", matcher.group(4)};
+                        "--target", matcher.group(3), "to", matcher.group(4)};
     return new CommandWithArgs(copyCommand, args);
   }
 

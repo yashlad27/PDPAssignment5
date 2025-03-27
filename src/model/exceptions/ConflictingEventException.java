@@ -1,7 +1,8 @@
 package model.exceptions;
 
 /**
- * Exception thrown when attempting to create or modify an event that conflicts with existing events.
+ * Exception thrown when attempting to create or modify an event that conflicts
+ * with existing events.
  * This exception is used to prevent scheduling conflicts by indicating that the requested
  * event's time slot overlaps with one or more existing events in the calendar.
  */

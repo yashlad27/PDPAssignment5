@@ -74,8 +74,6 @@ public class Calendar implements ICalendar {
    * false
    * @throws ConflictingEventException if autoDecline is true and event conflicts with existing
    *                                   events
-   * @throws IllegalArgumentException  if event is null
-   * @throws ConflictingEventException if event is conflicting
    */
   @Override
   public boolean addEvent(Event event, boolean autoDecline) throws ConflictingEventException {
@@ -86,7 +84,8 @@ public class Calendar implements ICalendar {
     if (hasConflict(event)) {
       if (autoDecline) {
         throw new ConflictingEventException(
-                "Cannot add event '" + event.getSubject() + "' due to conflict with an existing event");
+                "Cannot add event '" + event.getSubject()
+                        + "' due to conflict with an existing event");
       }
       return false;
     }
@@ -108,9 +107,7 @@ public class Calendar implements ICalendar {
    * @param recurringEvent The recurring event to add, must not be null
    * @param autoDecline    If true, throws exception on conflict; if false, returns false
    * @return true if event was added successfully, false if there was a conflict and autoDecline is
-   * false
-   * @throws ConflictingEventException if autoDecline is true and any occurrence conflicts
-   * @throws IllegalArgumentException  if recurringEvent is null
+   *        false
    */
   @Override
   public boolean addRecurringEvent(RecurringEvent recurringEvent, boolean autoDecline)

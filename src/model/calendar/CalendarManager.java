@@ -1,13 +1,10 @@
 package model.calendar;
 
-import java.util.Set;
-import java.util.function.Consumer;
-
 import model.exceptions.CalendarNotFoundException;
 import model.exceptions.DuplicateCalendarException;
 import model.exceptions.InvalidTimezoneException;
-import utilities.TimeZoneHandler;
 import utilities.CalendarNameValidator;
+import utilities.TimeZoneHandler;
 
 /**
  * Manages calendar operations and coordinates between the CalendarRegistry and TimeZoneHandler.
@@ -72,20 +69,16 @@ public class CalendarManager {
    */
   public Calendar createCalendar(String name, String timezone)
           throws DuplicateCalendarException, InvalidTimezoneException {
-    // Validate timezone
     if (!timezoneHandler.isValidTimezone(timezone)) {
       throw new InvalidTimezoneException("Invalid timezone: " + timezone);
     }
 
-    // Validate the calendar name
     CalendarNameValidator.validateCalendarName(name);
 
-    // Create the calendar with the specified timezone
     Calendar calendar = new Calendar();
     calendar.setName(name);
     calendar.setTimezone(timezone);
 
-    // Register the calendar
     try {
       calendarRegistry.registerCalendar(name, calendar);
     } catch (DuplicateCalendarException e) {
@@ -106,7 +99,6 @@ public class CalendarManager {
     try {
       return createCalendar(name, timezoneHandler.getDefaultTimezone());
     } catch (InvalidTimezoneException e) {
-      // This should never happen with the default timezone
       throw new RuntimeException("Invalid default timezone", e);
     }
   }
@@ -149,44 +141,6 @@ public class CalendarManager {
   }
 
   /**
-   * Executes an operation on the active calendar and returns a result.
-   *
-   * @param <T>       the result type
-   * @param operation the operation to execute
-   * @return the result of the operation
-   * @throws CalendarNotFoundException if there is no active calendar
-   * @throws Exception                 if the operation throws an exception
-   */
-  public <T> T executeOnActiveCalendar(CalendarOperation<T> operation)
-          throws CalendarNotFoundException, Exception {
-    Calendar calendar = calendarRegistry.getActiveCalendar();
-    return operation.execute(calendar);
-  }
-
-  /**
-   * Applies a consumer to a calendar by name.
-   *
-   * @param calendarName the name of the calendar
-   * @param consumer     the consumer to apply
-   * @throws CalendarNotFoundException if the calendar cannot be found
-   */
-  public void applyToCalendar(String calendarName, Consumer<Calendar> consumer)
-          throws CalendarNotFoundException {
-    calendarRegistry.applyToCalendar(calendarName, consumer);
-  }
-
-  /**
-   * Applies a consumer to the active calendar.
-   *
-   * @param consumer the consumer to apply
-   * @throws CalendarNotFoundException if there is no active calendar
-   */
-  public void applyToActiveCalendar(Consumer<Calendar> consumer)
-          throws CalendarNotFoundException {
-    calendarRegistry.applyToActiveCalendar(consumer);
-  }
-
-  /**
    * Sets the active calendar by name.
    *
    * @param name the name of the calendar to set as active
@@ -194,15 +148,6 @@ public class CalendarManager {
    */
   public void setActiveCalendar(String name) throws CalendarNotFoundException {
     calendarRegistry.setActiveCalendar(name);
-  }
-
-  /**
-   * Gets the name of the currently active calendar.
-   *
-   * @return the name of the active calendar, or null if no calendar is active
-   */
-  public String getActiveCalendarName() {
-    return calendarRegistry.getActiveCalendarName();
   }
 
   /**
@@ -216,37 +161,6 @@ public class CalendarManager {
   }
 
   /**
-   * Gets all calendar names.
-   *
-   * @return a set of all calendar names
-   */
-  public Set<String> getCalendarNames() {
-    return calendarRegistry.getCalendarNames();
-  }
-
-  /**
-   * Gets the number of calendars.
-   *
-   * @return the number of calendars
-   */
-  public int getCalendarCount() {
-    return calendarRegistry.getCalendarCount();
-  }
-
-  /**
-   * Edits a calendar's name.
-   *
-   * @param oldName the current name of the calendar
-   * @param newName the new name for the calendar
-   * @throws CalendarNotFoundException  if no calendar with the specified name exists
-   * @throws DuplicateCalendarException if a calendar with the new name already exists
-   */
-  public void editCalendarName(String oldName, String newName)
-          throws CalendarNotFoundException, DuplicateCalendarException {
-    calendarRegistry.renameCalendar(oldName, newName);
-  }
-
-  /**
    * Edits a calendar's timezone.
    *
    * @param calendarName the name of the calendar
@@ -256,25 +170,11 @@ public class CalendarManager {
    */
   public void editCalendarTimezone(String calendarName, String newTimezone)
           throws CalendarNotFoundException, InvalidTimezoneException {
-    // Validate timezone
     if (!timezoneHandler.isValidTimezone(newTimezone)) {
       throw new InvalidTimezoneException("Invalid timezone: " + newTimezone);
     }
-
-    // Update timezone
-    calendarRegistry.applyToCalendar(calendarName,
-            calendar -> calendar.setTimezone(newTimezone));
-  }
-
-  /**
-   * Removes a calendar.
-   *
-   * @param name the name of the calendar to remove
-   * @throws CalendarNotFoundException if no calendar with the specified name exists
-   */
-  public void removeCalendar(String name) throws CalendarNotFoundException {
-    calendarRegistry.removeCalendar(name);
-    CalendarNameValidator.removeCalendarName(name);
+    calendarRegistry.applyToCalendar(calendarName, calendar -> calendar
+            .setTimezone(newTimezone));
   }
 
   /**
