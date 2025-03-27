@@ -2,7 +2,6 @@ package utilities;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * Utility class for validating calendar names.
@@ -23,7 +22,7 @@ public class CalendarNameValidator {
 
     String trimmedName = name.trim();
     String unquotedName = removeQuotes(trimmedName);
-    
+
     if (unquotedName.isEmpty()) {
       throw new IllegalArgumentException("Calendar name cannot be empty");
     }
@@ -51,13 +50,13 @@ public class CalendarNameValidator {
 
   private static boolean containsInvalidCharacters(String name) {
     return name.chars()
-        .mapToObj(ch -> (char) ch)
-        .anyMatch(ch -> !Character.isLetterOrDigit(ch) && ch != '_');
+            .mapToObj(ch -> (char) ch)
+            .anyMatch(ch -> !Character.isLetterOrDigit(ch) && ch != '_');
   }
 
   private static boolean isDuplicateName(String name) {
     return existingNames.stream()
-        .anyMatch(existing -> existing.equals(name));
+            .anyMatch(existing -> existing.equals(name));
   }
 
   /**

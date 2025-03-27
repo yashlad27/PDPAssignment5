@@ -37,30 +37,26 @@ public interface ICalendar {
    *
    * @param event       The event to add, must not be null
    * @param autoDecline If true, throws exception on conflict; if false, returns false
-   * @return true if the event was added successfully, false if there was a conflict and autoDecline
-   * is false
+   * @return true if the event was added successfully, false if there was a conflict
    * @throws ConflictingEventException if autoDecline is true and the event conflicts with existing
-   *                                   events
-   * @throws IllegalArgumentException  if event is null
+   *                                   events.
    */
   boolean addEvent(Event event, boolean autoDecline) throws ConflictingEventException;
 
   /**
    * Adds a recurring event to the calendar with optional conflict checking.
    *
-   * <p> The method checks for conflicts across all occurrences of the recurring event. If
+   * <p>The method checks for conflicts across all occurrences of the recurring event. If
    * autoDecline is true, it will throw an exception if any occurrence conflicts with existing
    * events. If false, it will return false for conflicts.
    *
    * @param recurringEvent The recurring event to add, must not be null
    * @param autoDecline    If true, throws exception on conflict; if false, returns false
    * @return true if the event was added successfully, false if there was a conflict and autoDecline
-   * is false
-   * @throws ConflictingEventException if autoDecline is true and any occurrence conflicts
-   * @throws IllegalArgumentException  if recurringEvent is null
+   *            is false
    */
   boolean addRecurringEvent(RecurringEvent recurringEvent, boolean autoDecline)
-      throws ConflictingEventException;
+          throws ConflictingEventException;
 
   /**
    * Creates a recurring event that repeats on specified weekdays until a given end date.
@@ -82,8 +78,8 @@ public interface ICalendar {
    * @throws ConflictingEventException if autoDecline is true and any occurrence conflicts
    */
   boolean createRecurringEventUntil(String name, LocalDateTime start, LocalDateTime end,
-      String weekdays, LocalDate untilDate, boolean autoDecline)
-      throws InvalidEventException, ConflictingEventException;
+                                    String weekdays, LocalDate untilDate, boolean autoDecline)
+          throws InvalidEventException, ConflictingEventException;
 
   /**
    * Creates an all-day recurring event with a fixed number of occurrences.
@@ -105,8 +101,9 @@ public interface ICalendar {
    * @throws ConflictingEventException if autoDecline is true and any occurrence conflicts
    */
   boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays, int occurrences,
-      boolean autoDecline, String description, String location, boolean isPublic)
-      throws InvalidEventException, ConflictingEventException;
+                                     boolean autoDecline, String description,
+                                     String location, boolean isPublic)
+          throws InvalidEventException, ConflictingEventException;
 
   /**
    * Creates an all-day recurring event that repeats until a specific date.
@@ -116,11 +113,15 @@ public interface ICalendar {
    * @param weekdays    the days of the week to repeat on (e.g., "MWF")
    * @param untilDate   the date until which to repeat (inclusive)
    * @param autoDecline whether to automatically decline if there's a conflict
-   * @return
+   * @return true if event was created successfully
+   * @throws InvalidEventException     if any parameters are invalid
+   * @throws ConflictingEventException if autoDecline is true and any occurrence conflicts
    */
   boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
-      LocalDate untilDate, boolean autoDecline, String description, String location,
-      boolean isPublic) throws InvalidEventException, ConflictingEventException;
+                                          LocalDate untilDate, boolean autoDecline,
+                                          String description, String location,
+                                          boolean isPublic)
+          throws InvalidEventException, ConflictingEventException;
 
   /**
    * Gets all events occurring on a specific date.
@@ -165,6 +166,7 @@ public interface ICalendar {
    * @param subject       the subject of the event
    * @param startDateTime the start date and time of the event
    * @return the matching event, or null if not found
+   * @throws EventNotFoundException if no matching event is found
    */
   Event findEvent(String subject, LocalDateTime startDateTime) throws EventNotFoundException;
 
@@ -193,8 +195,8 @@ public interface ICalendar {
    * @throws ConflictingEventException if the edit would create a conflict
    */
   boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property,
-      String newValue)
-      throws EventNotFoundException, InvalidEventException, ConflictingEventException;
+                          String newValue)
+          throws EventNotFoundException, InvalidEventException, ConflictingEventException;
 
   /**
    * Edits all events in a recurring series starting from a specific date.
@@ -204,9 +206,11 @@ public interface ICalendar {
    * @param property      the property to edit
    * @param newValue      the new value for the property
    * @return the number of events that were edited
+   * @throws InvalidEventException     if the property or new value is invalid
+   * @throws ConflictingEventException if the edit would create a conflict
    */
   int editEventsFromDate(String subject, LocalDateTime startDateTime, String property,
-      String newValue) throws InvalidEventException, ConflictingEventException;
+                         String newValue) throws InvalidEventException, ConflictingEventException;
 
   /**
    * Edits all events with a specific subject.
@@ -215,9 +219,11 @@ public interface ICalendar {
    * @param property the property to edit
    * @param newValue the new value for the property
    * @return the number of events that were edited
+   * @throws InvalidEventException     if the property or new value is invalid
+   * @throws ConflictingEventException if the edit would create a conflict
    */
   int editAllEvents(String subject, String property, String newValue)
-      throws InvalidEventException, ConflictingEventException;
+          throws InvalidEventException, ConflictingEventException;
 
   /**
    * Gets all recurring events in the calendar.

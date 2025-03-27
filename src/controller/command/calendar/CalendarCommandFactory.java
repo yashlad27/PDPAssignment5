@@ -14,14 +14,25 @@ import model.exceptions.InvalidTimezoneException;
 import utilities.TimeZoneHandler;
 import view.ICalendarView;
 
+/**
+ * Factory class responsible for creating and managing calendar-related commands.
+ * This factory handles operations for creating, editing, selecting, and copying
+ * calendars and their events. It implements the ICommandFactory interface to
+ * provide a consistent way to retrieve calendar commands.
+ */
 public class CalendarCommandFactory implements ICommandFactory {
 
   private final Map<String, CalendarCommandHandler> commands;
   private final CalendarManager calendarManager;
-  private final ICalendarView view;
-  private final TimeZoneHandler timezoneHandler;
   private final CopyEventCommand copyEventCommand;
 
+  /**
+   * Creates a CalendarCommandFactory with required dependencies.
+   *
+   * @param calendarManager Handles calendar operations, non-null
+   * @param view            Calendar view interface, non-null
+   * @throws IllegalArgumentException If any parameter is null
+   */
   public CalendarCommandFactory(CalendarManager calendarManager, ICalendarView view) {
     if (calendarManager == null) {
       throw new IllegalArgumentException("CalendarManager cannot be null");
@@ -33,8 +44,7 @@ public class CalendarCommandFactory implements ICommandFactory {
 
     this.commands = new HashMap<>();
     this.calendarManager = calendarManager;
-    this.view = view;
-    this.timezoneHandler = calendarManager.getTimezoneHandler();
+    TimeZoneHandler timezoneHandler = calendarManager.getTimezoneHandler();
     this.copyEventCommand = new CopyEventCommand(calendarManager, timezoneHandler);
 
     registerCommands();

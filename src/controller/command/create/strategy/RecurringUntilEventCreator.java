@@ -19,7 +19,6 @@ public class RecurringUntilEventCreator extends AbstractEventCreator {
   private final String eventName;
   private final LocalDateTime startDateTime;
   private final LocalDateTime endDateTime;
-  private final String weekdays;
   private final Set<DayOfWeek> repeatDays;
   private final LocalDate untilDate;
   private final boolean autoDecline;
@@ -44,7 +43,7 @@ public class RecurringUntilEventCreator extends AbstractEventCreator {
       this.eventName = args[1];
       this.startDateTime = DateTimeUtil.parseDateTime(args[2]);
       this.endDateTime = DateTimeUtil.parseDateTime(args[3]);
-      this.weekdays = args[4];
+      String weekdays = args[4];
       this.repeatDays = DateTimeUtil.parseWeekdays(args[4]);
       this.untilDate = DateTimeUtil.parseDate(args[5]);
       this.autoDecline = Boolean.parseBoolean(args[6]);

@@ -33,7 +33,8 @@ public class CSVExporter {
    * Date-time formatter used to format complete date-time values (YYYY-MM-DDTHH:MM).
    * This is used for formatting date-time values in ISO-8601-like format.
    */
-  private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+  private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-"
+          + "MM-dd'T'HH:mm");
 
   /**
    * Exports a list of events to a CSV file.
@@ -48,10 +49,9 @@ public class CSVExporter {
    */
   public static String exportToCSV(String filePath, List<Event> events) throws IOException {
     try (FileWriter writer = new FileWriter(filePath)) {
-      // Write header row with column names
-      writer.write("Subject,Start Date,Start Time,End Date,End Time,All Day,Description,Location,Public\n");
+      writer.write("Subject,Start Date,Start Time,End Date,End Time,All Day," +
+              "Description,Location,Public\n");
 
-      // Write each event as a CSV row using streams
       events.stream()
               .map(CSVExporter::formatEventForCSV)
               .forEach(line -> {
@@ -73,7 +73,7 @@ public class CSVExporter {
    * @param events      the list of events to format for display
    * @param showDetails whether to include detailed information (description, location, privacy)
    * @return a formatted string representation of the events, with one event per line,
-   * or a message indicating no events if the list is empty or null
+   *       or a message indicating no events if the list is empty or null
    */
   public static String formatEventsForDisplay(List<Event> events, boolean showDetails) {
     if (events == null || events.isEmpty()) {
@@ -112,16 +112,14 @@ public class CSVExporter {
    * and optional details depending on the showDetails parameter.
    *
    * @param event       the event to format for display
-   * @param showDetails whether to include detailed information like description, location, and privacy
+   * @param showDetails whether to include detailed information like description,location & privacy
    * @return a formatted string representation of the event
    */
   private static String formatEventForDisplay(Event event, boolean showDetails) {
     StringBuilder display = new StringBuilder();
 
-    // Basic event info - always include subject
     display.append(event.getSubject());
 
-    // Add time information based on whether it's an all-day event
     if (event.isAllDay()) {
       display.append(" (All Day)");
     } else {
@@ -131,7 +129,6 @@ public class CSVExporter {
               .append(event.getEndDateTime().format(TIME_FORMATTER));
     }
 
-    // Add optional details if requested
     if (showDetails) {
       String description = event.getDescription();
       if (description != null && !description.trim().isEmpty()) {
@@ -152,7 +149,7 @@ public class CSVExporter {
   }
 
   /**
-   * Escapes a string value for CSV format according to RFC 4180 standards.
+   * Escapes a string value for CSV format.
    * This method handles special characters in CSV:
    * - If the value contains commas, double quotes, or newlines, it wraps the value in quotes
    * - Any existing double quotes are escaped by doubling them
@@ -166,7 +163,6 @@ public class CSVExporter {
       return "";
     }
 
-    // If the value contains commas, quotes, or newlines, wrap it in quotes
     if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
       return "\"" + value.replace("\"", "\"\"") + "\"";
     }

@@ -17,7 +17,7 @@ public class DateTimeUtil {
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
   private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
   private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(
-      "yyyy-MM-dd'T'HH:mm");
+          "yyyy-MM-dd'T'HH:mm");
 
   /**
    * Private constructor to prevent instantiation.
@@ -37,8 +37,8 @@ public class DateTimeUtil {
     try {
       return LocalDate.parse(dateStr, DATE_FORMATTER);
     } catch (DateTimeParseException e) {
-      throw new IllegalArgumentException("Invalid date format: " + dateStr +
-          ". Expected format: YYYY-MM-DD", e);
+      throw new IllegalArgumentException("Invalid date format: " + dateStr
+              + ". Expected format: YYYY-MM-DD", e);
     }
   }
 
@@ -54,7 +54,7 @@ public class DateTimeUtil {
       return LocalTime.parse(timeStr, TIME_FORMATTER);
     } catch (DateTimeParseException e) {
       throw new IllegalArgumentException("Invalid time format: " + timeStr +
-          ". Expected format: HH:MM", e);
+              ". Expected format: HH:MM", e);
     }
   }
 
@@ -72,11 +72,12 @@ public class DateTimeUtil {
     } catch (DateTimeParseException e) {
       try {
         // If that fails, try to parse with seconds included
-        DateTimeFormatter withSecondsFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        DateTimeFormatter withSecondsFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"
+                + "'T'HH:mm:ss");
         return LocalDateTime.parse(dateTimeStr, withSecondsFormatter);
       } catch (DateTimeParseException e2) {
         throw new IllegalArgumentException("Invalid date time format: " + dateTimeStr +
-            ". Expected format: YYYY-MM-DDThh:mm or YYYY-MM-DDThh:mm:ss", e2);
+                ". Expected format: YYYY-MM-DDThh:mm or YYYY-MM-DDThh:mm:ss", e2);
       }
     }
   }

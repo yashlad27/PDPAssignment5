@@ -12,6 +12,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+
+/**
+ * Test class for Calendar Registry class.
+ */
 public class CalendarRegistryTest {
 
   private CalendarRegistry calendarRegistry;
