@@ -30,27 +30,17 @@ public class EditEventCommandTest {
     editCommand = new EditEventCommand(calendar);
 
     LocalDateTime now = LocalDateTime.now();
-    LocalDateTime startDateTime = LocalDateTime.of(2023, 5,
-            15, 10, 0);
-    LocalDateTime endDateTime = LocalDateTime.of(2023, 5,
-            15, 11, 0);
+    LocalDateTime startDateTime = LocalDateTime.of(2023, 5, 15, 10, 0);
+    LocalDateTime endDateTime = LocalDateTime.of(2023, 5, 15, 11, 0);
 
-    Event singleEvent = new Event("Meeting", startDateTime, endDateTime, null,
-            null,
-            true
-    );
+    Event singleEvent = new Event("Meeting", startDateTime, endDateTime, null, null, true);
     calendar.addEvent(singleEvent, false);
 
-    LocalDateTime recStartDateTime = LocalDateTime.of(2023, 6,
-            1, 14, 0);
-    LocalDateTime recEndDateTime = LocalDateTime.of(2023, 6,
-            1, 15, 0);
+    LocalDateTime recStartDateTime = LocalDateTime.of(2023, 6, 1, 14, 0);
+    LocalDateTime recEndDateTime = LocalDateTime.of(2023, 6, 1, 15, 0);
 
-    calendar.createRecurringEventUntil("Weekly Meeting",
-            recStartDateTime, recEndDateTime, "MW",
-            LocalDate.of(2023, 7, 1),
-            false
-    );
+    calendar.createRecurringEventUntil("Weekly Meeting", recStartDateTime, recEndDateTime, "MW",
+        LocalDate.of(2023, 7, 1), false);
   }
 
   @After
@@ -90,7 +80,7 @@ public class EditEventCommandTest {
   @Test
   public void testEditSingleEventDescription() {
     String[] args = {"single", "description", "Meeting", "2023-05-15T10:00",
-            "Updated meeting description"};
+        "Updated meeting description"};
 
     String result = editCommand.execute(args);
 
@@ -109,7 +99,7 @@ public class EditEventCommandTest {
   @Test
   public void testEditSingleEventNotFound() {
     String[] args = {"single", "subject", "Non-existent Meeting", "2023-05-15T10:00",
-            "Updated Meeting"};
+        "Updated Meeting"};
 
     String result = editCommand.execute(args);
 
@@ -119,7 +109,7 @@ public class EditEventCommandTest {
   @Test
   public void testEditEventsFromDateSuccess() {
     String[] args = {"series_from_date", "subject", "Weekly Meeting", "2023-06-01T14:00",
-            "Updated Weekly Meeting"};
+        "Updated Weekly Meeting"};
 
     String result = editCommand.execute(args);
 
@@ -139,7 +129,7 @@ public class EditEventCommandTest {
   @Test
   public void testEditEventsFromDateNotFound() {
     String[] args = {"series_from_date", "subject", "Non-existent Meeting", "2023-06-01T14:00",
-            "Updated Meeting"};
+        "Updated Meeting"};
 
     String result = editCommand.execute(args);
 
@@ -225,17 +215,15 @@ public class EditEventCommandTest {
   public void testExecuteWithInsufficientArgsForSeriesFromDateEdit() {
     String[] args = {"series_from_date", "Weekly Meeting", "2023-06-01T14:00", "subject"};
     String result = editCommand.execute(args);
-    assertTrue("Should return error message for insufficient arguments",
-            result.contains("Error in command arguments:"
-                    + " Insufficient arguments for editing events from date"));
+    assertTrue("Should return error message for insufficient arguments", result.contains(
+        "Error in command arguments:" + " Insufficient arguments for editing events from date"));
   }
 
-  // New test cases
 
   @Test
   public void testEditEventWithQuotedValues() {
     String[] args = {"single", "description", "Meeting", "2023-05-15T10:00",
-            "\"Quoted description\""};
+        "\"Quoted description\""};
     String result = editCommand.execute(args);
     assertTrue(result.contains("Successfully edited event"));
   }
@@ -351,7 +339,8 @@ public class EditEventCommandTest {
 
     ICalendar mockExceptionCalendar = new Calendar() {
       @Override
-      public boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property, String newValue) {
+      public boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property,
+          String newValue) {
         throw new RuntimeException("Test generic exception");
       }
     };
@@ -370,8 +359,8 @@ public class EditEventCommandTest {
 
     ICalendar mockExceptionCalendar = new Calendar() {
       @Override
-      public boolean editSingleEvent(String subject, LocalDateTime startDateTime,
-                                     String property, String newValue) {
+      public boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property,
+          String newValue) {
         return false;
       }
     };
@@ -469,7 +458,7 @@ public class EditEventCommandTest {
     String[] args = {"all", "subject", "Meeting"};
     String result = testCmd.execute(args);
     assertTrue("Should indicate insufficient arguments",
-            result.contains("Error: Insufficient arguments for edit command"));
+        result.contains("Error: Insufficient arguments for edit command"));
   }
 
   @Test
@@ -484,7 +473,7 @@ public class EditEventCommandTest {
     String[] args = {"single", "Subject", "Meeting", "2023-05-15T10:00", "New Subject"};
     String result = editCommand.execute(args);
     assertTrue("Property name should be case-insensitive and not cause failure",
-            result.contains("Successfully edited event"));
+        result.contains("Successfully edited event"));
   }
 
   @Test
@@ -522,7 +511,7 @@ public class EditEventCommandTest {
 
     String result = testCmd.execute(null);
     assertTrue("Should handle null args gracefully",
-            result.contains("Error: Insufficient arguments for edit command"));
+        result.contains("Error: Insufficient arguments for edit command"));
   }
 
   @Test
@@ -549,7 +538,6 @@ public class EditEventCommandTest {
    */
   @Test
   public void testExecuteWithExtremeValues() {
-    // Very long subject
     StringBuilder longSubject = new StringBuilder();
     for (int i = 0; i < 10000; i++) {
       longSubject.append("a");
@@ -558,7 +546,6 @@ public class EditEventCommandTest {
     String[] args = {"single", "subject", "Meeting", "2023-05-15T10:00", longSubject.toString()};
     String result = editCommand.execute(args);
 
-    // Should handle long values without crashing
     assertTrue(!result.contains("Unexpected error"));
   }
 }

@@ -8,8 +8,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Test class for CalendarNameValidator.
- * Tests the validation of calendar names including format, uniqueness, and special characters.
+ * Test class for CalendarNameValidator. Tests the validation of calendar names including format,
+ * uniqueness, and special characters.
  */
 public class CalendarNameValidatorTest {
 

@@ -225,22 +225,6 @@ public class CalendarCommandFactoryTest {
     assertTrue("Error should be displayed in view", mockView.hasError(result));
   }
 
-//  @Test
-//  public void testCreateCalendarWithDuplicateName() throws ConflictingEventException,
-//          InvalidEventException, EventNotFoundException {
-//    // First create a calendar
-//    String[] createArgs = {"calendar", "--name", "DuplicateCalendar",
-//            "--timezone", "America/New_York"};
-//    factory.getCommand("create").execute(createArgs);
-//
-//    // Try to create another calendar with the same name
-//    String[] duplicateArgs = {"calendar", "--name", "DuplicateCalendar",
-//            "--timezone", "America/New_York"};
-//    String result = factory.getCommand("create").execute(duplicateArgs);
-//    assertTrue(result.startsWith("Error:"));
-//  }
-
-  // Test calendar operations with special characters in names
   @Test
   public void testCreateCalendarWithSpecialCharacters()
       throws ConflictingEventException, InvalidEventException, EventNotFoundException {
@@ -249,7 +233,6 @@ public class CalendarCommandFactoryTest {
     assertTrue(result.startsWith("Error:"));
   }
 
-  // Test calendar operations with very long names
   @Test
   public void testCreateCalendarWithLongName()
       throws ConflictingEventException, InvalidEventException, EventNotFoundException {

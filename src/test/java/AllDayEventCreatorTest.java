@@ -13,8 +13,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * Test class for AllDayEventCreator.
- * Tests the creation of single all-day events.
+ * Test class for AllDayEventCreator. Tests the creation of single all-day events.
  */
 public class AllDayEventCreatorTest {
 
@@ -87,17 +86,14 @@ public class AllDayEventCreatorTest {
 
   @Test
   public void testCreateEventSuccess() throws InvalidEventException {
-    String[] args = {"allday", "Meeting", "2023-05-15", "false", "Team meeting",
-            "Conference Room", "true"};
+    String[] args = {"allday", "Meeting", "2023-05-15", "false", "Team meeting", "Conference Room",
+        "true"};
     AllDayEventCreator creator = new AllDayEventCreator(args);
     Event event = creator.createEvent();
 
     assertEquals("Meeting", event.getSubject());
-    assertEquals(LocalDateTime.of(2023, 5, 15, 0, 0),
-            event.getStartDateTime());
-    assertEquals(
-            LocalDateTime.of(2023, 5, 15, 23, 59, 59)
-            , event.getEndDateTime());
+    assertEquals(LocalDateTime.of(2023, 5, 15, 0, 0), event.getStartDateTime());
+    assertEquals(LocalDateTime.of(2023, 5, 15, 23, 59, 59), event.getEndDateTime());
     assertEquals("Team meeting", event.getDescription());
     assertEquals("Conference Room", event.getLocation());
     assertTrue(event.isPublic());
@@ -106,12 +102,10 @@ public class AllDayEventCreatorTest {
 
   @Test
   public void testApplyEventAction() {
-    LocalDateTime eventTime = LocalDateTime.of(2025, 3, 26,
-            10, 0);
-    LocalDateTime eventEndTime = LocalDateTime.of(2025, 3,
-            26, 10, 10);
-    Event event = new Event("Meeting", eventTime, eventEndTime,
-            "Conference Room", "Discuss project updates", true);
+    LocalDateTime eventTime = LocalDateTime.of(2025, 3, 26, 10, 0);
+    LocalDateTime eventEndTime = LocalDateTime.of(2025, 3, 26, 10, 10);
+    Event event = new Event("Meeting", eventTime, eventEndTime, "Conference Room",
+        "Discuss project updates", true);
 
     EventAction updateSubject = e -> e.setSubject("Updated Subject");
     EventAction updateLocation = e -> e.setLocation("New Location");
