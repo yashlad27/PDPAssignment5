@@ -39,6 +39,8 @@ public class CalendarNameValidatorTest {
   @Test
   public void testValidateNameWithNumbers() {
     CalendarNameValidator.validateCalendarName("Calendar123");
+    assertTrue("Calendar name with numbers should be valid", 
+        CalendarNameValidator.hasCalendarName("Calendar123"));
   }
 
   @Test(expected = IllegalArgumentException.class)

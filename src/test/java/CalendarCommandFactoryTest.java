@@ -201,7 +201,8 @@ public class CalendarCommandFactoryTest {
 
   @Test
   public void testCreateCalendarWithMaximumEvents()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException, CalendarNotFoundException {
+      throws ConflictingEventException, InvalidEventException,
+          EventNotFoundException, CalendarNotFoundException {
     String[] createArgs = {"calendar", "--name", "MaxEventsCalendar", "--timezone",
         "America/New_York"};
     factory.getCommand("create").execute(createArgs);
@@ -219,7 +220,8 @@ public class CalendarCommandFactoryTest {
     String[] extraEventArgs = {"single", "ExtraEvent", "2024-01-01T10:00", "2024-01-01T11:00", null,
         null, "true", "true"};
     String result = eventFactory.getCommand("create").execute(extraEventArgs);
-    assertTrue("Error message should contain " + "'Error: Event conflicts with an existing event'",
+    assertTrue("Error message should contain "
+                    + "'Error: Event conflicts with an existing event'",
         result.contains("Error: Event conflicts with an existing event"));
     mockView.displayError(result);
     assertTrue("Error should be displayed in view", mockView.hasError(result));

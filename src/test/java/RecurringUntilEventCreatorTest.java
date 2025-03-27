@@ -101,10 +101,6 @@ public class RecurringUntilEventCreatorTest {
     public LocalDateTime getEndDateTime() {
       return endDateTime;
     }
-
-    @Override
-    public void setEndDateTime(LocalDateTime endDateTime) {
-    }
   }
 
   @Test
