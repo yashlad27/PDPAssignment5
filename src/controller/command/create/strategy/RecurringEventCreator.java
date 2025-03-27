@@ -12,8 +12,8 @@ import model.exceptions.InvalidEventException;
 import utilities.DateTimeUtil;
 
 /**
- * Strategy for creating a recurring event with a specific number of occurrences.
- * Extends AbstractEventCreator to inherit common functionality.
+ * Strategy for creating a recurring event with a specific number of occurrences. Extends
+ * AbstractEventCreator to inherit common functionality.
  */
 public class RecurringEventCreator extends AbstractEventCreator {
 
@@ -143,7 +143,8 @@ public class RecurringEventCreator extends AbstractEventCreator {
    */
   private void validateOccurrences(int occurrences) throws InvalidEventException {
     validateWithPredicate(occurrences, value -> value <= 0, "Occurrences must be positive");
-    validateWithPredicate(occurrences, value -> value > MAX_OCCURRENCES, "Maximum occurrences exceeded");
+    validateWithPredicate(occurrences, value -> value > MAX_OCCURRENCES,
+        "Maximum occurrences exceeded");
   }
 
   /**
@@ -154,7 +155,8 @@ public class RecurringEventCreator extends AbstractEventCreator {
    * @param errorMessage     the error message to throw if the condition is invalid
    * @throws InvalidEventException if the invalidCondition returns true
    */
-  private <T> void validateWithPredicate(T value, Predicate<T> invalidCondition, String errorMessage) throws InvalidEventException {
+  private <T> void validateWithPredicate(T value, Predicate<T> invalidCondition,
+      String errorMessage) throws InvalidEventException {
     if (invalidCondition.test(value)) {
       throw new InvalidEventException(errorMessage);
     }
@@ -185,15 +187,17 @@ public class RecurringEventCreator extends AbstractEventCreator {
   private void validateEventParameters() throws InvalidEventException {
     validateEventParameters(eventName);
 
-    // Validate date/time parameters
-    validateWithPredicate(startDateTime, dateTime -> dateTime == null, "Start date/time cannot be null");
+    validateWithPredicate(startDateTime, dateTime -> dateTime == null,
+        "Start date/time cannot be null");
 
-    validateWithPredicate(endDateTime, dateTime -> dateTime == null, "End date/time cannot be null");
+    validateWithPredicate(endDateTime, dateTime -> dateTime == null,
+        "End date/time cannot be null");
 
-    validateWithPredicate(new DateTimePair(startDateTime, endDateTime), pair -> pair.second.isBefore(pair.first), "End date/time cannot be before start date/time");
+    validateWithPredicate(new DateTimePair(startDateTime, endDateTime),
+        pair -> pair.second.isBefore(pair.first), "End date/time cannot be before start date/time");
 
-    // Validate recurrence parameters
-    validateWithPredicate(repeatDays, collection -> isCollectionEmpty(collection), "Repeat days cannot be empty");
+    validateWithPredicate(repeatDays, collection -> isCollectionEmpty(collection),
+        "Repeat days cannot be empty");
 
     validateOccurrences(occurrences);
   }
@@ -202,6 +206,7 @@ public class RecurringEventCreator extends AbstractEventCreator {
    * Simple pair class for date time validation.
    */
   private static class DateTimePair {
+
     final LocalDateTime first;
     final LocalDateTime second;
 
@@ -219,7 +224,9 @@ public class RecurringEventCreator extends AbstractEventCreator {
    */
   private Event buildRecurringEvent() throws InvalidEventException {
     try {
-      return new RecurringEvent.Builder(eventName, startDateTime, endDateTime, repeatDays).description(description).location(location).isPublic(isPublic).occurrences(occurrences).build();
+      return new RecurringEvent.Builder(eventName, startDateTime, endDateTime,
+          repeatDays).description(description).location(location).isPublic(isPublic)
+          .occurrences(occurrences).build();
     } catch (IllegalArgumentException e) {
       throw new InvalidEventException(e.getMessage());
     }
@@ -232,6 +239,7 @@ public class RecurringEventCreator extends AbstractEventCreator {
 
   @Override
   protected String getSuccessMessage(Event event) {
-    return String.format("Recurring event '%s' created successfully with %d occurrences on %s", eventName, occurrences, DateTimeUtil.formatWeekdays(repeatDays));
+    return String.format("Recurring event '%s' created successfully with %d occurrences on %s",
+        eventName, occurrences, DateTimeUtil.formatWeekdays(repeatDays));
   }
 }
