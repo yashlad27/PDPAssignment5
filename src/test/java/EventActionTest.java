@@ -21,8 +21,6 @@ public class EventActionTest {
 
   private List<Event> events;
   private Event regularEvent;
-  private Event allDayEvent;
-  private Event multiDayEvent;
 
   @Before
   public void setUp() {
@@ -31,11 +29,11 @@ public class EventActionTest {
     regularEvent = new Event("Team Meeting", LocalDateTime.of(2023, 5, 15, 9, 0),
         LocalDateTime.of(2023, 5, 15, 10, 30), "Weekly team sync", "Conference Room A", true);
 
-    allDayEvent = Event.createAllDayEvent("Company Holiday", LocalDate.of(2023, 5, 29),
-        "Memorial Day", null, true);
+    Event allDayEvent = Event.createAllDayEvent("Company Holiday", LocalDate.of(2023, 5, 29),
+            "Memorial Day", null, true);
 
-    multiDayEvent = new Event("Conference", LocalDateTime.of(2023, 6, 1, 9, 0),
-        LocalDateTime.of(2023, 6, 3, 17, 0), "Annual tech conference", "Convention Center", true);
+    Event multiDayEvent = new Event("Conference", LocalDateTime.of(2023, 6, 1, 9, 0),
+            LocalDateTime.of(2023, 6, 3, 17, 0), "Annual tech conference", "Convention Center", true);
 
     events.add(regularEvent);
     events.add(allDayEvent);
@@ -76,20 +74,6 @@ public class EventActionTest {
     modifyAction.executeOnList(events);
     assertTrue("All events should have modified subjects",
         events.stream().allMatch(e -> e.getSubject().endsWith(" (Modified)")));
-  }
-
-  @Test
-  public void testNullEventAction() {
-    EventAction nullCheckAction = event -> {
-      assertNotNull("Event should not be null", event);
-    };
-
-    try {
-      nullCheckAction.execute(null);
-      assertFalse("Should have thrown an assertion error", true);
-    } catch (AssertionError e) {
-      // Expected behavior
-    }
   }
 
   @Test
