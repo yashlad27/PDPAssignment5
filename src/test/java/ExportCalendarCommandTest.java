@@ -20,12 +20,12 @@ import static org.junit.Assert.assertTrue;
 public class ExportCalendarCommandTest {
 
   /**
-   * A mock implementation of the {@link ICalendar} interface used for testing.
-   * This mock allows control over the behavior of the {@code exportToCSV} method
-   * by setting predefined responses or exceptions. It also keeps track of the last
-   * file path used for exporting.
+   * A mock implementation of the {@link ICalendar} interface used for testing. This mock allows
+   * control over the behavior of the {@code exportToCSV} method by setting predefined responses or
+   * exceptions. It also keeps track of the last file path used for exporting.
    */
   private static class MockCalendar implements ICalendar {
+
     private String lastFilePath = null;
     private String exportResult = null;
     private IOException exportException = null;
@@ -70,26 +70,21 @@ public class ExportCalendarCommandTest {
 
     @Override
     public boolean createRecurringEventUntil(String name, LocalDateTime start, LocalDateTime end,
-                                             String weekdays, LocalDate untilDate,
-                                             boolean autoDecline) {
+        String weekdays, LocalDate untilDate, boolean autoDecline) {
       return false;
     }
 
     @Override
     public boolean createAllDayRecurringEvent(String name, LocalDate date, String weekdays,
-                                              int occurrences, boolean autoDecline,
-                                              String description, String location,
-                                              boolean isPublic) {
+        int occurrences, boolean autoDecline, String description, String location,
+        boolean isPublic) {
       return false;
     }
 
     @Override
     public boolean createAllDayRecurringEventUntil(String name, LocalDate date, String weekdays,
-                                                   LocalDate untilDate,
-                                                   boolean autoDecline,
-                                                   String description,
-                                                   String location,
-                                                   boolean isPublic) {
+        LocalDate untilDate, boolean autoDecline, String description, String location,
+        boolean isPublic) {
       return false;
     }
 
@@ -114,14 +109,14 @@ public class ExportCalendarCommandTest {
     }
 
     @Override
-    public boolean editSingleEvent(String subject, LocalDateTime startDateTime,
-                                   String property, String newValue) {
+    public boolean editSingleEvent(String subject, LocalDateTime startDateTime, String property,
+        String newValue) {
       return false;
     }
 
     @Override
-    public int editEventsFromDate(String subject, LocalDateTime startDateTime,
-                                  String property, String newValue) {
+    public int editEventsFromDate(String subject, LocalDateTime startDateTime, String property,
+        String newValue) {
       return 0;
     }
 
@@ -193,9 +188,8 @@ public class ExportCalendarCommandTest {
     String result = command.execute(args);
 
     assertEquals(null, calendar.getLastFilePath());
-    assertTrue(result.startsWith("Calendar exported successfully") ||
-            result.startsWith("Error") ||
-            result.startsWith("Failed"));
+    assertTrue(result.startsWith("Calendar exported successfully") || result.startsWith("Error")
+        || result.startsWith("Failed"));
   }
 
   @Test
