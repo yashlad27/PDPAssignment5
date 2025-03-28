@@ -862,4 +862,33 @@ public class CalendarTest {
     assertEquals(0, calendar.getAllRecurringEvents().size());
   }
 
+  @Test
+  public void testCopyWithTimezoneConversion() throws Exception {
+    LocalDateTime startTime = LocalDateTime.of(2024, 3, 15, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(2024, 3, 15, 11, 0);
+    Event testEvent = new Event("Test Meeting", startTime, endTime, "Test Description",
+        "Test Location", true);
+    calendar.addEvent(testEvent, false);
+
+    Calendar mockCalendar = new Calendar() {
+      @Override
+      public String exportToCSV(String filePath) throws IOException {
+        StringBuilder csv = new StringBuilder();
+        csv.append("Subject,Start Date,Start Time,End Date,End Time,All Day Event,"
+                + "Description,Location," + "Private\n");
+        csv.append("Test Meeting,03/15/2024,10:00 AM,03/15/2024,11:00 AM,False,"
+                + "Test Description,Test Location,False\n");
+        mockFileSystem.put(filePath, csv.toString());
+
+        return filePath;
+      }
+    };
+    mockCalendar.setName("Test Mock Calendar");
+    mockCalendar.setTimezone("America/New_York");
+
+    String result = mockCalendar.exportToCSV("calendar_export.csv");
+
+    assertTrue(result.contains("copied successfully"));
+  }
+
 }

@@ -43,7 +43,7 @@ public class CalendarController {
   private ICommandFactory commandFactory;
   private static final String EXIT_COMMAND = "exit";
   private static final Set<String> VALID_COMMANDS = new HashSet<>(
-      Arrays.asList("create", "use", "show", "edit", "copy", "exit"));
+          Arrays.asList("create", "use", "show", "edit", "copy", "exit"));
 
   /**
    * Constructs a new CalendarController with all necessary dependencies.
@@ -59,7 +59,7 @@ public class CalendarController {
    * @throws IllegalArgumentException if any parameter is null
    */
   public CalendarController(ICommandFactory commandFactory, ICommandFactory calendarCommandFactory,
-      CalendarManager calendarManager, ICalendarView view) {
+                            CalendarManager calendarManager, ICalendarView view) {
     if (commandFactory == null) {
       throw new IllegalArgumentException("CommandFactory cannot be null");
     }
@@ -133,8 +133,8 @@ public class CalendarController {
    */
   private boolean isCalendarCommand(String command) {
     return command.startsWith("create calendar") || command.startsWith("edit calendar")
-        || command.startsWith("use calendar") || command.startsWith("copy event")
-        || command.startsWith("copy events");
+            || command.startsWith("use calendar") || command.startsWith("copy event")
+            || command.startsWith("copy events");
   }
 
   /**
@@ -276,7 +276,6 @@ public class CalendarController {
    *
    * @param commandsFilePath Path to the file containing commands
    * @return true if all commands were executed successfully
-   * @throws IOException if there are issues reading the file
    */
   public boolean startHeadlessMode(String commandsFilePath) {
     if (!validateCommandFilePath(commandsFilePath)) {
@@ -306,7 +305,7 @@ public class CalendarController {
 
   private List<String> readCommands(BufferedReader reader) {
     return reader.lines().map(String::trim).filter(line -> !line.isEmpty())
-        .collect(Collectors.toList());
+            .collect(Collectors.toList());
   }
 
   private boolean validateCommands(List<String> commands) {

@@ -67,76 +67,75 @@ public class CalendarCommandFactoryTest {
 
   @Test
   public void testEditCalendarCommand()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+          throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String[] createArgs = {"calendar", "--name", "NewTestCalendar", "--timezone",
-        "America/New_York"};
+            "America/New_York"};
     factory.getCommand("create").execute(createArgs);
     mockView.clear();
 
     String[] editArgs = {"calendar", "--name", "NewTestCalendar", "--property", "timezone",
-        "America/Los_Angeles"};
+            "America/Los_Angeles"};
     String result = factory.getCommand("edit").execute(editArgs);
     assertTrue("Success message should contain 'Timezone updated'", result.contains(
-        "Timezone updated to America/Los_Angeles " + "for calendar 'NewTestCalendar'"));
+            "Timezone updated to America/Los_Angeles " + "for calendar 'NewTestCalendar'"));
     mockView.displaySuccess(result);
     assertTrue("Success message should be displayed in view", mockView.hasMessage(result));
   }
 
   @Test
   public void testEditCalendarTimezone()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+          throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String[] createArgs = {"calendar", "--name", "NewnewTestCalendar", "--timezone",
-        "America/New_York"};
+            "America/New_York"};
     factory.getCommand("create").execute(createArgs);
     mockView.clear();
 
     String[] editArgs = {"calendar", "--name", "NewnewTestCalendar", "--property", "timezone",
-        "America/Los_Angeles"};
+            "America/Los_Angeles"};
     String result = factory.getCommand("edit").execute(editArgs);
     assertTrue("Success message should contain 'Timezone updated'", result.contains(
-        "Timezone updated to " + "America/Los_Angeles for calendar 'NewnewTestCalendar'"));
+            "Timezone updated to " + "America/Los_Angeles for calendar 'NewnewTestCalendar'"));
     mockView.displaySuccess(result);
     assertTrue("Success message should be displayed in view", mockView.hasMessage(result));
   }
 
   @Test
   public void testEditNonExistentCalendar()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+          throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name", "NonExistentCalendar", "--property", "timezone",
-        "America/Los_Angeles"};
+            "America/Los_Angeles"};
     String result = factory.getCommand("edit").execute(args);
     assertTrue("Error message should contain 'Calendar not found'",
-        result.contains("Calendar not found"));
+            result.contains("Calendar not found"));
     mockView.displayError(result);
     assertTrue("Error should be displayed in view", mockView.hasError(result));
   }
 
   @Test
   public void testCreateDuplicateCalendar()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+          throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String[] createArgs = {"calendar", "--name", "TestCalendar", "--timezone", "America/New_York"};
     factory.getCommand("create").execute(createArgs);
     mockView.clear();
 
     String result = factory.getCommand("create").execute(createArgs);
     assertTrue("Error message should contain 'Error: Calendar name must be unique'",
-        result.contains("Error: Calendar name must be unique"));
+            result.contains("Error: Calendar name must be unique"));
     mockView.displayError(result);
     assertTrue("Error should be displayed in view", mockView.hasError(result));
   }
 
   @Test
   public void testEditCalendarWithInvalidProperty()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+          throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String[] createArgs = {"calendar", "--name", "TestCalendar", "--timezone", "America/New_York"};
     factory.getCommand("create").execute(createArgs);
     mockView.clear();
 
-    // Try to edit with invalid property
     String[] editArgs = {"calendar", "--name", "TestCalendar", "--property", "invalid", "value"};
     String result = factory.getCommand("edit").execute(editArgs);
     assertTrue("Error message should contain 'Invalid property'",
-        result.contains("Error: Invalid property 'invalid' for calendar edit"));
+            result.contains("Error: Invalid property 'invalid' for calendar edit"));
     mockView.displayError(result);
     assertTrue("Error should be displayed in view", mockView.hasError(result));
   }
@@ -153,23 +152,23 @@ public class CalendarCommandFactoryTest {
 
   @Test
   public void testEditCalendarWithInvalidTimezone()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+          throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String[] createArgs = {"calendar", "--name", "TestCalendar", "--timezone", "America/New_York"};
     factory.getCommand("create").execute(createArgs);
     mockView.clear();
 
     String[] editArgs = {"calendar", "--name", "TestCalendar", "--property", "timezone",
-        "Invalid/Timezone"};
+            "Invalid/Timezone"};
     String result = factory.getCommand("edit").execute(editArgs);
     assertTrue("Error message should contain 'Invalid timezone'",
-        result.contains("Invalid timezone"));
+            result.contains("Invalid timezone"));
     mockView.displayError(result);
     assertTrue("Error should be displayed in view", mockView.hasError(result));
   }
 
   @Test
   public void testCreateCalendarWithNullName()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+          throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name", null, "--timezone", "America/New_York"};
     String result = factory.getCommand("create").execute(args);
     assertTrue(result.startsWith("Error:"));
@@ -177,7 +176,7 @@ public class CalendarCommandFactoryTest {
 
   @Test
   public void testCreateCalendarWithEmptyName()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+          throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name", "", "--timezone", "America/New_York"};
     String result = factory.getCommand("create").execute(args);
     assertTrue(result.startsWith("Error:"));
@@ -185,7 +184,7 @@ public class CalendarCommandFactoryTest {
 
   @Test
   public void testCreateCalendarWithMissingTimezone()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+          throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name", "TestCalendar", "--timezone"};
     String result = factory.getCommand("create").execute(args);
     assertTrue(result.startsWith("Error:"));
@@ -193,7 +192,7 @@ public class CalendarCommandFactoryTest {
 
   @Test
   public void testEditEmptyCalendar()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+          throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name", "EmptyCalendar", "--property", "name", "NewName"};
     String result = factory.getCommand("edit").execute(args);
     assertTrue(result.startsWith("Error:"));
@@ -201,10 +200,10 @@ public class CalendarCommandFactoryTest {
 
   @Test
   public void testCreateCalendarWithMaximumEvents()
-      throws ConflictingEventException, InvalidEventException,
+          throws ConflictingEventException, InvalidEventException,
           EventNotFoundException, CalendarNotFoundException {
     String[] createArgs = {"calendar", "--name", "MaxEventsCalendar", "--timezone",
-        "America/New_York"};
+            "America/New_York"};
     factory.getCommand("create").execute(createArgs);
     mockView.clear();
 
@@ -213,23 +212,23 @@ public class CalendarCommandFactoryTest {
 
     for (int i = 0; i < 1000; i++) {
       String[] eventArgs = {"single", "Event" + i, "2024-01-01T10:00", "2024-01-01T11:00", null,
-          null, "true", "true"};
+              null, "true", "true"};
       eventFactory.getCommand("create").execute(eventArgs);
     }
 
     String[] extraEventArgs = {"single", "ExtraEvent", "2024-01-01T10:00", "2024-01-01T11:00", null,
-        null, "true", "true"};
+            null, "true", "true"};
     String result = eventFactory.getCommand("create").execute(extraEventArgs);
     assertTrue("Error message should contain "
                     + "'Error: Event conflicts with an existing event'",
-        result.contains("Error: Event conflicts with an existing event"));
+            result.contains("Error: Event conflicts with an existing event"));
     mockView.displayError(result);
     assertTrue("Error should be displayed in view", mockView.hasError(result));
   }
 
   @Test
   public void testCreateCalendarWithSpecialCharacters()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+          throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name", "Test@#$Calendar", "--timezone", "America/New_York"};
     String result = factory.getCommand("create").execute(args);
     assertTrue(result.startsWith("Error:"));
@@ -237,12 +236,12 @@ public class CalendarCommandFactoryTest {
 
   @Test
   public void testCreateCalendarWithLongName()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+          throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String longName = "A".repeat(1000);
     String[] args = {"calendar", "--name", longName, "--timezone", "America/New_York"};
     String result = factory.getCommand("create").execute(args);
     assertTrue("Error message should contain 'Calendar name cannot exceed 100 characters'",
-        result.contains("Calendar name cannot exceed 100 characters"));
+            result.contains("Calendar name cannot exceed 100 characters"));
     mockView.displayError(result);
     assertTrue("Error should be displayed in view", mockView.hasError(result));
   }
@@ -250,7 +249,7 @@ public class CalendarCommandFactoryTest {
   @Test
   public void testEditCalendarWithMissingProperty() throws Exception {
     String[] createArgs = {"calendar", "--name", "EditMissingProp", "--timezone",
-        "America/New_York"};
+            "America/New_York"};
     factory.getCommand("create").execute(createArgs);
     mockView.clear();
 
@@ -262,7 +261,7 @@ public class CalendarCommandFactoryTest {
   @Test
   public void testEditCalendarWithMissingValue() throws Exception {
     String[] createArgs = {"calendar", "--name", "EditMissingValue", "--timezone",
-        "America/New_York"};
+            "America/New_York"};
     factory.getCommand("create").execute(createArgs);
     mockView.clear();
 
@@ -273,7 +272,7 @@ public class CalendarCommandFactoryTest {
 
   @Test
   public void testExecuteWithEmptyArgs()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+          throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String result = factory.getCommand("create").execute(new String[]{});
     assertTrue("Should return error on insufficient arguments", result.startsWith("Error:"));
   }
@@ -285,7 +284,7 @@ public class CalendarCommandFactoryTest {
 
   @Test
   public void testUseCommandWithMissingName()
-      throws ConflictingEventException, InvalidEventException, EventNotFoundException {
+          throws ConflictingEventException, InvalidEventException, EventNotFoundException {
     String[] args = {"calendar", "--name"};
     String result = factory.getCommand("use").execute(args);
     assertTrue(result.startsWith("Error:"));
@@ -313,7 +312,7 @@ public class CalendarCommandFactoryTest {
     String[] args = {"calendar", "--name", longName, "--timezone", "America/New_York"};
     String result = factory.getCommand("create").execute(args);
     assertTrue("Error message should contain 'Calendar name cannot exceed 100 characters'",
-        result.contains("Calendar name cannot exceed 100 characters"));
+            result.contains("Calendar name cannot exceed 100 characters"));
     mockView.displayError(result);
     assertTrue("Error should be displayed in view", mockView.hasError(result));
   }
@@ -330,7 +329,7 @@ public class CalendarCommandFactoryTest {
   @Test
   public void testCreateEventWhenCalendarIsAtMaxLimit() throws Exception {
     String[] createArgs = {"calendar", "--name", "MaxEventCalendar", "--timezone",
-        "America/New_York"};
+            "America/New_York"};
     factory.getCommand("create").execute(createArgs);
     mockView.clear();
 
@@ -339,12 +338,12 @@ public class CalendarCommandFactoryTest {
 
     for (int i = 0; i < 1000; i++) {
       String[] eventArgs = {"single", "Event" + i, "2024-01-01T10:00", "2024-01-01T11:00", null,
-          null, "true", "true"};
+              null, "true", "true"};
       eventFactory.getCommand("create").execute(eventArgs);
     }
 
     String[] eventArgs = {"single", "ExtraEvent", "2024-01-01T10:00", "2024-01-01T11:00", null,
-        null, "true", "true"};
+            null, "true", "true"};
     String result = eventFactory.getCommand("create").execute(eventArgs);
     assertTrue(result.contains("Error: Event conflicts with an existing event"));
     mockView.displayError(result);
@@ -372,11 +371,11 @@ public class CalendarCommandFactoryTest {
   @Test
   public void testCreateCalendarWithDuplicateName() throws Exception {
     String[] createArgs1 = {"calendar", "--name", "DuplicateCalendar", "--timezone",
-        "America/New_York"};
+            "America/New_York"};
     String result1 = factory.getCommand("create").execute(createArgs1);
 
     String[] createArgs2 = {"calendar", "--name", "DuplicateCalendar", "--timezone",
-        "America/New_York"};
+            "America/New_York"};
     String result2 = factory.getCommand("create").execute(createArgs2);
 
     assertTrue(result2.contains("Error: Calendar name must be unique"));
@@ -387,7 +386,7 @@ public class CalendarCommandFactoryTest {
   @Test
   public void testCreateCalendarWithInvalidTimezone() throws Exception {
     String[] createArgs = {"calendar", "--name", "InvalidTimezoneCalendar", "--timezone",
-        "Invalid/Timezone"};
+            "Invalid/Timezone"};
     String result = factory.getCommand("create").execute(createArgs);
 
     assertTrue(result.contains("Invalid timezone:"));

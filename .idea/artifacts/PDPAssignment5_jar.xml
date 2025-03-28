@@ -1,5 +1,5 @@
 <component name="ArtifactManager">
-  <artifact type="jar" build-on-make="true" name="PDPAssignment5:jar">
+  <artifact type="jar" name="PDPAssignment5:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/PDPAssignment5_jar</output-path>
     <root id="archive" name="PDPAssignment5.jar">
       <element id="directory" name="META-INF">

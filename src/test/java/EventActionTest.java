@@ -12,7 +12,6 @@ import model.event.EventAction;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 /**
  * Test class for the EventAction interface.
@@ -27,13 +26,14 @@ public class EventActionTest {
     events = new ArrayList<>();
 
     regularEvent = new Event("Team Meeting", LocalDateTime.of(2023, 5, 15, 9, 0),
-        LocalDateTime.of(2023, 5, 15, 10, 30), "Weekly team sync", "Conference Room A", true);
+            LocalDateTime.of(2023, 5, 15, 10, 30), "Weekly team sync", "Conference Room A", true);
 
     Event allDayEvent = Event.createAllDayEvent("Company Holiday", LocalDate.of(2023, 5, 29),
             "Memorial Day", null, true);
 
     Event multiDayEvent = new Event("Conference", LocalDateTime.of(2023, 6, 1, 9, 0),
-            LocalDateTime.of(2023, 6, 3, 17, 0), "Annual tech conference", "Convention Center", true);
+            LocalDateTime.of(2023, 6, 3, 17, 0),
+            "Annual tech conference", "Convention Center", true);
 
     events.add(regularEvent);
     events.add(allDayEvent);
@@ -45,7 +45,7 @@ public class EventActionTest {
     EventAction printAction = event -> {
       assertNotNull("Event should not be null", event);
       assertTrue("Event should have a subject",
-          event.getSubject() != null && !event.getSubject().isEmpty());
+              event.getSubject() != null && !event.getSubject().isEmpty());
     };
 
     printAction.execute(regularEvent);
@@ -67,13 +67,13 @@ public class EventActionTest {
     modifyAction.execute(regularEvent);
 
     assertEquals("Event subject should be modified", originalSubject + " (Modified)",
-        regularEvent.getSubject());
+            regularEvent.getSubject());
     assertEquals("Event description should be modified", originalDesc + " (Updated)",
-        regularEvent.getDescription());
+            regularEvent.getDescription());
 
     modifyAction.executeOnList(events);
     assertTrue("All events should have modified subjects",
-        events.stream().allMatch(e -> e.getSubject().endsWith(" (Modified)")));
+            events.stream().allMatch(e -> e.getSubject().endsWith(" (Modified)")));
   }
 
   @Test
@@ -84,7 +84,7 @@ public class EventActionTest {
         assertTrue("Event should have valid end time", event.getEndDateTime() != null);
         if (!event.isAllDay()) {
           assertTrue("End time should be after start time",
-              event.getEndDateTime().isAfter(event.getStartDateTime()));
+                  event.getEndDateTime().isAfter(event.getStartDateTime()));
         }
       }
     };

@@ -140,6 +140,26 @@ java -cp target/classes CalendarApp --mode interactive
 java -cp target/classes CalendarApp --mode headless src/resources/headlessCmd.txt
 ```
 
+### Application using .jar
+
+- please move .jar file to root directory before executing the following commands.
+
+### Interactive Mode
+
+To run the application in interactive mode:
+
+```bash
+java -jar target/calendar-app.jar --mode interactive
+```
+
+### Headless Mode
+
+To run the application in headless mode with a command file:
+
+```bash
+java -jar target/calendar-app.jar --mode headless src/resources/headlessCmd.txt
+```
+
 ## Example Command Files
 
 - `resources/headlessCmd.txt`: Contains valid commands for testing
